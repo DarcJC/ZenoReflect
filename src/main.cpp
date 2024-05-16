@@ -1,10 +1,5 @@
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <ostream>
-#include <iostream>
-#include <optional>
-#include "clang-c/Index.h"
+#include "args.hpp"
+#include "utils.hpp"
 
 enum class TranslationUnitType {
     Header,
@@ -17,24 +12,6 @@ struct TranslationUnit {
     TranslationUnitType type = TranslationUnitType::Standalone;
 };
 
-std::ostream& operator<<(std::ostream& stream, const CXString& str) {
-    stream << clang_getCString(str);
-    clang_disposeString(str);
-    return stream;
-}
-
-std::optional<std::string> read_file(const std::string& filepath) {
-    std::ifstream file(filepath);
-    if (!file.is_open()) {
-        return std::nullopt;
-    }
-    std::stringstream buf;
-    buf << file.rdbuf();
-    return buf.str();
-}
-
-const char* PARSER_COMMAND_ARGS[] = {"-DZENO_REFLECT_PROCESSING=1\0", "-DWITH_REFLECT=1\0"};
-
 int traverse_file_ast(const TranslationUnit& unit) {
     CXIndex index = clang_createIndex(0, 1);
     CXTranslationUnit tu = nullptr;
@@ -42,12 +19,12 @@ int traverse_file_ast(const TranslationUnit& unit) {
         index, unit.identity_name.c_str(), 
         PARSER_COMMAND_ARGS, 2,
         nullptr, 0,
-        CXTranslationUnit_None,
+        CXTranslationUnit_IncludeAttributedTypes | CXTranslationUnit_SingleFileParse,
         &tu
     );
 
     if (!tu) {
-        std::cerr << "Failed to create translation unit from source" << std::endl;
+        std::cerr << "Failed to create translation unit from source: " << err << std::endl;
         return 3;
     }
 
@@ -72,13 +49,10 @@ int traverse_file_ast(const TranslationUnit& unit) {
 }
 
 
-int main(int argc, char** argv) {
-    if (argc != 2) {
-        std::cerr << "Usage: <Source File Path>" << std::endl;
-        return 1;
-    }
+int main(int argc, char* argv[]) {
+    ControlFlags flags = parse_args(argc, argv);
 
-    std::string filepath(argv[1]);
+    std::string filepath = flags.input_source_path;
     std::optional<std::string> source_str = read_file(filepath);
     if (!source_str.has_value()) {
         std::cerr << "Source is empty" << std::endl;
