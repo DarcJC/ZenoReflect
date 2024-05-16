@@ -42,7 +42,7 @@ int traverse_file_ast(const TranslationUnit& unit) {
         index, unit.identity_name.c_str(), 
         PARSER_COMMAND_ARGS, 2,
         nullptr, 0,
-        CXTranslationUnit_Incomplete,
+        CXTranslationUnit_None,
         &tu
     );
 
@@ -56,7 +56,8 @@ int traverse_file_ast(const TranslationUnit& unit) {
         root,
         [] (CXCursor cursor, CXCursor parent, CXClientData client_data) {
             std::cout << "Cursor kind: " << clang_getCursorKindSpelling(clang_getCursorKind(cursor)) << std::endl;
-            if (clang_getCursorKind(cursor) == CXCursorKind::CXCursor_FieldDecl) {
+            if (clang_getCursorKind(cursor) == CXCursorKind::CXCursor_AnnotateAttr) {
+                std::cout << clang_getCursorSpelling(cursor) << std::endl;
             }
 
             return CXChildVisit_Recurse;

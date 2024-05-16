@@ -1,4 +1,15 @@
 
-struct IAmPrimitve {
+#if !defined(ZENO_REFLECT_PROCESSING)
+    #define ZENO_ANNOTATE(...)
+    #define ZSTRUCT(...)
+    #define ZPROPERTY(...)
+#else
+    #define ZENO_ANNOTATE(...) [[clang::annotate(__VA_ARGS__)]]
+    #define ZSTRUCT(...) ZENO_ANNOTATE("#struct, " #__VA_ARGS__)
+    #define ZPROPERTY(...)  ZENO_ANNOTATE("#property, " #__VA_ARGS__)
+#endif
+
+struct ZSTRUCT(我是你爹(真), 123) IAmPrimitve {
     signed int i32;
 };
+
