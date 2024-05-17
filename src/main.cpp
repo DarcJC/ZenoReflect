@@ -15,9 +15,10 @@ struct TranslationUnit {
 int traverse_file_ast(const TranslationUnit& unit) {
     CXIndex index = clang_createIndex(0, 1);
     CXTranslationUnit tu = nullptr;
+    std::vector<char*> cmd_args = get_parser_command_args(GLOBAL_CONTROL_FLAGS->cpp_version);
     CXErrorCode err = clang_parseTranslationUnit2(
         index, unit.identity_name.c_str(), 
-        PARSER_COMMAND_ARGS, 2,
+        cmd_args.data(), cmd_args.size(),
         nullptr, 0,
         CXTranslationUnit_IncludeAttributedTypes | CXTranslationUnit_SingleFileParse,
         &tu
@@ -48,9 +49,12 @@ int traverse_file_ast(const TranslationUnit& unit) {
     return 0;
 }
 
-
 int main(int argc, char* argv[]) {
     ControlFlags flags = parse_args(argc, argv);
+    GLOBAL_CONTROL_FLAGS = &flags;
+    if (flags.verbose) {
+        flags.print();
+    }
 
     std::string filepath = flags.input_source_path;
     std::optional<std::string> source_str = read_file(filepath);
