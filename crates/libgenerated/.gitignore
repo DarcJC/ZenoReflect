@@ -1,0 +1,2 @@
+include/generated_templates.hpp
+src/generated_implementations.cpp
