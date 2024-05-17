@@ -15,12 +15,12 @@ struct TranslationUnit {
 int traverse_file_ast(const TranslationUnit& unit) {
     CXIndex index = clang_createIndex(0, 1);
     CXTranslationUnit tu = nullptr;
-    std::vector<char*> cmd_args = get_parser_command_args(GLOBAL_CONTROL_FLAGS->cpp_version);
+    std::vector<char*> cmd_args = get_parser_command_args(GLOBAL_CONTROL_FLAGS->cpp_version, GLOBAL_CONTROL_FLAGS->include_dirs, GLOBAL_CONTROL_FLAGS->pre_include_headers, GLOBAL_CONTROL_FLAGS->verbose);
     CXErrorCode err = clang_parseTranslationUnit2(
         index, unit.identity_name.c_str(), 
         cmd_args.data(), cmd_args.size(),
         nullptr, 0,
-        CXTranslationUnit_IncludeAttributedTypes | CXTranslationUnit_SingleFileParse,
+        CXTranslationUnit_IncludeAttributedTypes,
         &tu
     );
 
