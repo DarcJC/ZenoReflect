@@ -14,8 +14,6 @@ std::ostream& operator<<(std::ostream& stream, const CXString& str);
 
 std::optional<std::string> read_file(const std::string& filepath);
 
-// inline const char* PARSER_COMMAND_ARGS[] = {"-x", "c++", "-std=c++17", "-DZENO_REFLECT_PROCESSING=1", "-DWITH_REFLECT=1"};
-
 inline static std::vector<char*>& get_parser_command_args(
     const std::string& cpp_version,
     std::vector<std::string>& include_dirs,

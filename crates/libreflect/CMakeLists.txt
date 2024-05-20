@@ -1,6 +1,7 @@
 
 add_library(libreflect STATIC
     src/reflect.cpp
+    src/registry.cpp
 )
 add_library(ZenoReflect::libreflect ALIAS libreflect)
 target_include_directories(libreflect PUBLIC include)
