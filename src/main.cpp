@@ -56,17 +56,20 @@ int main(int argc, char* argv[]) {
         flags.print();
     }
 
-    std::string filepath = flags.input_source_path;
-    std::optional<std::string> source_str = read_file(filepath);
-    if (!source_str.has_value()) {
-        std::cerr << "Source is empty" << std::endl;
-        return 2;
-    }
-    std::string source = source_str.value();
+    int32_t result = 0;
+    for (const std::string& filepath : flags.input_sources) {
+        std::optional<std::string> source_str = read_file(filepath);
+        if (!source_str.has_value()) {
+            std::cerr << "Source is empty" << std::endl;
+            return 2;
+        }
+        std::string source = source_str.value();
 
-    return traverse_file_ast({
-        .identity_name = filepath,
-        .source = source,
-        .type = TranslationUnitType::Header,
-    });
+        result += traverse_file_ast({
+            .identity_name = filepath,
+            .source = source,
+            .type = TranslationUnitType::Header,
+        });
+    }
+    return result;
 }

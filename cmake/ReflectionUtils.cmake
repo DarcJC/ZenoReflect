@@ -58,19 +58,33 @@ endfunction()
 
 function(zeno_declare_reflection_support target)
     # Call this function after all target source has been added
-    get_target_include_dirs_recursive(${target} include_dirs)
-    list(LENGTH include_dirs include_dir_length)
-    if (include_dir_length GREATER 0)
-        list(JOIN include_dirs " --include_dirs=" include_dirs_string)
-        set(include_dirs_string "--include_dirs=${include_dirs_string}")
-    else()
-        set(include_dirs_string "")
+
+    # Input sources
+    get_target_property(REFLECTION_GENERATION_SOURCE ${target} SOURCES)
+    get_target_property(REFLECTION_GENERATION_SOURCE_DIR ${target} SOURCE_DIR)
+    list(LENGTH REFLECTION_GENERATION_SOURCE source_files_length)
+    if (source_files_length EQUAL 0)
+        message(WARNING "There is not source files found in target ${target}, check your calling timing")
     endif()
+    set(source_paths_value ${REFLECTION_GENERATION_SOURCE})
+    list(TRANSFORM source_paths_value PREPEND "${REFLECTION_GENERATION_SOURCE_DIR}/")
+    list(JOIN source_paths_value "," source_paths_string)
+
+    # Include dirs
+    get_target_include_dirs_recursive(${target} include_dirs)
+    list(JOIN include_dirs "," include_dirs_string)
+
     set(REFLECTION_GENERATION_TARGET _internal_${target}_reflect_generation)
-    add_custom_target(
-        ${REFLECTION_GENERATION_TARGET}
-        COMMAND $<TARGET_FILE:ZenoReflect::generator> ${include_dirs_string} $<IF:$<CONFIG:Debug>,"-v",""> --pre_include_header="${LIBREFLECT_PCH_PATH}" /home/darc/codes/clang_reflection_test/example/include/data.h
-        COMMENT "Generating reflection information"
+
+    add_custom_target(${REFLECTION_GENERATION_TARGET}
+        WORKING_DIRECTORY
+            ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND 
+            $<TARGET_FILE:ZenoReflect::generator> --include_dirs=\"${include_dirs_string}\" --pre_include_header="${LIBREFLECT_PCH_PATH}" --input_source=\"${source_paths_string}\" -o="${ZENO_REFLECTION_GENERATED_HEADERS_DIR}" $<IF:$<CONFIG:Debug>,"-v "," "> 
+        SOURCES 
+            ${REFLECTION_GENERATION_SOURCE} 
+        COMMENT 
+            "Generating reflection information"
     )
     add_dependencies(${target} ${REFLECTION_GENERATION_TARGET})
 endfunction()
