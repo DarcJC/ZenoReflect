@@ -5,6 +5,9 @@
     #define ZSTRUCT(...)
     #define ZPROPERTY(...)
     #define ZNODE(...)
+
+    // Speed up generator processing
+    #include "registry.hpp"
 #else
     #define ZENO_ANNOTATE(...) [[clang::annotate(__VA_ARGS__)]]
     #define ZSTRUCT(...) ZENO_ANNOTATE("#struct, " #__VA_ARGS__)
@@ -12,4 +15,3 @@
     #define ZNODE(...)  ZENO_ANNOTATE("#node, " #__VA_ARGS__)
 #endif
 
-#include "reflect/registry.hpp"

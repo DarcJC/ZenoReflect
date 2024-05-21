@@ -8,5 +8,4 @@ add_library(ReflectExample SHARED
 target_link_libraries(ReflectExample PUBLIC ZenoReflect::libreflect ZenoReflect::libgenerated)
 target_include_directories(ReflectExample PRIVATE include)
 
-get_target_property(ExampleIncludes ReflectExample INCLUDE_DIRECTORIES)
-message(STATUS "${ExampleIncludes}")
+zeno_declare_reflection_support(ReflectExample)
