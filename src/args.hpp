@@ -13,4 +13,4 @@ struct ControlFlags : public argparse::Args {
 
 ControlFlags parse_args(int argc, char** argv);
 
-static inline ControlFlags* GLOBAL_CONTROL_FLAGS = nullptr;
+extern ControlFlags* GLOBAL_CONTROL_FLAGS;

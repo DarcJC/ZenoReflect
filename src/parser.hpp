@@ -10,7 +10,8 @@ enum class TranslationUnitType {
 
 enum class ParserErrorCode {
     Success = 0,
-    TUCreationFailure = 0,
+    InternalError = 1,
+    TUCreationFailure = 2,
 };
 
 struct TranslationUnit {
