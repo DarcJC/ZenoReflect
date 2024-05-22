@@ -1,23 +1,23 @@
 
 message(CHECK_START "[Reflection] Starting to locate dependencies")
 
-if (MSVC)
-    find_package(LLVM REQUIRED CONFIG)
-    message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-    message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
-    message(STATUS "Using libclang ${LIBCLANG_LIBRARY}")
+find_package(Clang REQUIRED CONFIG)
+find_package(LLVM REQUIRED CONFIG)
 
-    include_directories(${LLVM_INCLUDE_DIRS})
-    link_directories(${LLVM_LIBRARY_DIR})
-    add_definitions(${LLVM_DEFINITIONS})
-else()
-    find_package(Clang REQUIRED CONFIG)
-    include_directories(${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
-    link_directories(${CLANG_LIBRARY_DIR})
-    add_definitions(${LLVM_DEFINITIONS})
-    add_definitions(${CLANG_DEFINITIONS})
-    set(LIBCLANG_LIBRARY libclang)
-endif(MSVC)
+list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
+
+include_directories(${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
+link_directories(${CLANG_LIBRARY_DIR} ${LLVM_LIBRARY_DIR})
+
+add_definitions(${CLANG_DEFINITIONS})
+separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
+add_definitions(${LLVM_DEFINITIONS_LIST}) 
+
+set(LIBCLANG_LIBRARY clang clang-cpp)
+
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+message(STATUS "Using libraries: ${LIBCLANG_LIBRARY}")
 
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/argparse/include)
 message(STATUS "Added argparse header into include dir")

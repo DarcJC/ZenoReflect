@@ -7,10 +7,7 @@
 #include <iostream>
 #include <optional>
 #include <vector>
-#include "clang-c/Index.h"
 #include "fmt/format.h"
-
-std::ostream& operator<<(std::ostream& stream, const CXString& str);
 
 std::optional<std::string> read_file(const std::string& filepath);
 
@@ -63,4 +60,3 @@ inline static std::vector<char*>& get_parser_command_args(
 
     return PARSER_COMMAND_ARGS;
 }
-
