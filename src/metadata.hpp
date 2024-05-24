@@ -1,0 +1,76 @@
+#pragma once
+#include <stdint.h>
+#include <string>
+#include <variant>
+#include <vector>
+#include <unordered_map>
+#include <optional>
+
+enum class MetadataType : uint8_t {
+    None = 0,
+    Struct,
+    Enum,
+    Function,
+    EnumValue,
+    StructField,
+    FunctionParameter,
+};
+
+MetadataType string_to_metadata_type(const std::string& str);
+
+struct MetadataContainer {
+    using Value = std::variant<std::string, std::vector<std::string>, bool>;
+
+    MetadataType type;
+    std::unordered_map<std::string, Value> properties;
+};
+
+/**
+ * A CFG DSL garmmar parser
+*/
+class MetadataParser {
+public:
+    static MetadataContainer parse(const std::string &in_dsl);
+
+protected:
+    enum class TokenType {
+        Unknown,
+        EndOfFile,
+        LeftBracket,
+        RightBracket,
+        Equal,
+        Comma,
+        Word,
+    };
+
+    struct Token {
+        TokenType type;
+        // inclusive
+        size_t start_range;
+        // exclusive
+        size_t end_range;
+        // Word value
+        std::optional<std::string> word_value = std::nullopt;
+    };
+
+    std::string current_text;
+
+    size_t m_pos = 0;
+    size_t m_end;
+
+    std::optional<Token> current_token;
+
+    struct {
+        int32_t is_slate: 1;
+        int32_t inside_quote: 1;
+    } m_state;
+
+protected:
+    MetadataParser(std::string in_dsl);
+    // lexer
+    Token next_token();
+    MetadataContainer run();
+    static bool is_operator(char c);
+};
+
+MetadataContainer parse_metadata_dsl(const std::string& in_dsl);

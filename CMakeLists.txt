@@ -13,7 +13,7 @@ llvm_map_components_to_libnames(LLVM_LINK_COMPONENTS support)
 set(LLVM_ENABLE_RTTI ON)
 set(LLVM_ENABLE_EH ON)
 add_executable(${RELCTION_GENERATOR_TARGET} 
-    src/main.cpp src/args.cpp src/utils.cpp src/parser.cpp
+    src/main.cpp src/args.cpp src/utils.cpp src/parser.cpp src/metadata.cpp
 )
 
 add_executable(ZenoReflect::generator ALIAS ${RELCTION_GENERATOR_TARGET})
