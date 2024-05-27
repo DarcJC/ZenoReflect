@@ -33,8 +33,8 @@ public:
     static MetadataContainer parse(const std::string &in_dsl);
 
 protected:
-    enum class TokenType {
-        Unknown,
+    enum class TokenType : uint8_t {
+        Unknown = 0,
         EndOfFile,
         LeftBracket,
         RightBracket,
@@ -63,7 +63,11 @@ protected:
     struct {
         int32_t is_slate: 1;
         int32_t inside_quote: 1;
-    } m_state;
+    } m_lexer_state;
+
+    struct {
+        bool found_type: 1;
+    } m_parser_state;
 
 protected:
     MetadataParser(std::string in_dsl);

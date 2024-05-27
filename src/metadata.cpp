@@ -1,6 +1,7 @@
 #include <limits>
 #include <sstream>
 #include <iostream>
+#include "fmt/format.h"
 #include "metadata.hpp"
 #include "args.hpp"
 
@@ -37,8 +38,10 @@ MetadataParser::MetadataParser(std::string in_dsl)
     : current_text(std::move(in_dsl))
     , m_end(current_text.size())
 {
-    m_state.is_slate = 0;
-    m_state.inside_quote = 0;
+    m_lexer_state.is_slate = 0;
+    m_lexer_state.inside_quote = 0;
+
+    m_parser_state.found_type = 0;
 }
 
 MetadataParser::Token MetadataParser::next_token()
@@ -52,7 +55,7 @@ MetadataParser::Token MetadataParser::next_token()
                 .end_range = m_pos,
             };
         }
-        
+
         const char& c = current_text.at(m_pos);
         char next_char = '\0';
         if (current_text.size() > m_pos + 1) {
@@ -62,7 +65,7 @@ MetadataParser::Token MetadataParser::next_token()
 
         switch (c) {
             case '(':
-                if (!m_state.inside_quote) {
+                if (!m_lexer_state.inside_quote) {
                     return Token {
                         .type = TokenType::LeftBracket,
                         .start_range = m_pos,
@@ -70,7 +73,7 @@ MetadataParser::Token MetadataParser::next_token()
                     };
                 }
             case ')':
-                if (!m_state.inside_quote) {
+                if (!m_lexer_state.inside_quote) {
                     return Token {
                         .type = TokenType::RightBracket,
                         .start_range = m_pos,
@@ -78,7 +81,7 @@ MetadataParser::Token MetadataParser::next_token()
                     };
                 }
             case '=':
-                if (!m_state.inside_quote) {
+                if (!m_lexer_state.inside_quote) {
                     return Token {
                         .type = TokenType::Equal,
                         .start_range = m_pos,
@@ -86,7 +89,7 @@ MetadataParser::Token MetadataParser::next_token()
                     };
                 }
             case ',':
-                if (!m_state.inside_quote) {
+                if (!m_lexer_state.inside_quote) {
                     return Token {
                         .type = TokenType::Comma,
                         .start_range = m_pos,
@@ -128,8 +131,8 @@ MetadataParser::Token MetadataParser::next_token()
                 length += 2;
                 break;
             case '\"':
-                if (m_state.inside_quote) {
-                    m_state.inside_quote = false;
+                if (m_lexer_state.inside_quote) {
+                    m_lexer_state.inside_quote = false;
                     m_pos++;
                     return Token {
                         .type = TokenType::Word,
@@ -138,13 +141,14 @@ MetadataParser::Token MetadataParser::next_token()
                         .word_value = std::make_optional<std::string>(word.str()),
                     };
                 } else {
-                    m_state.inside_quote = true;
+                    m_lexer_state.inside_quote = true;
                     m_pos++;
                     length++;
                 }
                 break;
             default:
-                if (is_operator(next_char)) {
+                word << c;
+                if (is_operator(next_char) && !m_lexer_state.inside_quote) {
                     m_pos ++;
                     return Token {
                         .type = TokenType::Word,
@@ -177,8 +181,11 @@ MetadataContainer MetadataParser::run()
 
     do {
         current_token = std::make_optional(next_token());
-    } while (current_token->type != TokenType::EndOfFile) {
-    }
+        std::cout << fmt::format("qwq: {}", static_cast<uint8_t>(current_token->type)) << std::endl;
+        if (current_token->type == TokenType::Word) {
+            std::cout << current_token->word_value.value() << std::endl;
+        }
+    } while (current_token->type != TokenType::EndOfFile);
 
     return container;
 }

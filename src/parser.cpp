@@ -68,6 +68,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                 if (const AnnotateAttr *Annotate = dyn_cast<AnnotateAttr>(attr)) {
                     llvm::outs() << "AnnotateAttr found in " << record_decl->getNameAsString() << ": ";
                     llvm::outs() << Annotate->getAnnotation().str() << "\n";
+                    MetadataParser::parse(Annotate->getAnnotation().str());
                 }
             }
         }
