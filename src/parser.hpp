@@ -57,9 +57,6 @@ struct ReflectionModel {
     std::unordered_map<std::string, ReflectionStruct> structs;
 };
 
-inline static struct ParserState {
-} GLOBAL_PARSER_STATE {};
-
 ParserErrorCode generate_reflection_model(const TranslationUnit& unit, ReflectionModel& out_model);
 
 struct ASTLabels {

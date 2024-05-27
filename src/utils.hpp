@@ -45,7 +45,7 @@ inline static std::vector<std::string> get_parser_command_args(
     }
 
     if (verbose) {
-        std::cout << "libclang args:\t\"";
+        std::cout << "[debug] libclang args:\t\"";
         for (const std::string& str : result) {
             std::cout << str << " ";
         }

@@ -152,7 +152,7 @@ MetadataParser::Token MetadataParser::next_token()
                 break;
             default:
                 word << c;
-                if (is_operator(next_char) && !m_lexer_state.inside_quote) {
+                if ((is_operator(next_char) || next_char == '\0') && !m_lexer_state.inside_quote) {
                     m_pos ++;
                     return Token {
                         .type = TokenType::Word,
@@ -237,23 +237,39 @@ MetadataContainer MetadataParser::run()
                 return container;
             }
             m_parser_state.inside_bracket = false;
+            list.push_back(m_parser_state.value_buffer.str());
+            m_parser_state.value_buffer.str("");
+            m_parser_state.value_buffer.clear();
+        } else if (current_token->type == TokenType::EndOfFile) {
+            if (m_parser_state.inside_bracket) {
+                std::cout << "[Reflect] Metadata parse aborted." << std::endl << "\tBrackets not matched" << std::endl;
+                m_parser_state.aborted = true;
+                return container;
+            }
+            if (!m_parser_state.key_buffer.str().empty()) {
+                container.properties.insert_or_assign(m_parser_state.key_buffer.str(), m_parser_state.value_buffer.str());
+            }
         }
     } while (current_token->type != TokenType::EndOfFile);
+    
 
-    for (const auto [k, v] : container.properties) {
-        std::visit([&k, &v] (auto& val) {
-            using ValType = decltype(val);
-            if constexpr (std::is_convertible_v<ValType, std::string>) {
-                std::cout << k << " = " << std::get<std::string>(v) << std::endl;
-            } else if constexpr (std::is_convertible_v<ValType, std::vector<std::string>>) {
-                std::cout << k << " = ";
-                const std::vector<std::string>& l = std::get<std::vector<std::string>>(v);
-                for (const auto& s : l) {
-                    std::cout << s << ",";
+    if (GLOBAL_CONTROL_FLAGS->verbose) {
+        for (const auto [k, v] : container.properties) {
+            std::visit([&k, &v] (auto& val) {
+                using ValType = decltype(val);
+                std::cout << "[debug] ";
+                if constexpr (std::is_convertible_v<ValType, std::string>) {
+                    std::cout << k << " = " << std::get<std::string>(v) << std::endl;
+                } else if constexpr (std::is_convertible_v<ValType, std::vector<std::string>>) {
+                    std::cout << k << " = ";
+                    const std::vector<std::string>& l = std::get<std::vector<std::string>>(v);
+                    for (const auto& s : l) {
+                        std::cout << s << ",";
+                    }
+                    std::cout << std::endl;
                 }
-                std::cout << std::endl;
-            }
-        }, v);
+            }, v);
+        }
     }
 
     return container;
