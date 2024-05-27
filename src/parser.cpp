@@ -17,7 +17,7 @@ public:
 
 ParserErrorCode generate_reflection_model(const TranslationUnit &unit, ReflectionModel &out_model) {
     out_model.debug_name = unit.identity_name;
-    std::vector<std::string> args = get_parser_command_args(GLOBAL_CONTROL_FLAGS->cpp_version, GLOBAL_CONTROL_FLAGS->include_dirs, GLOBAL_CONTROL_FLAGS->pre_include_headers, GLOBAL_CONTROL_FLAGS->verbose);
+    std::vector<std::string> args = zeno::reflect::get_parser_command_args(GLOBAL_CONTROL_FLAGS->cpp_version, GLOBAL_CONTROL_FLAGS->include_dirs, GLOBAL_CONTROL_FLAGS->pre_include_headers, GLOBAL_CONTROL_FLAGS->verbose);
 
     if (!clang::tooling::runToolOnCodeWithArgs(
         std::make_unique<ReflectionGeneratorAction>(),

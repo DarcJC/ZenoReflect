@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 
     int32_t result = 0;
     for (const std::string& filepath : GLOBAL_CONTROL_FLAGS->input_sources) {
-        std::optional<std::string> source_str = read_file(filepath);
+        std::optional<std::string> source_str = zeno::reflect::read_file(filepath);
         if (!source_str.has_value()) {
             std::cerr << fmt::format("Can't read source file {}", filepath) << std::endl;
             return 2;

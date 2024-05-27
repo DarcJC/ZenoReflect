@@ -19,9 +19,9 @@ enum class MetadataType : uint8_t {
 MetadataType string_to_metadata_type(const std::string& str);
 
 struct MetadataContainer {
-    using Value = std::variant<std::string, std::vector<std::string>, bool>;
+    using Value = std::variant<std::string, std::vector<std::string>>;
 
-    MetadataType type;
+    MetadataType type = MetadataType::None;
     std::unordered_map<std::string, Value> properties;
 };
 
@@ -66,7 +66,12 @@ protected:
     } m_lexer_state;
 
     struct {
-        bool found_type: 1;
+        int32_t found_type: 1;
+        int32_t aborted: 1;
+        int32_t key_value: 1; // 0 => key, 1 => value
+        int32_t inside_bracket: 1;
+        std::stringstream key_buffer;
+        std::stringstream value_buffer;
     } m_parser_state;
 
 protected:
@@ -74,6 +79,9 @@ protected:
     // lexer
     Token next_token();
     MetadataContainer run();
+
+    bool is_aborted() const;
+
     static bool is_operator(char c);
 };
 

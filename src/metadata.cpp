@@ -4,6 +4,7 @@
 #include "fmt/format.h"
 #include "metadata.hpp"
 #include "args.hpp"
+#include "utils.hpp"
 
 MetadataType string_to_metadata_type(const std::string &str)
 {
@@ -42,6 +43,9 @@ MetadataParser::MetadataParser(std::string in_dsl)
     m_lexer_state.inside_quote = 0;
 
     m_parser_state.found_type = 0;
+    m_parser_state.aborted = 0;
+    m_parser_state.key_value = 0;
+    m_parser_state.inside_bracket = 0;
 }
 
 MetadataParser::Token MetadataParser::next_token()
@@ -179,13 +183,83 @@ MetadataContainer MetadataParser::run()
 {
     MetadataContainer container{};
 
+    std::vector<std::string> list;
+    std::string temp_key;
     do {
         current_token = std::make_optional(next_token());
-        std::cout << fmt::format("qwq: {}", static_cast<uint8_t>(current_token->type)) << std::endl;
         if (current_token->type == TokenType::Word) {
-            std::cout << current_token->word_value.value() << std::endl;
+            const std::string trimed_word = zeno::reflect::trim(current_token->word_value.value());
+            if (trimed_word.starts_with("#")) {
+                if (container.type == MetadataType::None) {
+                    container.type = string_to_metadata_type(trimed_word.substr(1));
+                } else {
+                    std::cout << "[Reflect] Metadata parse aborted." << std::endl << "\t\"" << trimed_word << "\" duplicated type declaration."; 
+                    m_parser_state.aborted = true;
+                    return container;
+                }
+            } else {
+                if (!m_parser_state.key_value) {
+                    m_parser_state.key_buffer << trimed_word;
+                } else {
+                    m_parser_state.value_buffer << trimed_word;
+                }
+            }
+        } else if (current_token->type == TokenType::Equal) {
+            m_parser_state.key_value = true;
+            temp_key = m_parser_state.key_buffer.str();
+        } else if (current_token->type == TokenType::Comma) {
+            if (!m_parser_state.inside_bracket) {
+                if (list.empty()) {
+                    container.properties.insert_or_assign(temp_key, m_parser_state.value_buffer.str());
+                } else {
+                    container.properties.insert_or_assign(temp_key, std::move(list));
+                }
+                list = std::vector<std::string>();
+                m_parser_state.key_value = false;
+            } else {
+                list.push_back(m_parser_state.value_buffer.str());
+            }
+            m_parser_state.key_buffer.str("");
+            m_parser_state.key_buffer.clear();
+            m_parser_state.value_buffer.str("");
+            m_parser_state.value_buffer.clear();
+        } else if (current_token->type == TokenType::LeftBracket) {
+            if (m_parser_state.inside_bracket) {
+                std::cout << "[Reflect] Metadata parse aborted." << std::endl << "\tNested set isn't allowed" << std::endl;
+                m_parser_state.aborted = true;
+                return container;
+            }
+            m_parser_state.inside_bracket = true;
+        } else if (current_token->type == TokenType::RightBracket) {
+            if (!m_parser_state.inside_bracket) {
+                std::cout << "[Reflect] Metadata parse aborted." << std::endl << "\tBrackets not matched" << std::endl;
+                m_parser_state.aborted = true;
+                return container;
+            }
+            m_parser_state.inside_bracket = false;
         }
     } while (current_token->type != TokenType::EndOfFile);
 
+    for (const auto [k, v] : container.properties) {
+        std::visit([&k, &v] (auto& val) {
+            using ValType = decltype(val);
+            if constexpr (std::is_convertible_v<ValType, std::string>) {
+                std::cout << k << " = " << std::get<std::string>(v) << std::endl;
+            } else if constexpr (std::is_convertible_v<ValType, std::vector<std::string>>) {
+                std::cout << k << " = ";
+                const std::vector<std::string>& l = std::get<std::vector<std::string>>(v);
+                for (const auto& s : l) {
+                    std::cout << s << ",";
+                }
+                std::cout << std::endl;
+            }
+        }, v);
+    }
+
     return container;
+}
+
+bool MetadataParser::is_aborted() const
+{
+    return m_parser_state.aborted;
 }
