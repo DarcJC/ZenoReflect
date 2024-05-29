@@ -254,7 +254,7 @@ MetadataContainer MetadataParser::run()
     
 
     if (GLOBAL_CONTROL_FLAGS->verbose) {
-        for (const auto [k, v] : container.properties) {
+        for (const auto& [k, v] : container.properties) {
             std::visit([&k, &v] (auto& val) {
                 using ValType = decltype(val);
                 std::cout << "[debug] ";

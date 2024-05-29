@@ -2,7 +2,7 @@
 message(CHECK_START "[Reflection] Starting to locate dependencies")
 
 find_package(Clang REQUIRED CONFIG)
-find_package(LLVM REQUIRED CONFIG)
+find_package(LLVM REQUIRED CONFIG COMPONENTS Headers)
 
 list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 
@@ -25,3 +25,5 @@ message(STATUS "Added argparse header into include dir")
 find_package(fmt REQUIRED)
 
 message(CHECK_PASS "[Reflection] Found all dependencies successfully")
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../thirdparty/bitsery)

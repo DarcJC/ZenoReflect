@@ -8,4 +8,7 @@ add_library(ReflectExample SHARED
 target_link_libraries(ReflectExample PUBLIC ZenoReflect::libreflect ZenoReflect::libgenerated)
 target_include_directories(ReflectExample PRIVATE include)
 
-zeno_declare_reflection_support(ReflectExample)
+make_absolute_paths(REFLECTION_HEADERS 
+    include/data.h
+) 
+zeno_declare_reflection_support(ReflectExample ${REFLECTION_HEADERS})

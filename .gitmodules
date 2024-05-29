@@ -1,0 +1,3 @@
+[submodule "thirdparty/bitsery"]
+	path = thirdparty/bitsery
+	url = https://github.com/fraillt/bitsery.git

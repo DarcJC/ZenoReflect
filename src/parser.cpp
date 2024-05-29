@@ -19,6 +19,7 @@ ParserErrorCode generate_reflection_model(const TranslationUnit &unit, Reflectio
     out_model.debug_name = unit.identity_name;
     std::vector<std::string> args = zeno::reflect::get_parser_command_args(GLOBAL_CONTROL_FLAGS->cpp_version, GLOBAL_CONTROL_FLAGS->include_dirs, GLOBAL_CONTROL_FLAGS->pre_include_headers, GLOBAL_CONTROL_FLAGS->verbose);
 
+
     if (!clang::tooling::runToolOnCodeWithArgs(
         std::make_unique<ReflectionGeneratorAction>(),
         unit.source.c_str(),
@@ -57,18 +58,14 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
         }
 
         if (record_decl->getNumBases() > 0) {
-            llvm::outs() << "Base classes of " << record_decl->getNameAsString() << ":\n";
             for (const auto& base : record_decl->bases()) {
-                llvm::outs() << "  - " << base.getType().getAsString() << "\n";
             }
         }
 
         if (record_decl->hasAttrs()) {
             for (const auto* attr : record_decl->attrs()) {
                 if (const AnnotateAttr *Annotate = dyn_cast<AnnotateAttr>(attr)) {
-                    llvm::outs() << "AnnotateAttr found in " << record_decl->getNameAsString() << ": ";
-                    llvm::outs() << Annotate->getAnnotation().str() << "\n";
-                    MetadataParser::parse(Annotate->getAnnotation().str());
+                    MetadataContainer container = MetadataParser::parse(Annotate->getAnnotation().str());
                 }
             }
         }

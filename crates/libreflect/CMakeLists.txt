@@ -5,6 +5,7 @@ add_library(libreflect STATIC
 )
 add_library(ZenoReflect::libreflect ALIAS libreflect)
 target_include_directories(libreflect PUBLIC include)
+target_link_libraries(libreflect PUBLIC Bitsery::bitsery)
 
 set(PRE_INCLUDE_HEADER "${CMAKE_CURRENT_LIST_DIR}/include/reflect/core.hpp")
 target_precompile_headers(libreflect PUBLIC ${PRE_INCLUDE_HEADER})
