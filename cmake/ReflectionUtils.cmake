@@ -1,5 +1,5 @@
 
-set(RELFECTION_GENERATION_ROOT_TARGET _Reflection_ROOT)
+set(RELFECTION_GENERATION_ROOT_TARGET _Reflection_ROOT CACHE INTERNAL "Reflection generator dependencies for all targets")
 add_custom_target(${RELFECTION_GENERATION_ROOT_TARGET})
 
 macro(make_absolute_paths out_var)
