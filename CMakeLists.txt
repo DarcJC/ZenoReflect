@@ -7,6 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(cmake/FindPackages.cmake)
 include(cmake/ReflectionUtils.cmake)
+include(cmake/FixWindows.cmake)
 
 set(RELCTION_GENERATOR_TARGET ReflectGenerator)
 llvm_map_components_to_libnames(LLVM_LINK_COMPONENTS support)
