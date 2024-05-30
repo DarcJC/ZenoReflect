@@ -1,4 +1,7 @@
 
+set(RELFECTION_GENERATION_ROOT_TARGET _Reflection_ROOT)
+add_custom_target(${RELFECTION_GENERATION_ROOT_TARGET})
+
 macro(make_absolute_paths out_var)
     set(result_list)
     foreach(path ${ARGN})
@@ -53,10 +56,9 @@ function(zeno_declare_reflection_support target reflection_headers)
     set(source_paths_value ${REFLECTION_GENERATION_SOURCE})
     list(JOIN reflection_headers ${splitor} source_paths_string)
 
-    # Obtain compiler built-in include paths
-
     # Include dirs
     set(INCLUDE_DIRS $<LIST:REMOVE_DUPLICATES,$<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>>)
+    # Obtain compiler built-in include paths
     list(JOIN CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES "," SYSTEM_IMPLICIT_INCLUDE_DIRS)
 
     set(REFLECTION_GENERATION_TARGET _internal_${target}_reflect_generation)
@@ -71,5 +73,8 @@ function(zeno_declare_reflection_support target reflection_headers)
         COMMENT 
             "Generating reflection information for ${target}..."
     )
-    add_dependencies(${target} ${REFLECTION_GENERATION_TARGET})
+    add_dependencies(${RELFECTION_GENERATION_ROOT_TARGET} ${REFLECTION_GENERATION_TARGET})
+    add_dependencies(${target} ${RELFECTION_GENERATION_ROOT_TARGET})
+
+    target_link_libraries(${target} PUBLIC ZenoReflect::libreflect ZenoReflect::libgenerated)
 endfunction()

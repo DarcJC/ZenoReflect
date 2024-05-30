@@ -5,7 +5,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(ReflectExample SHARED
     src/example.cpp
 )
-target_link_libraries(ReflectExample PUBLIC ZenoReflect::libreflect ZenoReflect::libgenerated)
 target_include_directories(ReflectExample PRIVATE include)
 
 make_absolute_paths(REFLECTION_HEADERS 
