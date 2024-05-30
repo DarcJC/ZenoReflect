@@ -7,7 +7,7 @@
 #include <iostream>
 #include <optional>
 #include <vector>
-#include "fmt/format.h"
+#include <format>
 
 namespace zeno {
 

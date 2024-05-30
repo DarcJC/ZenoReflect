@@ -22,7 +22,7 @@ endfunction(zeno_get_target_property)
 function (get_target_include_dirs_recursive target result)
     # Get include dirs from a target recursive
     # Only PUBLIC libraries will be traversed
-    get_target_property(target_include_dirs ${target} INCLUDE_DIRECTORIES)
+    get_target_property(target_include_dirs ${target} INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
     set(${result} ${target_include_dirs})
     set(${target}_get_target_include_dirs_recursive_is_traversed "yes")
 

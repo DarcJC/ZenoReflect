@@ -1,7 +1,6 @@
 #include <limits>
 #include <sstream>
 #include <iostream>
-#include "fmt/format.h"
 #include "metadata.hpp"
 #include "args.hpp"
 #include "utils.hpp"

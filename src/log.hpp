@@ -1,10 +1,10 @@
 #pragma once
 
 #include <iostream>
-#include "fmt/format.h"
+#include <format>
 #include "args.hpp"
 
 #define ZENO_REFLECTION_LOG_DEBUG(...) \
     if (nullptr != GLOBAL_CONTROL_FLAGS && GLOBAL_CONTROL_FLAGS->verbose) {\
-        std::cout << fmt::format(...) << std::endl;\
+        std::cout << std::format(...) << std::endl;\
     }

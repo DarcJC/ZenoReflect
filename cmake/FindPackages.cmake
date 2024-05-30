@@ -13,7 +13,14 @@ add_definitions(${CLANG_DEFINITIONS})
 separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
 add_definitions(${LLVM_DEFINITIONS_LIST}) 
 
-set(LIBCLANG_LIBRARY clang clang-cpp)
+if (MSVC)
+    set(LIBCLANG_LIBRARY clangAST clangTooling CACHE INTERNAL "Clang targets to be linked")
+    llvm_map_components_to_libnames(llvm_libs all)
+    set(LLVM_LIBRARY ${llvm_libs} CACHE INTERNAL "LLVM targets to be linked")
+else()
+    set(LIBCLANG_LIBRARY clang-cpp CACHE INTERNAL "Clang targets to be linked")
+    set(LLVM_LIBRARY LLVM CACHE INTERNAL "LLVM targets to be linked")
+endif()
 
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
@@ -21,8 +28,6 @@ message(STATUS "Using libraries: ${LIBCLANG_LIBRARY}")
 
 include_directories(${CMAKE_SOURCE_DIR}/thirdparty/argparse/include)
 message(STATUS "Added argparse header into include dir")
-
-find_package(fmt REQUIRED)
 
 message(CHECK_PASS "[Reflection] Found all dependencies successfully")
 
