@@ -38,7 +38,7 @@ namespace reflect
             inst_to_move.internal_ptr = nullptr;
         }
         TypeInstance& operator=(TypeInstance&& inst_to_move) noexcept {
-            if (this != &other) {
+            if (this != &inst_to_move) {
                 delete internal_ptr;
                 internal_ptr = inst_to_move.internal_ptr;
                 inst_to_move.internal_ptr = nullptr;
@@ -55,11 +55,11 @@ namespace reflect
         }
 
         T* operator->() const {
-            return ptr;
+            return internal_ptr;
         }
 
         T& operator*() const {
-            return *ptr;
+            return *internal_ptr;
         }
     };
 
@@ -98,8 +98,21 @@ namespace reflect
     class TypeHandle {
         union {
             TypeBase* type_info = nullptr;
-            size_t rtti_hash = 0;
+            size_t rtti_hash;
         } m_handle;
+        bool is_reflected_type;
+
+        bool operator==(const TypeHandle& other) const {
+            if (this->is_reflected_type != other.is_reflected_type) {
+                return false;
+            }
+
+            if (this->is_reflected_type) {
+                return this->m_handle.type_info == other.m_handle.type_info;
+            } else {
+                return this->m_handle.rtti_hash == other.m_handle.rtti_hash;
+            }
+        }
     };
 
     /// Utilities for type reflection
