@@ -2,3 +2,4 @@
 
 #include "registry.hpp"
 #include "type.hpp"
+#include "typeinfo.hpp"

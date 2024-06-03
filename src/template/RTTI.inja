@@ -1,0 +1,13 @@
+R"INJA(
+namespace zeno
+{
+namespace reflect
+{
+    template <>
+    RTTITypeInfo& type_info<{{cppType}}>() {
+        static RTTITypeInfo info("{{ name }}", {{ hash }});
+        return info;
+    }
+}
+}
+)INJA";

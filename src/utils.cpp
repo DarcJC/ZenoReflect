@@ -84,6 +84,27 @@ std::string trim(const std::string &str)
     return trim_end(trim_start(str));
 }
 
+std::vector<std::string_view> split(std::string_view str, std::string_view delimiter)
+{
+    std::vector<std::string_view> parts;
+    size_t start = 0;
+    size_t end = str.find(delimiter);
+
+    while (end != std::string_view::npos) {
+        if (end > start) {
+            parts.push_back(str.substr(start, end - start));
+        }
+        start = end + delimiter.length();
+        end = str.find(delimiter, start);
+    }
+
+    if (start < str.length()) {
+        parts.push_back(str.substr(start));
+    }
+
+    return parts;
+}
+
 }
 }
 

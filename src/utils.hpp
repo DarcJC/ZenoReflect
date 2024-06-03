@@ -8,6 +8,7 @@
 #include <optional>
 #include <vector>
 #include <format>
+#include <string_view>
 
 namespace zeno {
 
@@ -25,6 +26,8 @@ std::vector<std::string> get_parser_command_args(
 std::string trim_start(const std::string& str);
 std::string trim_end(const std::string& str);
 std::string trim(const std::string& str);
+
+std::vector<std::string_view> split(std::string_view str, std::string_view delimiter);
 
 }
 }
