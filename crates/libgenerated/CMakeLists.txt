@@ -1,5 +1,5 @@
 
-add_library(libgenerated SHARED
+add_library(libgenerated STATIC
     src/generated_implementations.cpp
 )
 add_library(ZenoReflect::libgenerated ALIAS libgenerated)

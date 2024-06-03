@@ -2,6 +2,7 @@
 #include "log.hpp"
 #include "utils.hpp"
 #include "parser.hpp"
+#include "serialize.hpp"
 
 using namespace llvm;
 using namespace clang;

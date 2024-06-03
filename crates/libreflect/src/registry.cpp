@@ -2,12 +2,6 @@
 
 using namespace zeno::reflect;
 
-ClassRegistry ClassRegistry::get()
-{
-    static ClassRegistry registry{};
-    return registry;
-}
-
 int32_t zeno::reflect::internal_utils::allocate_new_id()
 {
     static std::atomic<int32_t> GLOBAL_ID_COUNTER = 0;

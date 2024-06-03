@@ -11,5 +11,3 @@
     #define ZPROPERTY(...)  ZENO_ANNOTATE("#property, " #__VA_ARGS__)
     #define ZNODE(...)  ZENO_ANNOTATE("#node, " #__VA_ARGS__)
 #endif
-
-#include "registry.hpp"

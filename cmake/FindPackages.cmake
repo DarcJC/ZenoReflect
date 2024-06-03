@@ -26,8 +26,10 @@ message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 message(STATUS "Using libraries: ${LIBCLANG_LIBRARY}")
 
-include_directories(${CMAKE_SOURCE_DIR}/thirdparty/argparse/include)
-message(STATUS "Added argparse header into include dir")
+set(REFLECTION_ARGPARSE_INCLUDE_DIR ${REFLECTION_CMAKE_SOURCE_DIR}/thirdparty/argparse/include)
+message(STATUS "Added argparse header, use target_include_directories(Target \${REFLECTION_ARGPARSE_INCLUDE_DIR}) to use it")
+set(REFLECTION_INJA_INCLUDE_DIR ${REFLECTION_CMAKE_SOURCE_DIR}/thirdparty/inja/include)
+message(STATUS "Added inja header, use target_include_directories(Target \${REFLECTION_INJA_INCLUDE_DIR}) to use it")
 
 message(CHECK_PASS "[Reflection] Found all dependencies successfully")
 
