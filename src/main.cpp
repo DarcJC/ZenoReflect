@@ -9,6 +9,9 @@ int main(int argc, char* argv[]) {
         GLOBAL_CONTROL_FLAGS->print();
     }
 
+    ReflectionModel model{};
+    pre_generate_reflection_model();
+
     int32_t result = 0;
     for (const std::string& filepath : GLOBAL_CONTROL_FLAGS->input_sources) {
         std::optional<std::string> source_str = zeno::reflect::read_file(filepath);
@@ -18,12 +21,14 @@ int main(int argc, char* argv[]) {
         }
         std::string source = source_str.value();
 
-        ReflectionModel model{};
         result += static_cast<int32_t>(generate_reflection_model({
             .identity_name = filepath,
             .source = source,
             .type = TranslationUnitType::Header,
         }, model));
     }
+
+    post_generate_reflection_model(model);
+
     return result;
 }

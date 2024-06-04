@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <set>
 #include "metadata.hpp"
 #include "codegen.hpp"
 #include "clang/Frontend/CompilerInvocation.h"
@@ -56,9 +57,12 @@ struct ReflectionStruct {
 struct ReflectionModel {
     std::string debug_name;
     std::unordered_map<std::string, ReflectionStruct> structs;
+    std::set<std::string> generated_headers;
 };
 
 ParserErrorCode generate_reflection_model(const TranslationUnit& unit, ReflectionModel& out_model);
+ParserErrorCode post_generate_reflection_model(const ReflectionModel& model);
+ParserErrorCode pre_generate_reflection_model();
 
 struct ASTLabels {
     inline static const char* RECORD_LABEL = "cxxRecord";
@@ -88,6 +92,8 @@ private:
 
 class ReflectionASTConsumer : public clang::ASTConsumer {
 public:
+    ReflectionASTConsumer(zeno::reflect::CodeCompilerState& state, std::string header_path);
+
     void HandleTranslationUnit(clang::ASTContext &context) override;
 
     void add_type_mapping(const std::string& alias_name, clang::QualType real_name);
@@ -99,4 +105,6 @@ private:
     std::unique_ptr<TypeAliasMatchCallback> type_alias_handler = std::make_unique<TypeAliasMatchCallback>(this);
 
     std::unordered_map<std::string, clang::QualType> type_name_mapping;
+    zeno::reflect::CodeCompilerState& m_compiler_state;
+    std::string m_header_path;
 };

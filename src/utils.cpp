@@ -1,6 +1,8 @@
 #include <string>
 #include <cctype>
+#include <filesystem>
 #include "utils.hpp"
+#include "args.hpp"
 
 namespace zeno {
 
@@ -103,6 +105,30 @@ std::vector<std::string_view> split(std::string_view str, std::string_view delim
     }
 
     return parts;
+}
+
+std::string get_file_path_in_header_output(std::string_view filename)
+{
+    return std::format("{}/{}", GLOBAL_CONTROL_FLAGS->output_dir, filename);
+}
+
+std::string relative_path_to_header_output(std::string_view abs_path)
+{
+    const std::filesystem::path header_output_dir(GLOBAL_CONTROL_FLAGS->output_dir);
+    const std::filesystem::path input_path(abs_path);
+
+    return std::filesystem::relative(input_path, header_output_dir);
+}
+
+void truncate_file(const std::string &path)
+{
+    std::ofstream s(path, std::ios::out | std::ios::trunc);
+    s.close();
+}
+
+std::string normalize_filename(std::string_view input)
+{
+    return std::filesystem::path(input).lexically_normal().filename();
 }
 
 }

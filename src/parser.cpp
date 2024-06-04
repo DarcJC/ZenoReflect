@@ -11,38 +11,57 @@ using namespace clang;
 using namespace clang::tooling;
 using namespace clang::ast_matchers;
 
-std::string get_file_path_in_header_output(std::string_view filename) {
-    return std::format("{}/{}", GLOBAL_CONTROL_FLAGS->output_dir, filename);
-}
-
-void truncate_file(const std::string& path) {
-    std::ofstream s(path, std::ios::out | std::ios::trunc);
-    s.close();
-}
-
-
 class ReflectionGeneratorAction : public ASTFrontendAction {
 public:
+    ReflectionGeneratorAction(zeno::reflect::CodeCompilerState& compielr_state, std::string header_path): m_compiler_state(compielr_state), m_header_path(std::move(header_path)) {}
+
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &compiler, StringRef code) override {
-        return std::make_unique<ReflectionASTConsumer>();
+        return std::make_unique<ReflectionASTConsumer>(m_compiler_state, m_header_path);
     }
+
+private:
+    zeno::reflect::CodeCompilerState& m_compiler_state;
+    std::string m_header_path;
 };
 
 ParserErrorCode generate_reflection_model(const TranslationUnit &unit, ReflectionModel &out_model) {
+    static zeno::reflect::CodeCompilerState root_state{};
+
     out_model.debug_name = unit.identity_name;
     std::vector<std::string> args = zeno::reflect::get_parser_command_args(GLOBAL_CONTROL_FLAGS->cpp_version, GLOBAL_CONTROL_FLAGS->include_dirs, GLOBAL_CONTROL_FLAGS->pre_include_headers, GLOBAL_CONTROL_FLAGS->verbose);
 
-    const std::string gen_template_header_path = get_file_path_in_header_output("generated_templates.hpp");
-    truncate_file(gen_template_header_path);
+    const std::string gen_template_header_path = zeno::reflect::get_file_path_in_header_output(std::format("{}.generated.hpp", zeno::reflect::normalize_filename(unit.identity_name)));
+    zeno::reflect::truncate_file(gen_template_header_path);
+    out_model.generated_headers.insert(gen_template_header_path);
 
     if (!clang::tooling::runToolOnCodeWithArgs(
-        std::make_unique<ReflectionGeneratorAction>(),
+        std::make_unique<ReflectionGeneratorAction>(root_state, gen_template_header_path),
         unit.source.c_str(),
         args,
         unit.identity_name.c_str()
     )) {
         return ParserErrorCode::InternalError;
     }
+
+    return ParserErrorCode::Success;
+}
+
+ParserErrorCode post_generate_reflection_model(const ReflectionModel &model)
+{
+    const std::string generated_header_path = zeno::reflect::get_file_path_in_header_output("generated_templates.hpp");
+    std::ofstream ghp_stream(generated_header_path, std::ios::out | std::ios::trunc);
+    ghp_stream << "#pragma once" << "\r\n";
+    for (const std::string& s : model.generated_headers) {
+        ghp_stream << std::format("#include \"{}\"", zeno::reflect::relative_path_to_header_output(s)) << "\r\n";
+    }
+
+    return ParserErrorCode::Success;
+}
+
+ParserErrorCode pre_generate_reflection_model()
+{
+    const std::string generated_header_path = zeno::reflect::get_file_path_in_header_output("generated_templates.hpp");
+    zeno::reflect::truncate_file(generated_header_path);
 
     return ParserErrorCode::Success;
 }
@@ -94,12 +113,17 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
     }
 }
 
+ReflectionASTConsumer::ReflectionASTConsumer(zeno::reflect::CodeCompilerState &state, std::string header_path)
+    : m_compiler_state(state)
+    , m_header_path(header_path)
+{
+}
+
 void ReflectionASTConsumer::HandleTranslationUnit(ASTContext &context)
 {
     scoped_context = &context;
 
-    const std::string gen_template_header_path = get_file_path_in_header_output("generated_templates.hpp");
-    truncate_file(gen_template_header_path);
+    const std::string& gen_template_header_path = m_header_path;
 
     MatchFinder type_alias_finder{};
     DeclarationMatcher typealias_matcher = typeAliasDecl().bind(ASTLabels::TYPE_ALIAS_LABEL);
@@ -114,7 +138,7 @@ void ReflectionASTConsumer::HandleTranslationUnit(ASTContext &context)
     record_finder.matchAST(context);
 
     // generate header
-    const std::string generated_templates = template_header_generator.compile();
+    const std::string generated_templates = template_header_generator.compile(m_compiler_state);
     
     std::ofstream generated_templates_stream(gen_template_header_path, std::ios::out | std::ios::trunc);
     generated_templates_stream << generated_templates;

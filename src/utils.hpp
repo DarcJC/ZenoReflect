@@ -29,5 +29,11 @@ std::string trim(const std::string& str);
 
 std::vector<std::string_view> split(std::string_view str, std::string_view delimiter);
 
+std::string get_file_path_in_header_output(std::string_view filename);
+std::string relative_path_to_header_output(std::string_view abs_path);
+void truncate_file(const std::string& path);
+
+std::string normalize_filename(std::string_view input);
+
 }
 }
