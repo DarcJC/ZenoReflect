@@ -11,6 +11,16 @@ using namespace clang;
 using namespace clang::tooling;
 using namespace clang::ast_matchers;
 
+std::string get_file_path_in_header_output(std::string_view filename) {
+    return std::format("{}/{}", GLOBAL_CONTROL_FLAGS->output_dir, filename);
+}
+
+void truncate_file(const std::string& path) {
+    std::ofstream s(path, std::ios::out | std::ios::trunc);
+    s.close();
+}
+
+
 class ReflectionGeneratorAction : public ASTFrontendAction {
 public:
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &compiler, StringRef code) override {
@@ -22,6 +32,8 @@ ParserErrorCode generate_reflection_model(const TranslationUnit &unit, Reflectio
     out_model.debug_name = unit.identity_name;
     std::vector<std::string> args = zeno::reflect::get_parser_command_args(GLOBAL_CONTROL_FLAGS->cpp_version, GLOBAL_CONTROL_FLAGS->include_dirs, GLOBAL_CONTROL_FLAGS->pre_include_headers, GLOBAL_CONTROL_FLAGS->verbose);
 
+    const std::string gen_template_header_path = get_file_path_in_header_output("generated_templates.hpp");
+    truncate_file(gen_template_header_path);
 
     if (!clang::tooling::runToolOnCodeWithArgs(
         std::make_unique<ReflectionGeneratorAction>(),
@@ -86,6 +98,9 @@ void ReflectionASTConsumer::HandleTranslationUnit(ASTContext &context)
 {
     scoped_context = &context;
 
+    const std::string gen_template_header_path = get_file_path_in_header_output("generated_templates.hpp");
+    truncate_file(gen_template_header_path);
+
     MatchFinder type_alias_finder{};
     DeclarationMatcher typealias_matcher = typeAliasDecl().bind(ASTLabels::TYPE_ALIAS_LABEL);
     DeclarationMatcher typedef_matcher = typedefDecl().bind(ASTLabels::TYPEDEF_LABEL);
@@ -100,7 +115,8 @@ void ReflectionASTConsumer::HandleTranslationUnit(ASTContext &context)
 
     // generate header
     const std::string generated_templates = template_header_generator.compile();
-    std::ofstream generated_templates_stream(std::format("{}/generated_templates.hpp", GLOBAL_CONTROL_FLAGS->output_dir), std::ios::out | std::ios::trunc);
+    
+    std::ofstream generated_templates_stream(gen_template_header_path, std::ios::out | std::ios::trunc);
     generated_templates_stream << generated_templates;
 
     scoped_context = nullptr;
