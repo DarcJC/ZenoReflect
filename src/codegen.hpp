@@ -65,6 +65,13 @@ namespace zeno::reflect
         std::string compile(CodeCompilerState& state) {
             const size_t hash_value = HashImpl{}(m_qual_type.getCanonicalType().getAsString());
             const std::string cppType = m_qual_type.getAsString();
+            const std::string name = m_qual_type.getCanonicalType().getAsString();
+            if (name.starts_with("__") || name.starts_with("struct __")) {
+                if (GLOBAL_CONTROL_FLAGS->verbose) {
+                    llvm::outs() << "[debug] Skipping compiler internal type \"" << cppType << "\"\n";
+                }
+                return "";
+            }
             if (state.type_hash_flag.contains(hash_value)) {
                 if (GLOBAL_CONTROL_FLAGS->verbose) {
                     llvm::outs() << "[debug] Generating duplicated RTTI, skipped \"" << cppType << "\"\n";
@@ -78,7 +85,7 @@ namespace zeno::reflect
             const std::string forward_decl = ForwordDeclGenerator(m_qual_type).compile(state);
             data["forwordDecl"] = forward_decl;
             data["cppType"] = cppType;
-            data["name"] = m_qual_type.getCanonicalType().getAsString();
+            data["name"] = name;
             data["hash"] = hash_value;
             
             return inja::render(text::RTTI, data);

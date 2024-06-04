@@ -2,7 +2,7 @@
 
 const char *zeno::reflect::RTTITypeInfo::name() const
 {
-    return m_name.c_str();
+    return m_name;
 }
 
 size_t zeno::reflect::RTTITypeInfo::hash_code() const
