@@ -1,8 +1,10 @@
+#include <fstream>
 #include "args.hpp"
 #include "log.hpp"
 #include "utils.hpp"
 #include "parser.hpp"
 #include "serialize.hpp"
+#include "codegen.hpp"
 
 using namespace llvm;
 using namespace clang;
@@ -37,12 +39,19 @@ TypeAliasMatchCallback::TypeAliasMatchCallback(ReflectionASTConsumer *context) :
 
 void TypeAliasMatchCallback::run(const MatchFinder::MatchResult &result)
 {
-    if (const TypedefDecl* typedef_decl = result.Nodes.getNodeAs<TypedefDecl>(ASTLabels::TYPEDEF_LABEL)) {
-        QualType underlying_type = typedef_decl->getUnderlyingType();
-        m_context->add_type_mapping(typedef_decl->getNameAsString(), underlying_type);
-    } else if (const TypeAliasDecl* type_alias_decl = result.Nodes.getNodeAs<TypeAliasDecl>(ASTLabels::TYPE_ALIAS_LABEL)) {
-        QualType underlying_type = type_alias_decl->getUnderlyingType();
-        m_context->add_type_mapping(type_alias_decl->getNameAsString(), underlying_type);
+    const TypeDecl* decll = nullptr;
+    QualType underlying_type;
+    if (const TypedefDecl* decl = result.Nodes.getNodeAs<TypedefDecl>(ASTLabels::TYPEDEF_LABEL)) {
+        underlying_type = decl->getUnderlyingType();
+        decll = decl;
+    } else if (const TypeAliasDecl* decl = result.Nodes.getNodeAs<TypeAliasDecl>(ASTLabels::TYPE_ALIAS_LABEL)) {
+        underlying_type = decl->getUnderlyingType();
+        decll = decl;
+    }
+
+    if (decll && m_context) {
+        zeno::reflect::RTTITypeGenerator rtti(underlying_type);
+        m_context->template_header_generator.add_rtti_block(rtti);
     }
 }
 
@@ -88,6 +97,11 @@ void ReflectionASTConsumer::HandleTranslationUnit(ASTContext &context)
     MatchFinder record_finder{};
     record_finder.addMatcher(record_type_matcher, record_type_handler.get());
     record_finder.matchAST(context);
+
+    // generate header
+    const std::string generated_templates = template_header_generator.compile();
+    std::ofstream generated_templates_stream(std::format("{}/generated_templates.hpp", GLOBAL_CONTROL_FLAGS->output_dir), std::ios::out | std::ios::trunc);
+    generated_templates_stream << generated_templates;
 
     scoped_context = nullptr;
 }

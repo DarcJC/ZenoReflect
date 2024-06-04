@@ -1,4 +1,13 @@
 
 R"INJA(
-    {{ rttiBlock }}
+#pragma once
+
+#include "reflect/type"
+
+////////////////////////////////////////////////
+/// Begin generated RTTI for types
+{{ rttiBlock }}
+/// End generated RTTI for types
+////////////////////////////////////////////////
+
 )INJA";

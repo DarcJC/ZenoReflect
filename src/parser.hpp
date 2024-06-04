@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include "metadata.hpp"
+#include "codegen.hpp"
 #include "clang/Frontend/CompilerInvocation.h"
 #include "clang/Tooling/Tooling.h"
 #include "clang/Tooling/CommonOptionsParser.h"
@@ -91,6 +92,7 @@ public:
 
     void add_type_mapping(const std::string& alias_name, clang::QualType real_name);
 
+    zeno::reflect::TemplateHeaderGenerator template_header_generator;
 private:
     clang::ASTContext* scoped_context = nullptr;
     std::unique_ptr<RecordTypeMatchCallback> record_type_handler = std::make_unique<RecordTypeMatchCallback>(this);

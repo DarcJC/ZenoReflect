@@ -1,8 +1,10 @@
+#pragma once
+
 namespace zeno::reflect::text {
-    const char* RTTI =
+    inline static const char* RTTI =
     #include "RTTI.inja"
     ;
-    const char* GENERATED_TEMPLATE_HEADER_TEMPLATE =
+    inline static const char* GENERATED_TEMPLATE_HEADER_TEMPLATE =
     #include "generated_template_header.inja"
     ;
 }

@@ -1,13 +1,18 @@
 R"INJA(
+///////////////////////////
+/// Begin RTTI of "{{ cppType }}"
+{{ default(forwordDecl, "") }}
 namespace zeno
 {
 namespace reflect
 {
     template <>
-    RTTITypeInfo& type_info<{{cppType}}>() {
-        static RTTITypeInfo info("{{ name }}", {{ hash }});
+    const RTTITypeInfo& type_info<{{cppType}}>() {
+        static RTTITypeInfo info("{{ name }}", {{ hash }}ULL);
         return info;
     }
 }
 }
+/// End RTTI of "{{ cppType }}"
+///////////////////////////
 )INJA";

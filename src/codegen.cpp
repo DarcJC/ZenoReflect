@@ -1,8 +1,11 @@
-#include "inja/inja.hpp"
-#include "template/template_literal"
 #include "codegen.hpp"
 
-std::string zeno::reflect::TemplateHeaderGenerator::compile(CodeCompilerState& state)
+std::string zeno::reflect::TemplateHeaderGenerator::compile()
+{
+    return compile(m_compiler_state);
+}
+
+std::string zeno::reflect::TemplateHeaderGenerator::compile(CodeCompilerState &state)
 {
     inja::json template_data;
     template_data["rttiBlock"] = m_rtti_block.str();

@@ -31,7 +31,12 @@ namespace reflect
     // SFINAE
     template <typename T>
     const RTTITypeInfo& type_info() {
+#ifdef ZENO_REFLECT_PROCESSING
+        static RTTITypeInfo Default{"<default_type>", 0};
+        return Default;
+#else
         static_assert(false, "The type_info of current type not implemented");
+#endif
     }
 }
 }
