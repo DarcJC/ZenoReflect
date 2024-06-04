@@ -117,7 +117,7 @@ std::string relative_path_to_header_output(std::string_view abs_path)
     const std::filesystem::path header_output_dir(GLOBAL_CONTROL_FLAGS->output_dir);
     const std::filesystem::path input_path(abs_path);
 
-    return std::filesystem::relative(input_path, header_output_dir);
+    return std::filesystem::relative(input_path, header_output_dir).string();
 }
 
 void truncate_file(const std::string &path)
@@ -128,7 +128,7 @@ void truncate_file(const std::string &path)
 
 std::string normalize_filename(std::string_view input)
 {
-    return std::filesystem::path(input).lexically_normal().filename();
+    return std::filesystem::path(input).lexically_normal().filename().string();
 }
 
 }
