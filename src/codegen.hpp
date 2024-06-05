@@ -67,7 +67,7 @@ namespace zeno::reflect
             const size_t hash_value = HashImpl{}(m_qual_type.getCanonicalType().getAsString());
             const std::string cppType = m_qual_type.getAsString();
             const std::string name = m_qual_type.getCanonicalType().getAsString();
-            if (name.starts_with("__") || name.starts_with("struct __")) {
+            if (is_blacklisted_keyword(cppType)) {
                 if (GLOBAL_CONTROL_FLAGS->verbose) {
                     llvm::outs() << "[debug] Skipping compiler internal type \"" << cppType << "\"\n";
                 }
@@ -90,6 +90,14 @@ namespace zeno::reflect
             data["hash"] = hash_value;
             
             return inja::render(text::RTTI, data);
+        }
+
+        static inline bool is_blacklisted_keyword(std::string_view keyword) {
+            return keyword.starts_with("__") 
+            || keyword.find("__int128") != std::string::npos
+            || keyword.find("__va_list_tag") != std::string::npos
+            || keyword.find("__NSConstantString") != std::string::npos
+            ;
         }
     };
 }
