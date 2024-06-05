@@ -10,6 +10,7 @@
 #include "clang/AST/DeclCXX.h"
 #include "inja/inja.hpp"
 #include "template/template_literal"
+#include "utils.hpp"
 #include "args.hpp"
 
 
@@ -52,7 +53,7 @@ namespace zeno::reflect
         std::string compile(CodeCompilerState& state);
     };
 
-    template <typename HashImpl = std::hash<std::string>, ICodeCompiler ForwordDeclGenerator = ForwardDeclarationGenerator>
+    template <typename HashImpl = zeno::reflect::FNV1aHash, ICodeCompiler ForwordDeclGenerator = ForwardDeclarationGenerator>
     requires IHashImpl<HashImpl, std::string> && std::default_initializable<HashImpl>
     class RTTITypeGenerator {
         clang::QualType m_qual_type;

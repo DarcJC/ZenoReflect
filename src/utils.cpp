@@ -1,6 +1,7 @@
 #include <string>
 #include <cctype>
 #include <filesystem>
+#include <cassert>
 #include "utils.hpp"
 #include "args.hpp"
 
@@ -129,6 +130,37 @@ void truncate_file(const std::string &path)
 std::string normalize_filename(std::string_view input)
 {
     return std::filesystem::path(input).lexically_normal().filename().string();
+}
+
+constexpr uint32_t FNV1aHash::hash_32_fnv1a(std::string_view str) const noexcept
+{
+    uint32_t hash = FNV1aInternal<uint32_t>::val;
+    for (const unsigned char c : str) {
+        hash = hash ^ c;
+        hash *= FNV1aInternal<uint32_t>::prime;
+    }
+    return hash;
+}
+
+constexpr uint64_t FNV1aHash::hash_64_fnv1a(std::string_view str) const noexcept
+{
+    uint64_t hash = FNV1aInternal<uint64_t>::val;
+    for (const unsigned char c : str) {
+        hash = hash ^ c;
+        hash *= FNV1aInternal<uint64_t>::prime;
+    }
+    return hash;
+}
+
+size_t FNV1aHash::operator()(std::string_view str) const noexcept
+{
+    if constexpr (sizeof(size_t) == sizeof(uint32_t)) {
+        return hash_32_fnv1a(str);
+    } else if constexpr (sizeof(size_t) == sizeof(uint64_t)) {
+        return hash_64_fnv1a(str);
+    } else {
+        assert(false);
+    }
 }
 
 }

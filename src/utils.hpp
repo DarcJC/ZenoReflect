@@ -35,5 +35,25 @@ void truncate_file(const std::string& path);
 
 std::string normalize_filename(std::string_view input);
 
+struct FNV1aHash {
+    
+    template <typename T>
+    struct FNV1aInternal {
+        static constexpr uint32_t val = 0x811c9dc5U;
+        static constexpr uint32_t prime = 0x1000193U;
+    };
+
+    template <>
+    struct FNV1aInternal<uint64_t> {
+        static constexpr uint64_t val = 0xcbf29ce484222325ULL;
+        static constexpr uint64_t prime = 0x100000001b3ULL;
+    };
+
+    constexpr uint32_t hash_32_fnv1a(std::string_view str) const noexcept;
+    constexpr uint64_t hash_64_fnv1a(std::string_view str) const noexcept;
+
+    size_t operator()(std::string_view str) const noexcept;
+};
+
 }
 }
