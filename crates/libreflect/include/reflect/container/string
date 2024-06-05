@@ -14,7 +14,7 @@ namespace reflect
     public:
         using ValueType = CharType;
 
-        static size_t strlen(const ValueType* cstr) {
+        REFLECT_CONSTEXPR static size_t strlen(const ValueType* cstr) {
             if (nullptr == cstr) {
                 return 0;
             }
@@ -24,7 +24,7 @@ namespace reflect
             return end - cstr;
         }
 
-        static ValueType* strcopy(const ValueType* cstr) {
+        REFLECT_CONSTEXPR static ValueType* strcopy(const ValueType* cstr) {
             if (nullptr == cstr) {
                 return nullptr;
             }
@@ -50,7 +50,7 @@ namespace reflect
         size_t m_length;
 
     public:
-        StringViewBase(const ValueType* s = nullptr) {
+        REFLECT_CONSTEXPR StringViewBase(const ValueType* s = nullptr) {
             if (s) {
                 m_length = Util::strlen(s);
                 m_data = nullptr;
@@ -63,7 +63,7 @@ namespace reflect
             }
         }
 
-        StringViewBase(const StringViewBase& other) {
+        REFLECT_CONSTEXPR StringViewBase(const StringViewBase& other) {
             if (other.m_data != nullptr) {
                 m_data = Util::strcopy(other.data());
                 m_length = other.length;
@@ -73,7 +73,7 @@ namespace reflect
             }
         }
 
-        StringViewBase(StringViewBase&& other) {
+        REFLECT_CONSTEXPR StringViewBase(StringViewBase&& other) {
             m_data = other.m_data;
             m_length = other.m_length;
 
