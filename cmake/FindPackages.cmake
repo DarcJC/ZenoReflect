@@ -33,4 +33,4 @@ message(STATUS "Added inja header, use target_include_directories(Target \${REFL
 
 message(CHECK_PASS "[Reflection] Found all dependencies successfully")
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../thirdparty/bitsery)
+# add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../thirdparty/bitsery)
