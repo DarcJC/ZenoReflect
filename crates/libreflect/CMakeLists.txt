@@ -3,9 +3,11 @@ add_library(libreflect STATIC
     src/reflect.cpp
     src/registry.cpp
     src/typeinfo.cpp
+    src/type.cpp
 )
 add_library(ZenoReflect::libreflect ALIAS libreflect)
 target_include_directories(libreflect PUBLIC include)
+target_include_directories(libreflect PRIVATE include/reflect)
 target_compile_definitions(libreflect PRIVATE "LIBREFLECT_EXPORTS=1")
 
 set(PRE_INCLUDE_HEADER "${CMAKE_CURRENT_LIST_DIR}/include/reflect/core.hpp")

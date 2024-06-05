@@ -4,6 +4,9 @@
 #include <any>
 #include <optional>
 #include <string_view>
+#include <cstdint>
+#include "polyfill.hpp"
+#include "container/string"
 
 namespace zeno
 {
@@ -81,18 +84,18 @@ namespace reflect
         class TypeBase* m_type = nullptr;
     };
 
-    struct TypeInfo {
+    struct ReflectedTypeInfo {
         // A prefix name. Used to avoid name conflicts between difference modules
-        std::string prefix;
-        std::string qualified_name;
-        std::string canonical_typename;
+        StringView prefix;
+        StringView qualified_name;
+        StringView canonical_typename;
         bool internal_flags[static_cast<size_t>(TypeFlags::Max)] = { false };
     };
 
     class TypeBase {
         virtual std::size_t type_hash() const = 0;
     protected:
-        std::optional<TypeInfo> m_type_info;
+        std::optional<ReflectedTypeInfo> m_type_info;
     };
 
     class TypeHandle {
@@ -101,6 +104,9 @@ namespace reflect
             size_t rtti_hash;
         } m_handle;
         bool is_reflected_type;
+
+    public:
+        TypeHandle(TypeBase* type_info);
 
         bool operator==(const TypeHandle& other) const {
             if (this->is_reflected_type != other.is_reflected_type) {

@@ -5,3 +5,5 @@
 #else
 #define REFLECT_CONSTEXPR
 #endif
+
+#define LIBREFLECT_INLINE inline

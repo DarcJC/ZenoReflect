@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include "polyfill.hpp"
 
 #define ZENO_NONCOPYABLE(TypeName) \
 	TypeName(TypeName&&) = delete; \
@@ -28,6 +29,5 @@ public:\
   #define LIBREFLECT_API
   #define LIBREFLECT_LOCAL
 #endif
-#define LIBREFLECT_INLINE inline
 
 #define REFLECT_CHECK(expr, MSG) if (!(expr)) { std::cout << "[Reflection Assertion] Failure:\n" << MSG << std::endl; exit(100); }

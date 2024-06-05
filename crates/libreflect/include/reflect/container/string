@@ -1,0 +1,146 @@
+#pragma once
+
+#include <cstdint>
+#include <cstring>
+#include <cassert>
+#include "reflect/polyfill.hpp"
+
+namespace zeno
+{
+namespace reflect
+{
+    template <typename CharType = char>
+    class CStringUtil {
+    public:
+        using ValueType = CharType;
+
+        static size_t strlen(const ValueType* cstr) {
+            if (nullptr == cstr) {
+                return 0;
+            }
+
+            const ValueType* end = cstr;
+            while (*end) ++end;
+            return end - cstr;
+        }
+
+        static ValueType* strcopy(const ValueType* cstr) {
+            if (nullptr == cstr) {
+                return nullptr;
+            }
+
+            size_t len = CStringUtil::strlen(cstr) + 1;
+            ValueType* copied = new ValueType[len];
+            for (size_t i = 0; i < len; ++i) {
+                copied[i] = cstr[i];
+            }
+            return copied;
+        }
+    };
+
+    template <typename CharType = char>
+    class StringViewBase {
+    public:
+        using ValueType = CharType;
+        using Util = CStringUtil<ValueType>;
+        using Self = StringViewBase;
+
+    private:
+        ValueType* m_data;
+        size_t m_length;
+
+    public:
+        StringViewBase(const ValueType* s = nullptr) {
+            if (s) {
+                m_length = Util::strlen(s);
+                m_data = nullptr;
+                if (m_length > 0) {
+                    m_data = Util::strcopy(s);
+                }
+            } else {
+                m_data = nullptr;
+                m_length = 0;
+            }
+        }
+
+        StringViewBase(const StringViewBase& other) {
+            if (other.m_data != nullptr) {
+                m_data = Util::strcopy(other.data());
+                m_length = other.length;
+            } else {
+                m_data = nullptr;
+                m_length = 0;
+            }
+        }
+
+        StringViewBase(StringViewBase&& other) {
+            m_data = other.m_data;
+            m_length = other.m_length;
+
+            other.m_data = nullptr;
+            other.m_length = 0;
+        }
+
+        virtual ~StringViewBase() {
+            delete m_data;
+        }
+
+        LIBREFLECT_INLINE size_t length() const {
+            return m_length;
+        }
+
+        LIBREFLECT_INLINE bool is_valid_index(size_t index) const {
+            return index < m_length;
+        }
+
+        LIBREFLECT_INLINE const ValueType& at(size_t index) const {
+            assert(is_valid_index(index));
+            return m_data[index];
+        }
+
+        LIBREFLECT_INLINE ValueType& at(size_t index) {
+            assert(is_valid_index(index));
+            return m_data[index];
+        }
+
+        LIBREFLECT_INLINE ValueType* data() {
+            return m_data;
+        }
+
+        LIBREFLECT_INLINE const ValueType* data() const {
+            return m_data;
+        }
+
+        LIBREFLECT_INLINE ValueType* c_str() {
+            return data();
+        }
+
+        LIBREFLECT_INLINE const ValueType* c_str() const {
+            return data();
+        }
+
+        LIBREFLECT_INLINE const ValueType& operator[](size_t index) const {
+            return at(index);
+        }
+
+        LIBREFLECT_INLINE ValueType& operator[](size_t index) {
+            return at(index);
+        }
+
+        ValueType& operator=(ValueType&& other) {
+            delete m_data;
+
+            m_data = other.m_data;
+            m_length = other.m_length;
+
+            other.m_data = nullptr;
+            other.m_length = 0;
+
+            return *this;
+        }
+    };
+
+    using StringView = StringViewBase<char>;
+}
+}
+

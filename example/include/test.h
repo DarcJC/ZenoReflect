@@ -8,3 +8,5 @@ namespace zeno {
     };
 
 }
+
+using ZABC = zeno::ABC;
