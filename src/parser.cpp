@@ -24,9 +24,7 @@ private:
     std::string m_header_path;
 };
 
-ParserErrorCode generate_reflection_model(const TranslationUnit &unit, ReflectionModel &out_model) {
-    static zeno::reflect::CodeCompilerState root_state{};
-
+ParserErrorCode generate_reflection_model(const TranslationUnit &unit, ReflectionModel &out_model, zeno::reflect::CodeCompilerState& root_state) {
     out_model.debug_name = unit.identity_name;
     std::vector<std::string> args = zeno::reflect::get_parser_command_args(GLOBAL_CONTROL_FLAGS->cpp_version, GLOBAL_CONTROL_FLAGS->include_dirs, GLOBAL_CONTROL_FLAGS->pre_include_headers, GLOBAL_CONTROL_FLAGS->verbose);
 
@@ -116,6 +114,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
 ReflectionASTConsumer::ReflectionASTConsumer(zeno::reflect::CodeCompilerState &state, std::string header_path)
     : m_compiler_state(state)
     , m_header_path(header_path)
+    , template_header_generator(zeno::reflect::TemplateHeaderGenerator{state})
 {
 }
 
@@ -138,7 +137,7 @@ void ReflectionASTConsumer::HandleTranslationUnit(ASTContext &context)
     record_finder.matchAST(context);
 
     // generate header
-    const std::string generated_templates = template_header_generator.compile(m_compiler_state);
+    const std::string generated_templates = template_header_generator.compile();
     
     std::ofstream generated_templates_stream(gen_template_header_path, std::ios::out | std::ios::trunc);
     generated_templates_stream << generated_templates;

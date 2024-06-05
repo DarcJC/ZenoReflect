@@ -60,7 +60,7 @@ struct ReflectionModel {
     std::set<std::string> generated_headers;
 };
 
-ParserErrorCode generate_reflection_model(const TranslationUnit& unit, ReflectionModel& out_model);
+ParserErrorCode generate_reflection_model(const TranslationUnit& unit, ReflectionModel& out_model, zeno::reflect::CodeCompilerState& root_state);
 ParserErrorCode post_generate_reflection_model(const ReflectionModel& model);
 ParserErrorCode pre_generate_reflection_model();
 

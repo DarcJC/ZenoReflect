@@ -9,5 +9,6 @@ target_include_directories(ReflectExample PRIVATE include)
 
 make_absolute_paths(REFLECTION_HEADERS 
     include/data.h
+    include/test.h
 ) 
-zeno_declare_reflection_support(ReflectExample ${REFLECTION_HEADERS})
+zeno_declare_reflection_support(ReflectExample "${REFLECTION_HEADERS}")

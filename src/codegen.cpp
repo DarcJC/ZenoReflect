@@ -1,5 +1,10 @@
 #include "codegen.hpp"
 
+zeno::reflect::TemplateHeaderGenerator::TemplateHeaderGenerator(CodeCompilerState &state)
+    : m_compiler_state(state)
+{
+}
+
 std::string zeno::reflect::TemplateHeaderGenerator::compile()
 {
     return compile(m_compiler_state);

@@ -31,10 +31,12 @@ namespace zeno::reflect
     };
 
     class TemplateHeaderGenerator {
-        CodeCompilerState m_compiler_state{};
+        CodeCompilerState& m_compiler_state;
         std::stringstream m_rtti_block{};
 
     public:
+        TemplateHeaderGenerator(CodeCompilerState& state);
+
         std::string compile();
         std::string compile(CodeCompilerState& state);
 

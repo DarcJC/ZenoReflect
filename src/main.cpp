@@ -13,6 +13,7 @@ int main(int argc, char* argv[]) {
     pre_generate_reflection_model();
 
     int32_t result = 0;
+    zeno::reflect::CodeCompilerState compiler_state;
     for (const std::string& filepath : GLOBAL_CONTROL_FLAGS->input_sources) {
         std::optional<std::string> source_str = zeno::reflect::read_file(filepath);
         if (!source_str.has_value()) {
@@ -25,7 +26,7 @@ int main(int argc, char* argv[]) {
             .identity_name = filepath,
             .source = source,
             .type = TranslationUnitType::Header,
-        }, model));
+        }, model, compiler_state));
     }
 
     post_generate_reflection_model(model);
