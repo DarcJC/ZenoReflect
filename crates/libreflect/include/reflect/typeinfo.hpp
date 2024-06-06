@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cstddef>
-#include "polyfill.hpp"
+#include "reflect/polyfill.hpp"
+#include "reflect/traits/reference.hpp"
 
 namespace zeno
 {
@@ -18,6 +19,8 @@ namespace reflect
         const char* name() const;
         size_t hash_code() const;
 
+        bool operator==(const RTTITypeInfo& other);
+        bool operator!=(const RTTITypeInfo& other);
     private:
 
         const char* m_name;
@@ -26,12 +29,13 @@ namespace reflect
 
     // SFINAE
     template <typename T>
-    REFLECT_CONSTEXPR RTTITypeInfo type_info() {
+    REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info() {
+        static REFLECT_STATIC_CONSTEXPR RTTITypeInfo Default = {"<default_type>", 0}; 
 #ifdef ZENO_REFLECT_PROCESSING
-        return {"<default_type>", 0};
+        return Default;
 #else
         static_assert(false, "\r\n==== Reflection Error ====\r\nThe type_info of current type not implemented. Have you marked it out ?\r\nTry '#include \"generated_templates.hpp\"' in the traslation unit where you used zeno::reflect::type_info. \r\n==== Reflection Error End ====");
-        return {"<default_type>", 0};
+        return Default;
 #endif
     }
 }

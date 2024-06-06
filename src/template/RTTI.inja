@@ -7,8 +7,9 @@ namespace zeno
 namespace reflect
 {
     template <>
-    REFLECT_CONSTEXPR RTTITypeInfo type_info<{{cppType}}>() {
-        return RTTITypeInfo("{{ name }}", {{ hash }}ULL);
+    REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<{{cppType}}>() {
+        static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {"{{ name }}", {{ hash }}ULL};
+        return s;
     }
 }
 }

@@ -1,5 +1,5 @@
 #pragma once
 
-#include "registry.hpp"
-#include "type.hpp"
-#include "typeinfo.hpp"
+#include "reflect/registry.hpp"
+#include "reflect/type.hpp"
+#include "reflect/typeinfo.hpp"

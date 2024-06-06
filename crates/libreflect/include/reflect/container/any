@@ -1,0 +1,111 @@
+#pragma once
+
+#include "reflect/polyfill.hpp"
+#include "reflect/typeinfo.hpp"
+#include "reflect/traits/type_traits"
+#include <type_traits>
+
+namespace zeno
+{
+namespace reflect
+{
+    struct AnyError {};
+    struct AnyCloneError : public AnyError {};
+    struct AnyCastError : public AnyError {};
+
+    class Any {
+    public:
+        ~Any() {
+            reset();
+        }
+
+        Any() = default;
+
+        Any(const Any& other) {
+            if (other.has_value()) {
+                m_value_container = other.m_value_container->clone();
+            }
+        }
+
+        Any(Any&& other) noexcept : m_value_container(other.m_value_container) {
+            other.m_value_container = nullptr;
+        }
+
+        template <typename T>
+        Any(T&& value) {
+            emplace<TTDecay<T>>(forward<T>(value));
+        }
+
+        Any& operator=(Any other) {
+            swap(other);
+            return *this;
+        }
+
+        template <typename T, typename... Args>
+        void emplace(Args&&... args) {
+            reset();
+            m_value_container = new ValueContainer<T>(T(forward<Args>(args)...));
+        }
+
+        void swap(Any& other) noexcept {
+            IContainer* other_container = other.m_value_container;
+            other.m_value_container = m_value_container;
+            m_value_container = other_container;
+        }
+
+        bool has_value() const {
+            return nullptr != m_value_container;
+        }
+
+        void reset() {
+            delete m_value_container;
+            m_value_container = nullptr;
+        }
+
+        const RTTITypeInfo& type() const {
+            if (!has_value()) {
+                throw AnyCastError();
+            }
+            return m_value_container->type();
+        }
+
+    private:
+        class IContainer {
+        public:
+            virtual ~IContainer() {}
+            virtual const RTTITypeInfo& type() const = 0;
+            virtual IContainer* clone() const = 0;
+        };
+
+        template <typename T>
+        class ValueContainer : public IContainer {
+        public:
+            using ValueType = T;
+
+            ValueType m_value;
+
+            template <typename U = T>
+            ValueContainer(const U& value, TTEnableIf<std::is_copy_constructible_v<U>, U>* = nullptr): m_value(value) {}
+            // ValueContainer(const U& value): m_value(std::forward(value)) {}
+
+            template <typename U = T>
+            ValueContainer(U&& value, TTEnableIf<std::is_copy_constructible_v<U>, U>* = nullptr): m_value(std::move(value)) {}
+            // ValueContainer(U&& value): m_value(std::move(value)) {}
+
+            virtual const RTTITypeInfo& type() const override {
+                return type_info<TTDecay<TTRemovePointer<TTRemoveReference<ValueType>>>>();
+            }
+
+            virtual IContainer* clone() const override {
+                if REFLECT_CONSTEXPR (VTIsCopyConstructible<T>) {
+                    return new ValueContainer<ValueType>(m_value);
+                } else {
+                    throw AnyCloneError();
+                }
+            }
+        };
+
+        IContainer* m_value_container = nullptr;
+    };
+}
+}
