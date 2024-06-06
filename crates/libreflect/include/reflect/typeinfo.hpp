@@ -28,10 +28,10 @@ namespace reflect
     template <typename T>
     REFLECT_CONSTEXPR RTTITypeInfo type_info() {
 #ifdef ZENO_REFLECT_PROCESSING
-        return RTTITypeInfo{"<default_type>", 0};
+        return {"<default_type>", 0};
 #else
         static_assert(false, "The type_info of current type not implemented. Have you marked it ?");
-        return RTTITypeInfo{"<default_type>", 0};
+        return {"<default_type>", 0};
 #endif
     }
 }

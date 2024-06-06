@@ -1,0 +1,35 @@
+#pragma once
+
+#include <utility>
+#include "reflect/traits/type_traits"
+
+namespace zeno
+{
+namespace reflect
+{
+    template <typename T, typename = TTEnableIf<std::is_member_pointer<T>::value>>
+    class MemberProxy {
+    private:
+        // Pointer to member
+        T m_member_ptr;
+    public:
+        explicit MemberProxy(T ptr_to_member): m_member_ptr(ptr_to_member) {}
+
+        template <typename SelfType, typename... Args>
+        auto operator()(SelfType&& self, Args&&... args) const
+        -> TTEnableIf<std::is_function_v<TTRemovePointer<T>>, 
+            decltype((forward<SelfType>(self).*m_member_ptr)(forward<Args>(args)...))>
+        {
+            return (forward<SelfType>(self).*m_member_ptr)(forward<Args>(args)...);
+        }
+
+        template <typename SelfType>
+        auto operator()(SelfType&& self) const
+        -> TTEnableIf<!std::is_function_v<TTRemovePointer<T>>, 
+            decltype(forward<SelfType>(self).*m_member_ptr)>
+        {
+            return forward<SelfType>(self).*m_member_ptr;
+        }
+    };
+}
+}
