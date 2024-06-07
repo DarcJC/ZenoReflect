@@ -10,7 +10,8 @@ int main(int argc, char* argv[]) {
 
     {
         using namespace zeno::reflect;
-        IAmPrimitve p{.i32 = 10086};
+        IAmPrimitve p{};
+        p.i32 = 10086;
         MemberProxy proxy(&IAmPrimitve::i32);
         std::cout << "Proxied: " << proxy(p) << std::endl;
 
@@ -22,9 +23,9 @@ int main(int argc, char* argv[]) {
 
         {
             Any any = make_any<Yeppp>(Yeppp {
-                .field1 = 24566,
-                .field2 = "aaaaa", 
-                .field3 = false,
+                24566,
+                "aaaaa", 
+                false,
             });
             std::cout << "Any: " << any.type().name() << std::endl;
 
@@ -39,7 +40,7 @@ int main(int argc, char* argv[]) {
 
             Yeppp& lol = any_cast<Yeppp&>(any);
             {
-                Yeppp tmp{.field1 = 12313};
+                Yeppp tmp{12313};
                 lol = tmp; // Copy!
             }
             std::cout << "field1: " << qwq.field1 << "\tfield2: " << qwq.field2 << "\tfield3: " << qwq.field3 << std::endl;
