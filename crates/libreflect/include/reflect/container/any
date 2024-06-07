@@ -14,20 +14,22 @@ namespace reflect
     struct AnyCastNullError : public AnyError {};
     struct AnyCastTypeError : public AnyError {};
 
+    class Any;
+
     template <typename T, typename... Args>
-    class Any make_any(Args&&... args);
+    Any make_any(Args&&... args);
 
     template <typename T>
-    T any_cast(class Any& operand);
+    T any_cast(Any& operand);
 
     template <typename T>
     T any_cast(const class Any& operand);
 
     template<typename T>
-    T* any_cast(class Any* operand) noexcept;
+    T* any_cast(Any* operand) noexcept;
 
     template<typename T>
-    const T* any_cast(const class Any* operand) noexcept;
+    const T* any_cast(const Any* operand) noexcept;
 
     class Any {
     public:
@@ -138,7 +140,7 @@ namespace reflect
         friend Any make_any(Args&&... args);
 
         template <typename T>
-        friend T any_cast(class Any& operand);
+        friend T any_cast(Any& operand);
 
         template <typename T>
         friend T any_cast(const Any& operand);
