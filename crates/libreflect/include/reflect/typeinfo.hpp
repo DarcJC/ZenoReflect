@@ -19,8 +19,9 @@ namespace reflect
         const char* name() const;
         size_t hash_code() const;
 
-        bool operator==(const RTTITypeInfo& other);
-        bool operator!=(const RTTITypeInfo& other);
+        REFLECT_CONSTEXPR bool equal_fast(const RTTITypeInfo& other) const;
+        bool operator==(const RTTITypeInfo& other) const;
+        bool operator!=(const RTTITypeInfo& other) const;
     private:
 
         const char* m_name;

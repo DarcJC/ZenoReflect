@@ -90,7 +90,6 @@ namespace reflect
 
     template <typename T>
     using TTDecay = typename TDecay<T>::Type;
-
 } // namespace reflect 
 } // namespace zeno
 

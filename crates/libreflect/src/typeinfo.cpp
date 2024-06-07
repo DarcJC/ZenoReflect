@@ -1,4 +1,5 @@
 #include "reflect/typeinfo.hpp"
+#include "typeinfo.hpp"
 
 const char *zeno::reflect::RTTITypeInfo::name() const
 {
@@ -10,12 +11,17 @@ size_t zeno::reflect::RTTITypeInfo::hash_code() const
     return m_hashcode;
 }
 
-bool zeno::reflect::RTTITypeInfo::operator==(const RTTITypeInfo &other)
+REFLECT_CONSTEXPR bool zeno::reflect::RTTITypeInfo::equal_fast(const RTTITypeInfo &other) const
+{
+    return this == &other;
+}
+
+bool zeno::reflect::RTTITypeInfo::operator==(const RTTITypeInfo &other) const
 {
     return other.hash_code() == other.hash_code() && other.name() == name();
 }
 
-bool zeno::reflect::RTTITypeInfo::operator!=(const RTTITypeInfo &other)
+bool zeno::reflect::RTTITypeInfo::operator!=(const RTTITypeInfo &other) const
 {
     return !operator==(other);
 }

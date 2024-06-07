@@ -3,7 +3,6 @@
 #include "reflect/polyfill.hpp"
 #include "reflect/typeinfo.hpp"
 #include "reflect/traits/type_traits"
-#include <type_traits>
 
 namespace zeno
 {
@@ -43,8 +42,9 @@ namespace reflect
 
         template <typename T, typename... Args>
         void emplace(Args&&... args) {
+            using NoCVType = typename TRemoveCV<T>::Type;
             reset();
-            m_value_container = new ValueContainer<T>(T(forward<Args>(args)...));
+            m_value_container = new ValueContainer<NoCVType>(NoCVType(forward<Args>(args)...));
         }
 
         void swap(Any& other) noexcept {
@@ -85,12 +85,10 @@ namespace reflect
             ValueType m_value;
 
             template <typename U = T>
-            ValueContainer(const U& value, TTEnableIf<std::is_copy_constructible_v<U>, U>* = nullptr): m_value(value) {}
-            // ValueContainer(const U& value): m_value(std::forward(value)) {}
+            ValueContainer(const U& value, TTEnableIf<VTIsCopyConstructible<U>, U>* = nullptr): m_value(value) {}
 
             template <typename U = T>
-            ValueContainer(U&& value, TTEnableIf<std::is_copy_constructible_v<U>, U>* = nullptr): m_value(std::move(value)) {}
-            // ValueContainer(U&& value): m_value(std::move(value)) {}
+            ValueContainer(U&& value): m_value(move(value)) {}
 
             virtual const RTTITypeInfo& type() const override {
                 return type_info<TTDecay<TTRemovePointer<TTRemoveReference<ValueType>>>>();

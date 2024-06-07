@@ -1,6 +1,7 @@
 #pragma once
 
 #include "reflect/polyfill.hpp"
+#include "constant_eval.hpp"
 
 namespace zeno
 {
@@ -19,38 +20,6 @@ namespace reflect
     using TTEnableIf = typename TEnableIf<Cond, T>::Type;
     // ==== Enable If ===
 
-    // ==== Meta Program Constant ====
-    template <typename T, T v>
-    struct TIntegralConstant {
-        static REFLECT_CONSTEXPR_OR_INLINE T value = v;
-        using ValueType = T;
-        using Type = TIntegralConstant<T, v>;
-        REFLECT_CONSTEXPR operator ValueType() const noexcept {
-            return value;
-        }
-    };
-
-    using TTrueType = TIntegralConstant<bool, true>;
-    using TFalseType = TIntegralConstant<bool, false>;
-
-    template <typename... Ts>
-    struct TMakeVoid {
-        using Type = void;
-    };
-
-    template <typename... Ts>
-    using TVoid = typename TMakeVoid<Ts...>::Type;
-    // ==== Meta Program Constant ====
-
-    /// @brief Get a object reference of given type for meta programming
-    /// @tparam T object type
-    /// @return A dangling rvalue reference of given type
-    template <typename T>
-    T&& declval() noexcept {
-        // Hard coded casting to rvalue
-        return static_cast<T&&>(*((T*)nullptr));
-    }
-
     // ==== Check copy constructible ====
     template <typename T, typename = void>
     struct TIsCopyConstructible : TFalseType {};
@@ -63,7 +32,7 @@ namespace reflect
     > : TTrueType {};
 
     template <typename T>
-    LIBREFLECT_INLINE REFLECT_CONSTEXPR bool VTIsCopyConstructible = TIsCopyConstructible<T>::value;
+    LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsCopyConstructible = TIsCopyConstructible<T>::value;
     // ==== Check copy constructible ====
 
     // ==== Check move constructible ====
@@ -78,8 +47,30 @@ namespace reflect
     > : TTrueType {};
 
     template <typename T>
-    LIBREFLECT_INLINE REFLECT_CONSTEXPR bool VTIsMoveConstructible = TIsMoveConstructible<T>::value;
+    LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsMoveConstructible = TIsMoveConstructible<T>::value;
     // ==== Check move constructible ====
+
+    // ==== Check copy assignable ====
+    template <typename T, typename = void>
+    struct TIsCopyAssignable : TFalseType {};
+
+    template <typename T>
+    struct TIsCopyAssignable<T, TVoid<decltype(declval<T&>() = declval<const T&>())>> : TTrueType {};
+
+    template <typename T>
+    LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsCopyAssignable = TIsCopyAssignable<T>::value;
+    // ==== Check copy assignable ====
+
+    // ==== Check move assignable ====
+    template <typename T, typename = void>
+    struct TIsMoveAssignable : TFalseType {};
+
+    template <typename T>
+    struct TIsMoveAssignable<T, TVoid<decltype(declval<T&>() = declval<T&&>())>> : TTrueType {};
+
+    template <typename T>
+    LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsMoveAssignable = TIsMoveAssignable<T>::value;
+    // ==== Check move assignable ====
 
     // ==== Condition ====
     template <bool Cond, typename TrueType = TTrueType, typename FalseType = TFalseType>
@@ -106,6 +97,9 @@ namespace reflect
     template <typename T>
     struct TIsConst<const T> : TTrueType {};
 
+    template <typename T>
+    LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsConst = TIsConst<T>::value;
+
     template <typename T, typename U>
     struct TIsSame : TFalseType {};
 
@@ -113,8 +107,19 @@ namespace reflect
     struct TIsSame<T, T> : TTrueType {};
 
     template <typename T, typename U>
-    LIBREFLECT_INLINE REFLECT_CONSTEXPR bool VTIsSame = TIsSame<T, U>::value;
+    LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsSame = TIsSame<T, U>::value;
     // ==== Check qualifier ====
+
+    // ==== Is Member Pointer ====
+    template <typename T>
+    struct TIsMemberPointer : TFalseType {};
+
+    template <typename T, typename C>
+    struct TIsMemberPointer<T C::*> : TTrueType {};
+
+    template <typename T>
+    LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsMemberPointer = TIsMemberPointer<T>::value;
+    // ==== Is Member Pointer ====
 
 } // namespace reflect 
 } // namespace zeno
