@@ -1,6 +1,7 @@
 #pragma once
 
 #include "reflect/polyfill.hpp"
+#include <cstdint>
 
 namespace zeno
 {

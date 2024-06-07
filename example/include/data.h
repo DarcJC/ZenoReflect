@@ -6,7 +6,11 @@
 namespace test {
 struct Parent {};
 namespace inner {
-struct Oops {};
+struct Oops {
+    int field1;
+    const char* field2 = "abc";
+    bool field3 = true;
+};
 union Yeppp {};
 }
 }

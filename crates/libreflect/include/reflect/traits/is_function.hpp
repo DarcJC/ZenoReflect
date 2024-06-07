@@ -47,6 +47,6 @@ namespace reflect
     struct TIsFunction<Ret(Args...) const volatile &&> : TTrueType {};
 
     template <typename T>
-    LIBREFLECT_INLINE REFLECT_CONSTEXPR_OR_CONST bool VTIsFunction = TIsFunction<T>::value;
+    LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsFunction = TIsFunction<T>::value;
 }
 }

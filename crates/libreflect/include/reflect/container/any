@@ -11,6 +11,23 @@ namespace reflect
     struct AnyError {};
     struct AnyCloneError : public AnyError {};
     struct AnyCastError : public AnyError {};
+    struct AnyCastNullError : public AnyError {};
+    struct AnyCastTypeError : public AnyError {};
+
+    template <typename T, typename... Args>
+    class Any make_any(Args&&... args);
+
+    template <typename T>
+    T any_cast(class Any& operand);
+
+    template <typename T>
+    T any_cast(const class Any& operand);
+
+    template<typename T>
+    T* any_cast(class Any* operand) noexcept;
+
+    template<typename T>
+    const T* any_cast(const class Any* operand) noexcept;
 
     class Any {
     public:
@@ -42,9 +59,9 @@ namespace reflect
 
         template <typename T, typename... Args>
         void emplace(Args&&... args) {
-            using NoCVType = typename TRemoveCV<T>::Type;
+            using DecayType = TTDecay<T>;
             reset();
-            m_value_container = new ValueContainer<NoCVType>(NoCVType(forward<Args>(args)...));
+            m_value_container = new ValueContainer<DecayType>(DecayType(forward<Args>(args)...));
         }
 
         void swap(Any& other) noexcept {
@@ -74,8 +91,11 @@ namespace reflect
         public:
             virtual ~IContainer() {}
             virtual const RTTITypeInfo& type() const = 0;
+            virtual bool is_type(const RTTITypeInfo& other_type) const = 0;
             virtual IContainer* clone() const = 0;
         };
+
+        Any(IContainer* container) : m_value_container(container) {};
 
         template <typename T>
         class ValueContainer : public IContainer {
@@ -94,6 +114,14 @@ namespace reflect
                 return type_info<TTDecay<TTRemovePointer<TTRemoveReference<ValueType>>>>();
             }
 
+            virtual bool is_type(const RTTITypeInfo& other_type) const override {
+#if REFLECT_LIBRARY_ANY_FASTPATH
+                return other_type.equal_fast(other_type);
+#else
+                return other_type == this->type();
+#endif
+            }
+
             virtual IContainer* clone() const override {
                 if REFLECT_CONSTEXPR (VTIsCopyConstructible<T>) {
                     return new ValueContainer<ValueType>(m_value);
@@ -104,6 +132,79 @@ namespace reflect
         };
 
         IContainer* m_value_container = nullptr;
+
+        // ==== Friend Functions ====
+        template <typename T, typename... Args>
+        friend Any make_any(Args&&... args);
+
+        template <typename T>
+        friend T any_cast(class Any& operand);
+
+        template <typename T>
+        friend T any_cast(const Any& operand);
+
+        template<typename T>
+        friend T* any_cast(Any* operand) noexcept;
+
+        template<typename T>
+        friend const T* any_cast(const Any* operand) noexcept;
+
+        // ==== Friend Functions ====
     };
+
+    template <typename T, typename... Args>
+    Any make_any(Args&&... args) {
+        using DecayType = TTDecay<T>;
+
+        return Any(DecayType(forward<Args>(args)...));
+    }
+
+    template <typename T>
+    T any_cast(Any& operand) {
+        using NonRef = TTDecay<T>;
+
+        if (!operand.has_value()) {
+            throw AnyCastNullError();
+        }
+
+        if (!operand.m_value_container->is_type(type_info<NonRef>())) {
+            throw AnyCastTypeError();
+        }
+
+        return static_cast<Any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value;
+    }
+
+    template <typename T>
+    T any_cast(const Any& operand) {
+        using NonRef = TTDecay<T>;
+
+        if (!operand.has_value()) {
+            throw AnyCastNullError();
+        }
+
+        if (!operand.m_value_container->is_type(type_info<NonRef>())) {
+            throw AnyCastTypeError();
+        }
+
+        return static_cast<const Any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value;
+    }
+
+    template<typename T>
+    T* any_cast(Any* operand) noexcept {
+        using NonRef = TTDecay<T>;
+        if (operand && operand->has_value() && operand->m_value_container->is_type(type_info<NonRef>())) {
+            return &static_cast<Any::ValueContainer<NonRef>*>(operand->m_value_container)->m_value;
+        }
+        return nullptr;
+    }
+
+    template<typename T>
+    const T* any_cast(const Any* operand) noexcept {
+        using NonRef = TTDecay<T>;
+        if (operand && operand->has_value() && operand->m_value_container->is_type(type_info<NonRef>())) {
+            return &static_cast<const Any::ValueContainer<NonRef>*>(operand->m_value_container)->m_value;
+        }
+        return nullptr;
+    }
 }
 }

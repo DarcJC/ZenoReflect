@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cstdint>
+#include "reflect/polyfill.hpp"
+#include "constant_eval.hpp"
 
 namespace zeno
 {
@@ -90,6 +91,27 @@ namespace reflect
 
     template <typename T>
     using TTDecay = typename TDecay<T>::Type;
+
+    template <typename T>
+    struct TIsReference : TFalseType {};
+
+    template <typename T>
+    struct TIsReference<T&> : TTrueType {};
+
+    template <typename T>
+    struct TIsReference<T&&> : TTrueType {};
+
+    template <typename T>
+    LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsReference = TIsReference<T>::value;
+
+    template <typename T>
+    struct TIsPointer : TFalseType {};
+
+    template <typename T>
+    struct TIsPointer<T*> : TTrueType {};
+
+    template <typename T>
+    LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsPointer = TIsPointer<T>::value;
 } // namespace reflect 
 } // namespace zeno
 
