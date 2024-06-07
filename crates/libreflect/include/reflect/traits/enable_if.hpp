@@ -105,6 +105,15 @@ namespace reflect
 
     template <typename T>
     struct TIsConst<const T> : TTrueType {};
+
+    template <typename T, typename U>
+    struct TIsSame : TFalseType {};
+
+    template <typename T>
+    struct TIsSame<T, T> : TTrueType {};
+
+    template <typename T, typename U>
+    LIBREFLECT_INLINE REFLECT_CONSTEXPR bool VTIsSame = TIsSame<T, U>::value;
     // ==== Check qualifier ====
 
 } // namespace reflect 
