@@ -1,5 +1,6 @@
 #include "reflect/typeinfo.hpp"
 #include "typeinfo.hpp"
+#include "container/string"
 
 const char *zeno::reflect::RTTITypeInfo::name() const
 {
@@ -18,7 +19,7 @@ REFLECT_CONSTEXPR bool zeno::reflect::RTTITypeInfo::equal_fast(const RTTITypeInf
 
 bool zeno::reflect::RTTITypeInfo::operator==(const RTTITypeInfo &other) const
 {
-    return other.hash_code() == other.hash_code() && other.name() == name();
+    return other.hash_code() == other.hash_code() && CStringUtil<char>::strcmp(other.name(), name()) == 0;
 }
 
 bool zeno::reflect::RTTITypeInfo::operator!=(const RTTITypeInfo &other) const

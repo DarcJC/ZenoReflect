@@ -36,6 +36,14 @@ namespace reflect
             }
             return copied;
         }
+
+        REFLECT_CONSTEXPR static int strcmp(const ValueType* lhs, const ValueType* rhs) {
+            while (*lhs && (*lhs == *rhs)) {
+                ++lhs;
+                ++rhs;
+            }
+            return *lhs - *rhs;
+        }
     };
 
     template <typename CharType = char>
