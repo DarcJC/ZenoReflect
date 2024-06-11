@@ -44,10 +44,11 @@ int main(int argc, char* argv[]) {
             wow->field1 = 456;
             wow = any_cast<Yeppp>(&any);
 
-            const Yeppp& qwq = any_cast<Yeppp>(any);
+            const Yeppp& qwq = any_cast<Yeppp&>(any);
             std::cout << "field1: " << qwq.field1 << "\tfield2: " << qwq.field2 << "\tfield3: " << qwq.field3 << std::endl;
 
             Yeppp& lol = any_cast<Yeppp&>(any);
+            std::cout << "Address of lol: " << &lol << "\tAddress of wow: " << wow << "\tAddress of qwq: " << &qwq << std::endl;
             {
                 Yeppp tmp{12313};
                 lol = tmp; // Copy!
