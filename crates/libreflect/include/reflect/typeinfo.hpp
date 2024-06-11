@@ -20,11 +20,15 @@ namespace reflect
         size_t hash_code() const;
 
         /**
+         * Compare two type info using hash code.
+        */
+        REFLECT_CONSTEXPR bool equal_fast(const RTTITypeInfo& other) const;
+        /**
          * Compare two type info based on their address.
          * 
          * This fast path should only be safe if using inside the same translation unit.
         */
-        REFLECT_CONSTEXPR bool equal_fast(const RTTITypeInfo& other) const;
+        REFLECT_CONSTEXPR bool equal_fast_unsafe(const RTTITypeInfo& other) const;
         bool operator==(const RTTITypeInfo& other) const;
         bool operator!=(const RTTITypeInfo& other) const;
     private:
