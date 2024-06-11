@@ -1,6 +1,7 @@
 #include "data.h"
 #include "reflect/container/object_proxy"
 #include "reflect/container/any"
+#include "reflect/container/arraylist"
 #include <iostream>
 
 
@@ -54,6 +55,11 @@ int main(int argc, char* argv[]) {
                 lol = tmp; // Copy!
             }
             std::cout << "field1: " << qwq.field1 << "\tfield2: " << qwq.field2 << "\tfield3: " << qwq.field3 << std::endl;
+        }
+
+        {
+            ArrayList<Yeppp> arr{};
+            arr.add_item({});
         }
     }
 

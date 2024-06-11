@@ -1,0 +1,101 @@
+#pragma once
+
+#include <cstdint>
+#include "reflect/macro.hpp"
+#include "reflect/traits/move.hpp"
+
+namespace zeno
+{
+namespace reflect
+{
+    template <typename T>
+    class ArrayList {
+    private:
+        T* m_data;
+        size_t m_size;
+        size_t m_capacity;
+
+        void resize_internal() {
+            size_t new_capacity = 8;
+            if (m_capacity != 0) {
+                new_capacity = m_capacity * 2;
+            }
+            T* new_data = new T[new_capacity];
+            for (size_t i = 0; i < m_size; ++i) {
+                new_data[i] = move(m_data[i]);
+            }
+            delete[] m_data;
+            m_data = new_data;
+            m_capacity = new_capacity;
+        }
+    public:
+        ArrayList() : m_size(0), m_capacity(1), m_data(new T[1]) {}
+        ~ArrayList() {
+            delete[] m_data;
+        }
+        ArrayList(const ArrayList& other) : m_size(other.m_size), m_capacity(other.m_capacity), m_data(new T[other.m_capacity]) {
+            for (size_t i = 0; i < other.m_size; ++i) {
+                m_data[i] = other.m_data[i];
+            }
+        }
+        ArrayList(ArrayList&& other) noexcept : m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity) {
+            other.m_data = nullptr;
+            other.m_size = 0;
+            other.m_capacity = 0;
+        }
+
+        LIBREFLECT_INLINE bool is_valid_index(size_t index) const {
+            return index < m_size;
+        }
+
+        size_t add_item(const T& value) {
+            if (m_size == m_capacity) {
+                resize_internal();
+            }
+            m_data[m_size] = value;
+            return m_size++;
+        }
+
+        size_t remove_last() {
+            if (m_size > 0) {
+                --m_size;
+            }
+            return m_size;
+        }
+
+        void remove_at(size_t index) {
+            if (is_valid_index(index)) {
+                for (size_t i = index; i < m_size - 1; ++i) {
+                    m_data[i] = move(m_data[i + 1]);
+                }
+            }
+        }
+
+        LIBREFLECT_INLINE T& operator[](size_t index) {
+            return m_data[index];
+        }
+
+        LIBREFLECT_INLINE const T& operator[](size_t index) const {
+            return m_data[index];
+        }
+
+        LIBREFLECT_INLINE size_t size() const {
+            return m_size;
+        }
+
+        LIBREFLECT_INLINE size_t capacity() const {
+            return m_capacity;
+        }
+
+        template <typename... Ts>
+        size_t emplace_item(Ts&&... vals) {
+            if (m_size == m_capacity) {
+                resize_internal();
+            }
+            new (m_data + m_size) T(forward<Ts>(vals)...);
+            return m_size++;
+        }
+    };
+}
+}
+

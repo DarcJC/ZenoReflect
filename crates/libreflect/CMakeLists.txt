@@ -4,6 +4,8 @@ add_library(libreflect STATIC
     src/registry.cpp
     src/typeinfo.cpp
     src/type.cpp
+
+    src/impl/memory.cpp
 )
 add_library(ZenoReflect::libreflect ALIAS libreflect)
 target_include_directories(libreflect PUBLIC include)

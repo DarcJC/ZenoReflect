@@ -30,5 +30,8 @@ namespace reflect
             return forward<SelfType>(self).*m_member_ptr;
         }
     };
+
+    class MemberAccessor {
+    };
 }
 }
