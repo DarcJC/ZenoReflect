@@ -16,7 +16,7 @@ namespace reflect
 
         template <typename SelfType, typename... Args>
         auto operator()(SelfType&& self, Args&&... args) const
-        -> TTEnableIf<VTIsFunction<TTRemovePointer<T>>, 
+        -> TTEnableIf<VTIsMemberFunction<TTRemovePointer<T>>, 
             decltype((forward<SelfType>(self).*m_member_ptr)(forward<Args>(args)...))>
         {
             return (forward<SelfType>(self).*m_member_ptr)(forward<Args>(args)...);
@@ -24,7 +24,7 @@ namespace reflect
 
         template <typename SelfType>
         auto operator()(SelfType&& self) const
-        -> TTEnableIf<!VTIsFunction<TTRemovePointer<T>>, 
+        -> TTEnableIf<!VTIsMemberFunction<TTRemovePointer<T>>, 
             decltype(forward<SelfType>(self).*m_member_ptr)>
         {
             return forward<SelfType>(self).*m_member_ptr;

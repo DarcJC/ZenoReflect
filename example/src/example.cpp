@@ -3,6 +3,11 @@
 #include "reflect/container/any"
 #include <iostream>
 
+
+void IAmPrimitve::DoSomething(int value) {
+    std::cout << "Doing something " << value << "x ..." << std::endl;
+}
+
 int main(int argc, char* argv[]) {
 
     std::cout << "Name: " << zeno::reflect::type_info<char*>().name() << std::endl;
@@ -10,10 +15,14 @@ int main(int argc, char* argv[]) {
 
     {
         using namespace zeno::reflect;
-        IAmPrimitve p{};
-        p.i32 = 10086;
-        MemberProxy proxy(&IAmPrimitve::i32);
-        std::cout << "Proxied: " << proxy(p) << std::endl;
+        {
+            IAmPrimitve p{};
+            p.i32 = 10086;
+            MemberProxy proxy(&IAmPrimitve::i32);
+            std::cout << "Proxied Field: " << proxy(p) << std::endl;
+            MemberProxy proxy2(&IAmPrimitve::DoSomething);
+            proxy2(p, p.i32);
+        }
 
         {
             const Yeppp pp{};

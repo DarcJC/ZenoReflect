@@ -48,5 +48,47 @@ namespace reflect
 
     template <typename T>
     LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsFunction = TIsFunction<T>::value;
+
+    template<typename T>
+    struct TIsMemberFunction : TFalseType {};
+
+    template<typename C, typename Ret, typename... Args>
+    struct TIsMemberFunction<Ret (C::*)(Args...)> : TTrueType {};
+
+    template<typename C, typename Ret, typename... Args>
+    struct TIsMemberFunction<Ret (C::*)(Args...) const> : TTrueType {};
+
+    template<typename C, typename Ret, typename... Args>
+    struct TIsMemberFunction<Ret (C::*)(Args...) volatile> : TTrueType {};
+
+    template<typename C, typename Ret, typename... Args>
+    struct TIsMemberFunction<Ret (C::*)(Args...) const volatile> : TTrueType {};
+
+    template<typename C, typename Ret, typename... Args>
+    struct TIsMemberFunction<Ret (C::*)(Args...) &> : TTrueType {};
+
+    template<typename C, typename Ret, typename... Args>
+    struct TIsMemberFunction<Ret (C::*)(Args...) const &> : TTrueType {};
+
+    template<typename C, typename Ret, typename... Args>
+    struct TIsMemberFunction<Ret (C::*)(Args...) volatile &> : TTrueType {};
+
+    template<typename C, typename Ret, typename... Args>
+    struct TIsMemberFunction<Ret (C::*)(Args...) const volatile &> : TTrueType {};
+
+    template<typename C, typename Ret, typename... Args>
+    struct TIsMemberFunction<Ret (C::*)(Args...) &&> : TTrueType {};
+
+    template<typename C, typename Ret, typename... Args>
+    struct TIsMemberFunction<Ret (C::*)(Args...) const &&> : TTrueType {};
+
+    template<typename C, typename Ret, typename... Args>
+    struct TIsMemberFunction<Ret (C::*)(Args...) volatile &&> : TTrueType {};
+
+    template<typename C, typename Ret, typename... Args>
+    struct TIsMemberFunction<Ret (C::*)(Args...) const volatile &&> : TTrueType {};
+
+    template <typename T>
+    LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsMemberFunction = TIsMemberFunction<T>::value;
 }
 }
