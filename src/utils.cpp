@@ -64,10 +64,15 @@ std::vector<std::string> get_parser_command_args(const std::string &cpp_version,
     return result;
 }
 
+bool is_vaild_char(char c)
+{
+    return c >= -1;
+}
+
 std::string trim_start(const std::string &str)
 {
     size_t start = 0;
-    while (start < str.length() && std::isspace(str[start])) {
+    while (start < str.length() && std::isspace(static_cast<unsigned char>(str[start]))) {
         start++;
     }
     return str.substr(start);
@@ -76,7 +81,7 @@ std::string trim_start(const std::string &str)
 std::string trim_end(const std::string &str)
 {
     size_t end = str.length();
-    while (end > 0 && std::isspace(str[end - 1])) {
+    while (end > 0 && std::isspace(static_cast<unsigned char>(str[end - 1]))) {
         end--;
     }
     return str.substr(0, end);

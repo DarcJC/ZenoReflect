@@ -23,6 +23,7 @@ std::vector<std::string> get_parser_command_args(
     bool verbose = false
 );
 
+bool is_vaild_char(char c);
 std::string trim_start(const std::string& str);
 std::string trim_end(const std::string& str);
 std::string trim(const std::string& str);

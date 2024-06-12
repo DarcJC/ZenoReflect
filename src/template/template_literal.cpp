@@ -1,11 +1,11 @@
 #include "template_literal"
 
-using namespace zeno::reflect::text;
+using namespace zeno::reflect;
 
-static const char* RTTI =
+const char* text::RTTI =
     #include "RTTI.inja"
 ;
 
-static const char* GENERATED_TEMPLATE_HEADER_TEMPLATE =
+const char* text::GENERATED_TEMPLATE_HEADER_TEMPLATE =
     #include "generated_template_header.inja"
 ;
