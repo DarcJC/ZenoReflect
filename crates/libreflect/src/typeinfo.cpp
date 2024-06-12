@@ -12,12 +12,12 @@ size_t zeno::reflect::RTTITypeInfo::hash_code() const
     return m_hashcode;
 }
 
-REFLECT_CONSTEXPR bool zeno::reflect::RTTITypeInfo::equal_fast(const RTTITypeInfo &other) const
+REFLECT_STATIC_CONSTEXPR bool zeno::reflect::RTTITypeInfo::equal_fast(const RTTITypeInfo &other) const
 {
     return hash_code() == other.hash_code();
 }
 
-REFLECT_CONSTEXPR bool zeno::reflect::RTTITypeInfo::equal_fast_unsafe(const RTTITypeInfo &other) const
+REFLECT_STATIC_CONSTEXPR bool zeno::reflect::RTTITypeInfo::equal_fast_unsafe(const RTTITypeInfo &other) const
 {
     return this == &other;
 }
