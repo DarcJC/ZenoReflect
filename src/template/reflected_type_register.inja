@@ -1,0 +1,13 @@
+R"INJA(
+#include "reflect/registry.hpp"
+
+## for type_info in types
+namespace {
+    struct S{{- type_info.normal_name -}}Registrator {
+        S{{- type_info.normal_name -}}Registrator() {
+        }
+    };
+    static S{{- type_info.normal_name -}}Registrator global_S{{- type_info.normal_name -}}Registrator{};
+}
+## endfor
+)INJA";

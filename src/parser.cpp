@@ -5,6 +5,7 @@
 #include "parser.hpp"
 #include "serialize.hpp"
 #include "codegen.hpp"
+#include "template/template_literal"
 
 using namespace llvm;
 using namespace clang;
@@ -44,7 +45,7 @@ ParserErrorCode generate_reflection_model(const TranslationUnit &unit, Reflectio
     return ParserErrorCode::Success;
 }
 
-ParserErrorCode post_generate_reflection_model(const ReflectionModel &model)
+ParserErrorCode post_generate_reflection_model(const ReflectionModel &model, const zeno::reflect::CodeCompilerState& state)
 {
     const std::string generated_header_path = zeno::reflect::get_file_path_in_header_output("generated_templates.hpp");
     std::ofstream ghp_stream(generated_header_path, std::ios::out | std::ios::trunc);
@@ -52,6 +53,10 @@ ParserErrorCode post_generate_reflection_model(const ReflectionModel &model)
     for (const std::string& s : model.generated_headers) {
         ghp_stream << std::format("#include \"{}\"", zeno::reflect::relative_path_to_header_output(s)) << "\r\n";
     }
+
+    const std::string generated_target_source = GLOBAL_CONTROL_FLAGS->target_type_register_source_path;
+    std::ofstream gts_stream(generated_target_source, std::ios::out | std::ios::trunc);
+    gts_stream << inja::render(zeno::reflect::text::REFLECTED_TYPE_REGISTER, state.types_register_data);
 
     return ParserErrorCode::Success;
 }
@@ -79,8 +84,8 @@ void TypeAliasMatchCallback::run(const MatchFinder::MatchResult &result)
     }
 
     if (decll && m_context) {
-        zeno::reflect::RTTITypeGenerator rtti(underlying_type);
-        m_context->template_header_generator.add_rtti_block(rtti);
+        // zeno::reflect::RTTITypeGenerator rtti(underlying_type);
+        // m_context->template_header_generator.add_rtti_block(rtti);
     }
 }
 
@@ -96,16 +101,25 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
             return;
         }
 
-        if (record_decl->getNumBases() > 0) {
-            for (const auto& base : record_decl->bases()) {
-            }
-        }
+        bool is_reflected_record_type = false;
+        MetadataContainer container;
 
         if (record_decl->hasAttrs()) {
             for (const auto* attr : record_decl->attrs()) {
                 if (const AnnotateAttr *Annotate = dyn_cast<AnnotateAttr>(attr)) {
-                    MetadataContainer container = MetadataParser::parse(Annotate->getAnnotation().str());
+                    container = MetadataParser::parse(Annotate->getAnnotation().str());
+                    is_reflected_record_type = true;
+                    break;
                 }
+            }
+        }
+
+        if (!is_reflected_record_type) {
+            return;
+        }
+        
+        if (record_decl->getNumBases() > 0) {
+            for (const auto& base : record_decl->bases()) {
             }
         }
     }
@@ -124,12 +138,12 @@ void ReflectionASTConsumer::HandleTranslationUnit(ASTContext &context)
 
     const std::string& gen_template_header_path = m_header_path;
 
-    MatchFinder type_alias_finder{};
-    DeclarationMatcher typealias_matcher = typeAliasDecl().bind(ASTLabels::TYPE_ALIAS_LABEL);
-    DeclarationMatcher typedef_matcher = typedefDecl().bind(ASTLabels::TYPEDEF_LABEL);
-    type_alias_finder.addMatcher(typealias_matcher, type_alias_handler.get());
-    type_alias_finder.addMatcher(typedef_matcher, type_alias_handler.get());
-    type_alias_finder.matchAST(context);
+    // MatchFinder type_alias_finder{};
+    // DeclarationMatcher typealias_matcher = typeAliasDecl().bind(ASTLabels::TYPE_ALIAS_LABEL);
+    // DeclarationMatcher typedef_matcher = typedefDecl().bind(ASTLabels::TYPEDEF_LABEL);
+    // type_alias_finder.addMatcher(typealias_matcher, type_alias_handler.get());
+    // type_alias_finder.addMatcher(typedef_matcher, type_alias_handler.get());
+    // type_alias_finder.matchAST(context);
 
     DeclarationMatcher record_type_matcher = cxxRecordDecl().bind(ASTLabels::RECORD_LABEL);
     MatchFinder record_finder{};

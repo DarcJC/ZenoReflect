@@ -11,6 +11,7 @@ void IAmPrimitve::DoSomething(int value) {
 
 int main(int argc, char* argv[]) {
 
+#if 0
     std::cout << "Name: " << zeno::reflect::type_info<char*>().name() << std::endl;
     std::cout << "Hash: " << zeno::reflect::type_info<char*>().hash_code() << std::endl;
 
@@ -62,6 +63,7 @@ int main(int argc, char* argv[]) {
             arr.add_item({});
         }
     }
+#endif
 
     return 0;
 }

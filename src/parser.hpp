@@ -61,7 +61,7 @@ struct ReflectionModel {
 };
 
 ParserErrorCode generate_reflection_model(const TranslationUnit& unit, ReflectionModel& out_model, zeno::reflect::CodeCompilerState& root_state);
-ParserErrorCode post_generate_reflection_model(const ReflectionModel& model);
+ParserErrorCode post_generate_reflection_model(const ReflectionModel& model, const zeno::reflect::CodeCompilerState& state);
 ParserErrorCode pre_generate_reflection_model();
 
 struct ASTLabels {

@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
         }, model, compiler_state));
     }
 
-    post_generate_reflection_model(model);
+    post_generate_reflection_model(model, compiler_state);
 
     return result;
 }

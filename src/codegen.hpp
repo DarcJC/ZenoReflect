@@ -18,6 +18,9 @@ namespace zeno::reflect
 {
     struct CodeCompilerState {
         std::unordered_map<size_t, uint8_t> type_hash_flag;
+        inja::json types_register_data;
+
+        CodeCompilerState();
     };
     
     template <typename T>
