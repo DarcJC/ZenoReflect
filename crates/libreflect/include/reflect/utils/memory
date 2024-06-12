@@ -7,7 +7,7 @@ namespace zeno
 {
 namespace reflect
 {
-    void* memmove(void* dest, const void* src, size_t n);
+    LIBREFLECT_API void* memmove(void* dest, const void* src, std::size_t n);
 }
 }
 

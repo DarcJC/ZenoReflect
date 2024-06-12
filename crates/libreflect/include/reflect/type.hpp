@@ -1,12 +1,11 @@
 #pragma once
 
-#include <vector>
-#include <any>
-#include <optional>
-#include <string_view>
 #include <cstdint>
 #include "reflect/polyfill.hpp"
 #include "reflect/container/string"
+#include "reflect/container/arraylist"
+#include "reflect/container/any"
+#include "reflect/traits/type_traits"
 
 namespace zeno
 {
@@ -25,60 +24,19 @@ namespace reflect
         Max,
     };
 
-    template <typename T>
-    class TypeInstance {
-        T* internal_ptr;
-
-    public:
-        using Type = T;
-
-        TypeInstance(T* inst): internal_ptr(inst) { REFLECT_CHECK(internal_ptr != nullptr, "Type instance can't be null"); }
-
-        TypeInstance(const TypeInstance&) = delete;
-        TypeInstance& operator=(const TypeInstance&) = delete;
-
-        TypeInstance(TypeInstance&& inst_to_move) noexcept : internal_ptr(inst_to_move.internal_ptr) {
-            inst_to_move.internal_ptr = nullptr;
-        }
-        TypeInstance& operator=(TypeInstance&& inst_to_move) noexcept {
-            if (this != &inst_to_move) {
-                delete internal_ptr;
-                internal_ptr = inst_to_move.internal_ptr;
-                inst_to_move.internal_ptr = nullptr;
-            }
-            return *this;
-        }
-
-        ~TypeInstance() {
-            delete internal_ptr;
-        }
-
-        bool is_valid() const {
-            return internal_ptr != nullptr;
-        }
-
-        T* operator->() const {
-            return internal_ptr;
-        }
-
-        T& operator*() const {
-            return *internal_ptr;
-        }
-    };
-
     class ITypeConstructor {
     public:
-        virtual void* new_instance(const std::vector<std::any>& params = {}) = 0;
+        virtual void* new_instance(const ArrayList<Any>& params = {}) = 0;
 
         template <typename T>
-        T* new_instance_typed(const std::vector<std::any>& params = {}) {
+        T* new_instance_typed(const ArrayList<Any>& params = {}) {
             return reinterpret_cast<T*>(new_instance(params));
         }
 
-        template <typename T>
-        TypeInstance<T> new_instance_proxied(const std::vector<std::any>& params = {}) {
-            return TypeInstance<T>(new_instance_typed<T>(params));
-        }
+        // template <typename T>
+        // TypeInstance<T> new_instance_proxied(const std::vector<std::any>& params = {}) {
+        //     return TypeInstance<T>(new_instance_typed<T>(params));
+        // }
 
     protected:
         class TypeBase* m_type = nullptr;
@@ -93,9 +51,10 @@ namespace reflect
     };
 
     class TypeBase {
+    public:
         virtual std::size_t type_hash() const = 0;
     protected:
-        std::optional<ReflectedTypeInfo> m_type_info;
+        ReflectedTypeInfo m_type_info;
     };
 
     class TypeHandle {
@@ -107,6 +66,11 @@ namespace reflect
 
     public:
         TypeHandle(TypeBase* type_info);
+
+        template <typename T>
+        REFLECT_CONSTEXPR_OR_INLINE TypeHandle(TTDecay<T>* = nullptr) {
+            m_handle.rtti_hash = type_info<TTDecay<T>>.hash_code();
+        }
 
         bool operator==(const TypeHandle& other) const {
             if (this->is_reflected_type != other.is_reflected_type) {

@@ -1,5 +1,3 @@
-#include <cstdlib>
-#include <iostream>
 #include "polyfill.hpp"
 
 #define ZENO_NONCOPYABLE(TypeName) \
@@ -30,4 +28,4 @@ public:\
   #define LIBREFLECT_LOCAL
 #endif
 
-#define REFLECT_CHECK(expr, MSG) if (!(expr)) { std::cout << "[Reflection Assertion] Failure:\n" << MSG << std::endl; exit(100); }
+// #define REFLECT_CHECK(expr, MSG) if (!(expr)) { std::cout << "[Reflection Assertion] Failure:\n" << MSG << std::endl; exit(100); }
