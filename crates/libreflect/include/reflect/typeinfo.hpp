@@ -10,7 +10,7 @@ namespace reflect
 {
     class RTTITypeInfo;
 
-    class RTTITypeInfo {
+    class LIBREFLECT_API RTTITypeInfo {
     public:
         // Important: This constructor is internal, don't use it
         REFLECT_CONSTEXPR RTTITypeInfo(const char* in_name, std::size_t hashcode): m_name(in_name), m_hashcode(hashcode) {}

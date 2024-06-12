@@ -1,5 +1,5 @@
 
-add_library(libreflect STATIC
+add_library(libreflect SHARED
     src/reflect.cpp
     src/registry.cpp
     src/typeinfo.cpp
