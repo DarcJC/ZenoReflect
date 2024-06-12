@@ -21,6 +21,7 @@ set(LLVM_ENABLE_RTTI ON)
 set(LLVM_ENABLE_EH ON)
 add_executable(${RELCTION_GENERATOR_TARGET} 
     src/main.cpp src/args.cpp src/utils.cpp src/parser.cpp src/metadata.cpp src/codegen.cpp
+    src/template/template_literal.cpp
 )
 
 add_executable(ZenoReflect::generator ALIAS ${RELCTION_GENERATOR_TARGET})
