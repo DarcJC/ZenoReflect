@@ -40,7 +40,7 @@ namespace reflect
 
     // SFINAE
     template <typename T>
-    REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info() {
+    static REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info() {
         static REFLECT_STATIC_CONSTEXPR RTTITypeInfo Default = {"<default_type>", 0}; 
 #ifdef ZENO_REFLECT_PROCESSING
         return Default;

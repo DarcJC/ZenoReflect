@@ -38,7 +38,7 @@ namespace reflect
     public:
         static ReflectionRegistry& get();
 
-        ReflectTypeMap& operator->();
+        ReflectTypeMap* operator->();
     };
 }
 }

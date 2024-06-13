@@ -20,9 +20,9 @@ ReflectionRegistry& ReflectionRegistry::get()
     return instance;
 }
 
-ReflectTypeMap& zeno::reflect::ReflectionRegistry::operator->()
+ReflectTypeMap* zeno::reflect::ReflectionRegistry::operator->()
 {
-    return m_typed_map;
+    return &m_typed_map;
 }
 
 #define RTM_TO_TYPED_MAPS(var) static_cast < std::map < KeyType, ValueType> *>(var)

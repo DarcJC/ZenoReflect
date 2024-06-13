@@ -90,7 +90,7 @@ namespace reflect
         }
 
         virtual ~StringViewBase() {
-            delete m_data;
+            reset();
         }
 
         LIBREFLECT_INLINE size_t length() const {
@@ -144,6 +144,31 @@ namespace reflect
             other.m_data = nullptr;
             other.m_length = 0;
 
+            return *this;
+        }
+
+        void reset() {
+            delete m_data;
+            m_data = nullptr;
+            m_length = 0;
+        }
+
+        void emplace(const ValueType* s = nullptr) {
+            reset();
+            if (s) {
+                m_length = Util::strlen(s);
+                m_data = nullptr;
+                if (m_length > 0) {
+                    m_data = Util::strcopy(s);
+                }
+            } else {
+                m_data = nullptr;
+                m_length = 0;
+            }
+        }
+
+        StringViewBase& operator=(const char* s) {
+            emplace(s);
             return *this;
         }
     };

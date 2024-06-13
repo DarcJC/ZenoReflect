@@ -1,10 +1,35 @@
 R"INJA(
-#include "reflect/registry.hpp"
+#include "reflect/type"
+#include "reflect/reflection.generated.hpp"
+
+using namespace zeno::reflect;
 
 ## for type_info in types
 namespace {
+    class Type{{- type_info.normal_name -}}_Instance : public TypeBase {
+    public:
+        using Super = TypeBase;
+
+        Type{{- type_info.normal_name -}}_Instance(const ReflectedTypeInfo& type_info) : Super(type_info) {
+        }
+
+        virtual std::size_t type_hash() const override {
+            return get_rtti_info().hash_code();
+        }
+
+        static const RTTITypeInfo& get_rtti_info() {
+            return type_info<{{ type_info.canonical_typename }}>();
+        }
+    };
+
     struct S{{- type_info.normal_name -}}Registrator {
         S{{- type_info.normal_name -}}Registrator() {
+            ReflectedTypeInfo info {};
+            info.prefix = "{{ prefix }}";
+            info.qualified_name = "{{ type_info.qualified_name }}";
+            info.canonical_typename = "{{ type_info.canonical_typename }}";
+            TypeBase* type_impl = new Type{{- type_info.normal_name -}}_Instance(info);
+            (ReflectionRegistry::get())->add(type_impl);
         }
     };
     static S{{- type_info.normal_name -}}Registrator global_S{{- type_info.normal_name -}}Registrator{};

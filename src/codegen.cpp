@@ -72,4 +72,5 @@ std::string zeno::reflect::ForwardDeclarationGenerator::compile(CodeCompilerStat
 zeno::reflect::CodeCompilerState::CodeCompilerState()
 {
     types_register_data["types"] = std::vector<inja::json>{};
+    types_register_data["prefix"] = "";
 }

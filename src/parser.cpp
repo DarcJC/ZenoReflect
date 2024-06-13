@@ -135,6 +135,8 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
             if (!found) {
                 inja::json type_data;
                 type_data["normal_name"] = normalized_name;
+                type_data["qualified_name"] = record_qual_type.getAsString();
+                type_data["canonical_typename"] = record_qual_type.getCanonicalType().getAsString();
                 m_context->m_compiler_state.types_register_data["types"].push_back(type_data);
             }
         }

@@ -53,7 +53,7 @@ namespace reflect
     class TypeBase {
     public:
         TypeBase() = delete;
-        TypeBase(const ReflectedTypeInfo& type_info) : m_type_info(type_info) {}
+        TypeBase(const ReflectedTypeInfo& type_info);
         virtual ~TypeBase() = default;
 
         virtual std::size_t type_hash() const = 0;
