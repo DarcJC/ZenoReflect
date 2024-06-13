@@ -53,20 +53,24 @@ namespace reflect
     class TypeBase {
     public:
         TypeBase() = delete;
-        TypeBase(const ReflectedTypeInfo& type_info);
         virtual ~TypeBase() = default;
 
         virtual std::size_t type_hash() const = 0;
+
+        virtual bool operator==(const TypeBase& other) const;
+        virtual bool operator!=(const TypeBase& other) const;
     protected:
+        TypeBase(const ReflectedTypeInfo& type_info);
+
         ReflectedTypeInfo m_type_info;
     };
 
     class TypeHandle {
-        union {
+        mutable union {
             TypeBase* type_info = nullptr;
             size_t rtti_hash;
         } m_handle;
-        bool is_reflected_type;
+        mutable bool is_reflected_type;
 
     public:
         TypeHandle(TypeBase* type_info);
@@ -74,19 +78,14 @@ namespace reflect
         template <typename T>
         REFLECT_CONSTEXPR_OR_INLINE TypeHandle(TTDecay<T>* = nullptr) {
             m_handle.rtti_hash = type_info<TTDecay<T>>.hash_code();
+            is_reflected_type = false;
         }
 
-        bool operator==(const TypeHandle& other) const {
-            if (this->is_reflected_type != other.is_reflected_type) {
-                return false;
-            }
+        bool operator==(const TypeHandle& other) const;
+        bool operator!=(const TypeHandle& other) const;
 
-            if (this->is_reflected_type) {
-                return this->m_handle.type_info == other.m_handle.type_info;
-            } else {
-                return this->m_handle.rtti_hash == other.m_handle.rtti_hash;
-            }
-        }
+        TypeBase* get_reflected_type_or_null() const;
+        TypeBase* operator->() const;
     };
 
     /// Utilities for type reflection
