@@ -1,14 +1,20 @@
 #include "reflect/type.hpp"
 #include "reflect/registry.hpp"
+#include "type.hpp"
 
 using namespace zeno::reflect;
 
 TypeHandle::TypeHandle(TypeBase *type_info)
-    : m_handle(type_info)
-    , is_reflected_type(true)
+    : is_reflected_type(true)
 {
+    m_handle.type_info = type_info;
 }
 
+zeno::reflect::TypeHandle::TypeHandle(const RTTITypeInfo &rtti_info)
+    : is_reflected_type(false)
+{
+    m_handle.rtti_hash = rtti_info.hash_code();
+}
 
 bool TypeHandle::operator==(const TypeHandle& other) const {
     TypeBase* self_type = nullptr;
@@ -28,6 +34,18 @@ TypeBase* TypeHandle::operator->() const
     return get_reflected_type_or_null();
 }
 
+size_t zeno::reflect::TypeHandle::type_hash() const
+{
+    if (is_reflected_type) {
+        if (nullptr != m_handle.type_info) {
+            return m_handle.type_info->type_hash();
+        }
+    } else {
+        return m_handle.rtti_hash;
+    }
+    return 0;
+}
+
 TypeBase* TypeHandle::get_reflected_type_or_null() const
 {
     if (is_reflected_type) {
@@ -39,6 +57,12 @@ TypeBase* TypeHandle::get_reflected_type_or_null() const
         is_reflected_type = true;
     }
     return reflected_type;
+}
+
+
+REFLECT_STATIC_CONSTEXPR TypeHandle::TypeHandle(const T_NullTypeArg&) {
+    m_handle.rtti_hash = 0;
+    is_reflected_type = false;
 }
 
 TypeBase::TypeBase(const ReflectedTypeInfo &type_info)
@@ -54,4 +78,9 @@ bool TypeBase::operator==(const TypeBase &other) const
 bool zeno::reflect::TypeBase::operator!=(const TypeBase &other) const
 {
     return !(other == *this);
+}
+
+const ReflectedTypeInfo& zeno::reflect::TypeBase::get_info() const
+{
+    return m_type_info;
 }
