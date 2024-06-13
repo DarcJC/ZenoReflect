@@ -29,7 +29,7 @@ ParserErrorCode generate_reflection_model(const TranslationUnit &unit, Reflectio
     out_model.debug_name = unit.identity_name;
     std::vector<std::string> args = zeno::reflect::get_parser_command_args(GLOBAL_CONTROL_FLAGS->cpp_version, GLOBAL_CONTROL_FLAGS->include_dirs, GLOBAL_CONTROL_FLAGS->pre_include_headers, GLOBAL_CONTROL_FLAGS->verbose);
 
-    const std::string gen_template_header_path = zeno::reflect::get_file_path_in_header_output(std::format("{}.generated.hpp", zeno::reflect::normalize_filename(unit.identity_name)));
+    const std::string gen_template_header_path = zeno::reflect::get_file_path_in_header_output(std::format("reflect/{}.generated.hpp", zeno::reflect::normalize_filename(unit.identity_name)));
     zeno::reflect::truncate_file(gen_template_header_path);
     out_model.generated_headers.insert(gen_template_header_path);
 
@@ -47,7 +47,7 @@ ParserErrorCode generate_reflection_model(const TranslationUnit &unit, Reflectio
 
 ParserErrorCode post_generate_reflection_model(const ReflectionModel &model, const zeno::reflect::CodeCompilerState& state)
 {
-    const std::string generated_header_path = zeno::reflect::get_file_path_in_header_output("generated_templates.hpp");
+    const std::string generated_header_path = zeno::reflect::get_file_path_in_header_output("reflect/reflection.generated.hpp");
     std::ofstream ghp_stream(generated_header_path, std::ios::out | std::ios::trunc);
     ghp_stream << "#pragma once" << "\r\n";
     for (const std::string& s : model.generated_headers) {
@@ -63,7 +63,7 @@ ParserErrorCode post_generate_reflection_model(const ReflectionModel &model, con
 
 ParserErrorCode pre_generate_reflection_model()
 {
-    const std::string generated_header_path = zeno::reflect::get_file_path_in_header_output("generated_templates.hpp");
+    const std::string generated_header_path = zeno::reflect::get_file_path_in_header_output("reflect/reflection.generated.hpp");
     zeno::reflect::truncate_file(generated_header_path);
 
     return ParserErrorCode::Success;
@@ -121,15 +121,15 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
         // Generate rtti information
         const Type* record_type = record_decl->getTypeForDecl();
         QualType record_qual_type(record_type, 0);
-        zeno::reflect::RTTITypeGenerator rtti(record_qual_type);
-        m_context->template_header_generator.add_rtti_block(rtti);
+        m_context->template_header_generator.add_rtti_type(record_qual_type);
 
         {
             const std::string normalized_name = zeno::reflect::convert_to_valid_cpp_var_name(record_qual_type.getCanonicalType().getAsString());
             bool found = false;
             for (auto type_info : m_context->m_compiler_state.types_register_data["types"]) {
-                if (found = (type_info["normal_name"] == normalized_name)) {
+                if (type_info["normal_name"] == normalized_name) {
                     found = true;
+                    break;
                 }
             }
             if (!found) {

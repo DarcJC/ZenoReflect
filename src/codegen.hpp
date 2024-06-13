@@ -33,22 +33,6 @@ namespace zeno::reflect
         { v(s) } -> std::convertible_to<size_t>;
     };
 
-    class TemplateHeaderGenerator {
-        CodeCompilerState& m_compiler_state;
-        std::stringstream m_rtti_block{};
-
-    public:
-        TemplateHeaderGenerator(CodeCompilerState& state);
-
-        std::string compile();
-        std::string compile(CodeCompilerState& state);
-
-        template <ICodeCompiler T>
-        void add_rtti_block(T generator) {
-            m_rtti_block << generator.compile(m_compiler_state);
-        }
-    };
-
     class ForwardDeclarationGenerator {
         clang::QualType m_qual_type;
 
@@ -103,6 +87,27 @@ namespace zeno::reflect
             || keyword.find("__va_list_tag") != std::string::npos
             || keyword.find("__NSConstantString") != std::string::npos
             ;
+        }
+    };
+
+    class TemplateHeaderGenerator {
+        CodeCompilerState& m_compiler_state;
+        std::stringstream m_rtti_block{};
+
+    public:
+        TemplateHeaderGenerator(CodeCompilerState& state);
+
+        std::string compile();
+        std::string compile(CodeCompilerState& state);
+
+        template <ICodeCompiler T>
+        void add_rtti_block(T generator) {
+            m_rtti_block << generator.compile(m_compiler_state);
+        }
+
+        template <ICodeCompiler T = RTTITypeGenerator<>>
+        void add_rtti_type(clang::QualType type) {
+            m_rtti_block << RTTITypeGenerator(type).compile(m_compiler_state);
         }
     };
 }

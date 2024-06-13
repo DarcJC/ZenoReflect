@@ -74,7 +74,7 @@ namespace reflect
         REFLECT_CONSTEXPR StringViewBase(const StringViewBase& other) {
             if (other.m_data != nullptr) {
                 m_data = Util::strcopy(other.data());
-                m_length = other.length;
+                m_length = other.m_length;
             } else {
                 m_data = nullptr;
                 m_length = 0;

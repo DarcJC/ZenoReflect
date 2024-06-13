@@ -1,7 +1,7 @@
 #pragma once
 
 // #include "reflect/type"
-#include "generated_templates.hpp"
+#include "reflect/reflection.generated.hpp"
 
 namespace test {
 struct Parent {};
