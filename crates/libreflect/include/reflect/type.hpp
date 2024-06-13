@@ -5,6 +5,7 @@
 #include "reflect/container/string"
 #include "reflect/container/arraylist"
 #include "reflect/container/any"
+#include "reflect/macro.hpp"
 #include "reflect/traits/type_traits"
 #include "reflect/container/arraylist"
 
@@ -51,7 +52,7 @@ namespace reflect
         bool internal_flags[static_cast<size_t>(TypeFlags::Max)] = { false };
     };
 
-    class TypeBase {
+    class LIBREFLECT_API TypeBase {
     protected:
         TypeBase(const ReflectedTypeInfo& type_info);
 
@@ -71,7 +72,7 @@ namespace reflect
 
     struct T_NullTypeArg {};
 
-    class TypeHandle {
+    class LIBREFLECT_API TypeHandle {
         mutable union {
             TypeBase* type_info = nullptr;
             size_t rtti_hash;

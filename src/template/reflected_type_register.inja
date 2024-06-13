@@ -22,7 +22,8 @@ namespace {
         }
 
         static const RTTITypeInfo& get_rtti_info() {
-            return type_info<{{ type_info.canonical_typename }}>();
+            // Note: namespace required here because MSVC has a pre-defined type named type_info
+            return zeno::reflect::type_info<{{ type_info.canonical_typename }}>();
         }
 
         inline static ArrayList<ITypeConstructor*>& get_internal_constructors() {
