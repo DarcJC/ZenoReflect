@@ -23,6 +23,14 @@ bool TypeHandle::operator==(const TypeHandle& other) const {
     } else {
         self_type = get_reflected_type_or_null();
     }
+
+    TypeBase* other_type = other.get_reflected_type_or_null();
+
+    if (nullptr == other_type || nullptr == self_type) {
+        return nullptr == other_type && nullptr == self_type;
+    }
+    
+    return *self_type == *other_type;
 }
 
 bool TypeHandle::operator!=(const TypeHandle& other) const {

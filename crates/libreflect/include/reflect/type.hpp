@@ -6,6 +6,7 @@
 #include "reflect/container/arraylist"
 #include "reflect/container/any"
 #include "reflect/traits/type_traits"
+#include "reflect/container/arraylist"
 
 namespace zeno
 {
@@ -65,6 +66,7 @@ namespace reflect
         virtual std::size_t type_hash() const = 0;
         virtual const ReflectedTypeInfo& get_info() const;
 
+        virtual const ArrayList<ITypeConstructor*>& get_constructors() const = 0;
     };
 
     struct T_NullTypeArg {};

@@ -17,9 +17,19 @@ namespace {
             return get_rtti_info().hash_code();
         }
 
+        virtual const ArrayList<ITypeConstructor*>& get_constructors() const override {
+            return get_internal_constructors();
+        }
+
         static const RTTITypeInfo& get_rtti_info() {
             return type_info<{{ type_info.canonical_typename }}>();
         }
+
+        inline static ArrayList<ITypeConstructor*>& get_internal_constructors() {
+            static ArrayList<ITypeConstructor*> internal_constructors { {{ type_info.num_ctor }} };
+            return internal_constructors;
+        }
+
     };
 
     struct S{{- type_info.normal_name -}}Registrator {
@@ -28,7 +38,12 @@ namespace {
             info.prefix = "{{ prefix }}";
             info.qualified_name = "{{ type_info.qualified_name }}";
             info.canonical_typename = "{{ type_info.canonical_typename }}";
-            TypeBase* type_impl = new Type{{- type_info.normal_name -}}_Instance(info);
+            Type{{- type_info.normal_name -}}_Instance* type_impl = new Type{{- type_info.normal_name -}}_Instance(info);
+
+            {
+                ArrayList<ITypeConstructor*>& constructors = type_impl->get_internal_constructors();
+            }
+
             (ReflectionRegistry::get())->add(type_impl);
         }
     };

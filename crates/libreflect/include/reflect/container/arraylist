@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include <cstdint>
 #include "reflect/macro.hpp"
 #include "reflect/traits/move.hpp"
@@ -29,7 +30,10 @@ namespace reflect
             m_capacity = new_capacity;
         }
     public:
-        ArrayList() : m_size(0), m_capacity(1), m_data(new T[1]) {}
+        ArrayList(size_t init_size = 1) : m_size(0), m_capacity(init_size > 0 ? init_size : 1), m_data(new T[init_size > 0 ? init_size : 1]) {
+            memset(m_data, 0, init_size * sizeof(T));
+        }
+
         ~ArrayList() {
             delete[] m_data;
         }

@@ -137,6 +137,38 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                 type_data["normal_name"] = normalized_name;
                 type_data["qualified_name"] = record_qual_type.getAsString();
                 type_data["canonical_typename"] = record_qual_type.getCanonicalType().getAsString();
+                type_data["ctors"] = {};
+
+                // Processing methods
+                {
+                    unsigned int num_ctor = 0;
+                    for (auto it = record_decl->method_begin(); it != record_decl->method_end(); ++it) {
+                        // Register all param types used
+                        if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it)) {
+                            for (unsigned int i = 0; i < method_decl->getNumParams(); ++i) {
+                                const ParmVarDecl* param_decl = method_decl->getParamDecl(i);
+                                if (param_decl) {
+                                    QualType type = param_decl->getType();
+                                    m_context->template_header_generator.add_rtti_type(type);
+                                }
+                            }
+                        }
+
+                        // Check is constructor
+                        if (const CXXConstructorDecl* constructor_decl = dyn_cast<CXXConstructorDecl>(*it)) {
+                            ++num_ctor;
+
+                            for (unsigned int i = 0; i < constructor_decl->getNumParams(); ++i) {
+                                const ParmVarDecl* param_decl = constructor_decl->getParamDecl(i);
+                                if (param_decl) {
+                                    QualType type = param_decl->getType();
+                                }
+                            }
+                        }
+                    }
+                    type_data["num_ctor"] = num_ctor;
+                }
+
                 m_context->m_compiler_state.types_register_data["types"].push_back(type_data);
             }
         }
