@@ -35,6 +35,7 @@ std::string relative_path_to_header_output(std::string_view abs_path);
 void truncate_file(const std::string& path);
 
 std::string normalize_filename(std::string_view input);
+std::string convert_to_valid_cpp_var_name(std::string_view type_name);
 
 struct FNV1aHash {
     

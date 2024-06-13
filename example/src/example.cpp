@@ -5,7 +5,7 @@
 #include <iostream>
 
 
-void IAmPrimitve::DoSomething(int value) {
+void zeno::IAmPrimitve::DoSomething(int value) {
     std::cout << "Doing something " << value << "x ..." << std::endl;
 }
 

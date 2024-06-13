@@ -107,4 +107,6 @@ private:
     std::unordered_map<std::string, clang::QualType> type_name_mapping;
     zeno::reflect::CodeCompilerState& m_compiler_state;
     std::string m_header_path;
+
+    friend struct RecordTypeMatchCallback;
 };

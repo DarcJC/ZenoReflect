@@ -137,6 +137,47 @@ std::string normalize_filename(std::string_view input)
     return std::filesystem::path(input).lexically_normal().filename().string();
 }
 
+std::string convert_to_valid_cpp_var_name(std::string_view type_name)
+{
+    std::string varName;
+    bool lastWasColon = false;
+
+    for (std::size_t i = 0; i < type_name.size(); ++i) {
+        char ch = type_name[i];
+
+        // RecordTypes => struct, class, union
+        if (type_name.substr(i, 6) == "struct" && (i + 6 == type_name.size() || type_name[i + 6] == ' ')) {
+            varName += "struct_";
+            i += 6; // "struct"
+        } else if (type_name.substr(i, 5) == "class" && (i + 5 == type_name.size() || type_name[i + 5] == ' ')) {
+            varName += "class_";
+            i += 5; // "class"
+        } else if (type_name.substr(i, 5) == "union" && (i + 5 == type_name.size() || type_name[i + 5] == ' ')) {
+            varName += "union_";
+            i += 5; // "union"
+        } else if (std::isalnum(ch)) { // Valid chars
+            varName += ch;
+            lastWasColon = false;
+        } else if (ch == ':' || ch == ' ') {
+            if (!lastWasColon && !varName.empty() && varName.back() != '_') {
+                varName += '_';  // Replace ":" or " "
+            }
+            lastWasColon = (ch == ':');
+        }
+    }
+
+    if (!varName.empty() && varName.back() == '_') {
+        varName.pop_back();
+    }
+
+    // Ensure not started with number
+    if (!varName.empty() && std::isdigit(varName[0])) {
+        varName = "_" + varName;
+    }
+
+    return varName;
+}
+
 constexpr uint32_t FNV1aHash::hash_32_fnv1a(std::string_view str) const noexcept
 {
     uint32_t hash = FNV1aInternal<uint32_t>::val;
