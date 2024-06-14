@@ -14,7 +14,9 @@ namespace zeno
 namespace reflect 
 {
     class TypeBase;
+    class IHasParameter;
     class ITypeConstructor;
+    class IMemberFunction;
 
     enum class TypeFlags : uint8_t {
         IsClass = 0,
@@ -53,6 +55,7 @@ namespace reflect
         virtual const ReflectedTypeInfo& get_info() const;
 
         virtual const ArrayList<ITypeConstructor*>& get_constructors() const = 0;
+        virtual const ArrayList<IMemberFunction*>& get_member_functions() const = 0;
     };
 
     struct T_NullTypeArg {};
@@ -88,28 +91,43 @@ namespace reflect
         REFLECT_STATIC_CONSTEXPR TypeHandle(const T_NullTypeArg&);
     };
 
-    class ITypeConstructor {
+    class IHasParameter {
     public:
+        virtual ~IHasParameter();
+
+        virtual bool is_suitable_to_invoke(const ArrayList<Any>& params = {}) const;
+
+        virtual const ArrayList<RTTITypeInfo>& get_params() const = 0;
+        virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const = 0;
+    };
+
+    class ITypeConstructor : public IHasParameter {
+    public:
+        virtual ~ITypeConstructor();
+
         template <typename T>
-        T* new_instance_typed(const ArrayList<Any>& params = {}) {
+        T* new_instance_typed(const ArrayList<Any>& params = {}) const {
             return reinterpret_cast<T*>(new_instance(params));
         }
 
         template <typename T>
-        T create_instance_typed(const ArrayList<Any>& params = {}) {
+        T create_instance_typed(const ArrayList<Any>& params = {}) const {
             return any_cast<T>(create_instance(params));
         }
 
-        virtual void* new_instance(const ArrayList<Any>& params = {}) = 0;
+        virtual void* new_instance(const ArrayList<Any>& params = {}) const = 0;
 
-        virtual Any create_instance(const ArrayList<Any>& params = {}) = 0;
+        virtual Any create_instance(const ArrayList<Any>& params = {}) const = 0;
 
-        virtual TypeHandle get_parent_type();
+        virtual TypeHandle get_parent_type() const;
 
     protected:
         explicit ITypeConstructor(TypeHandle in_type);
 
         TypeHandle m_type;
+    };
+
+    class IMemberFunction : public IHasParameter {
     };
 
     /// Utilities for type reflection

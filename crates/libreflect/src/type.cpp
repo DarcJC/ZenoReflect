@@ -93,7 +93,9 @@ const ReflectedTypeInfo& zeno::reflect::TypeBase::get_info() const
     return m_type_info;
 }
 
-TypeHandle zeno::reflect::ITypeConstructor::get_parent_type()
+zeno::reflect::ITypeConstructor::~ITypeConstructor() = default;
+
+TypeHandle zeno::reflect::ITypeConstructor::get_parent_type() const
 {
     return m_type;
 }
@@ -101,4 +103,21 @@ TypeHandle zeno::reflect::ITypeConstructor::get_parent_type()
 zeno::reflect::ITypeConstructor::ITypeConstructor(TypeHandle in_type)
     : m_type(in_type)
 {
+}
+
+zeno::reflect::IHasParameter::~IHasParameter() = default;
+
+bool zeno::reflect::IHasParameter::is_suitable_to_invoke(const ArrayList<Any>& params) const {
+    const ArrayList<RTTITypeInfo>& signature_erased = get_params_dacayed();
+    if (params.size() < signature_erased.size()) {
+        return false;
+    }
+
+    for (int i = 0; i < signature_erased.size(); ++i) {
+        if (params[i].type() != signature_erased[i]) {
+            return false;
+        }
+    }
+
+    return true;
 }

@@ -2,9 +2,12 @@
 
 #include <cstring>
 #include <cstdint>
+#include <cstdlib>
 #include <initializer_list> // Sadly we can't impl initializer_list by ourselves
 #include "reflect/macro.hpp"
+#include "reflect/polyfill.hpp"
 #include "reflect/traits/move.hpp"
+#include "reflect/traits/reference.hpp"
 
 namespace zeno
 {
@@ -13,7 +16,7 @@ namespace reflect
     template <typename T>
     class ArrayList {
     private:
-        T* m_data;
+        void* m_data;
         size_t m_size;
         size_t m_capacity;
 
@@ -22,30 +25,32 @@ namespace reflect
             if (m_capacity != 0) {
                 new_capacity = m_capacity * 2;
             }
-            T* new_data = new T[new_capacity];
+            T* new_data = static_cast<T*>(malloc(sizeof(T) * new_capacity));
             for (size_t i = 0; i < m_size; ++i) {
-                new_data[i] = zeno::reflect::move(m_data[i]);
+                new_data[i] = zeno::reflect::move(static_cast<T*>(m_data)[i]);
             }
-            delete[] m_data;
+            free(m_data);
             m_data = new_data;
             m_capacity = new_capacity;
         }
     public:
-        ArrayList(size_t init_size = 1) : m_size(0), m_capacity(init_size > 0 ? init_size : 1), m_data(new T[init_size > 0 ? init_size : 1]) {
+        ArrayList(size_t init_size = 1) : m_size(0), m_capacity(init_size > 0 ? init_size : 1), m_data(malloc(sizeof(T) * (init_size > 0 ? init_size : 1))) {
             memset(m_data, 0, init_size * sizeof(T));
         }
-        ArrayList(std::initializer_list<T> init) : m_size(0), m_capacity(init.size()), m_data(new T[init.size()]) {
+
+        ArrayList(std::initializer_list<T> init) : m_size(0), m_capacity(init.size()), m_data(malloc(sizeof(T) * init.size())) {
             for (const T& item : init) {
                 add_item(item);
             }
         }
 
         ~ArrayList() {
-            delete[] m_data;
+            free(m_data);
         }
-        ArrayList(const ArrayList& other) : m_size(other.m_size), m_capacity(other.m_capacity), m_data(new T[other.m_capacity]) {
+
+        ArrayList(const ArrayList& other) : m_size(other.m_size), m_capacity(other.m_capacity), m_data(malloc(sizeof(T) * other.m_capacity)) {
             for (size_t i = 0; i < other.m_size; ++i) {
-                m_data[i] = other.m_data[i];
+                static_cast<T*>(m_data)[i] = static_cast<T*>(other.m_data)[i];
             }
         }
         ArrayList(ArrayList&& other) noexcept : m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity) {
@@ -62,7 +67,7 @@ namespace reflect
             if (m_size == m_capacity) {
                 resize_internal();
             }
-            m_data[m_size] = value;
+            static_cast<T*>(m_data)[m_size] = value;
             return m_size++;
         }
 
@@ -76,17 +81,17 @@ namespace reflect
         void remove_at(size_t index) {
             if (is_valid_index(index)) {
                 for (size_t i = index; i < m_size - 1; ++i) {
-                    m_data[i] = zeno::reflect::move(m_data[i + 1]);
+                    static_cast<T*>(m_data)[i] = zeno::reflect::move(static_cast<T*>(m_data)[i + 1]);
                 }
             }
         }
 
         LIBREFLECT_INLINE T& operator[](size_t index) {
-            return m_data[index];
+            return static_cast<T*>(m_data)[index];
         }
 
         LIBREFLECT_INLINE const T& operator[](size_t index) const {
-            return m_data[index];
+            return static_cast<T*>(m_data)[index];
         }
 
         LIBREFLECT_INLINE size_t size() const {
@@ -102,7 +107,7 @@ namespace reflect
             if (m_size == m_capacity) {
                 resize_internal();
             }
-            new (m_data + m_size) T(zeno::reflect::forward<Ts>(vals)...);
+            new (static_cast<T*>(m_data) + m_size) T(zeno::reflect::forward<Ts>(vals)...);
             return m_size++;
         }
     };

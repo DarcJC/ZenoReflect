@@ -15,7 +15,10 @@ namespace reflect
     public:
         // Important: This constructor is internal, don't use it
         REFLECT_CONSTEXPR RTTITypeInfo(const char* in_name, std::size_t hashcode): m_name(in_name), m_hashcode(hashcode) {}
-        RTTITypeInfo& operator=(const RTTITypeInfo&&) = delete;
+        RTTITypeInfo(const RTTITypeInfo& other);
+        RTTITypeInfo(RTTITypeInfo&& other);
+        RTTITypeInfo& operator=(const RTTITypeInfo& other);
+        RTTITypeInfo& operator=(RTTITypeInfo&& other);
 
         const char* name() const;
         size_t hash_code() const;

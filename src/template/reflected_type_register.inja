@@ -27,14 +27,23 @@ namespace {
             return get_internal_constructors();
         }
 
+        virtual const ArrayList<IMemberFunction*>& get_member_functions() const override {
+            return get_internal_member_functions();
+        }
+
         static const RTTITypeInfo& get_rtti_info() {
             // Note: namespace required here because MSVC has a pre-defined type named type_info
             return zeno::reflect::type_info<{{ type_info.canonical_typename }}>();
         }
 
         inline static ArrayList<ITypeConstructor*>& get_internal_constructors() {
-            static ArrayList<ITypeConstructor*> internal_constructors { {{ type_info.num_ctor }} + 1 };
+            static ArrayList<ITypeConstructor*> internal_constructors { {{ type_info.num_ctor }} };
             return internal_constructors;
+        }
+
+        inline static ArrayList<IMemberFunction*>& get_internal_member_functions() {
+            static ArrayList<IMemberFunction*> internal_funcs { {{ default(type_info.num_func, 0) }} };
+            return internal_funcs;
         }
 
     };
@@ -44,20 +53,26 @@ namespace {
     public:
         ConstructorWrapperFor{{- type_info.normal_name -}}_{{- loop.index -}}() : ITypeConstructor(get_type<{{ type_info.canonical_typename }}>()) {}
 
-        static bool check_params_type(const ArrayList<Any>& params) {
-            if (params.size() != {{ length(params) }}) {
-                return false;
-            }
+        virtual const ArrayList<RTTITypeInfo>& get_params() const override {
+            static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in params
-            if (params[{{ loop.index }}].type() != zeno::reflect::type_info<TTDecay<{{ param }}>>()) {
-                return false;
-            }
+                    type_info<{{ param }}>(),
 ## endfor
-            return true;
+            };
+            return STATIC_LIST;
         }
 
-        virtual void* new_instance(const ArrayList<Any>& params = {}) override {
-            if (check_params_type(params)) {
+        virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const override {
+            static ArrayList<RTTITypeInfo> STATIC_LIST {
+## for param in params
+                    type_info<TTDecay<{{ param }}>>(),
+## endfor
+            };
+            return STATIC_LIST;
+        }
+
+        virtual void* new_instance(const ArrayList<Any>& params = {}) const override {
+            if (is_suitable_to_invoke(params)) {
 ## for param in params
                 Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
                 {{ param }} p{{- loop.index }} = any_cast<{{ param }}>(any{{- loop.index -}});
@@ -72,9 +87,9 @@ namespace {
             return nullptr;
         }
 
-        virtual Any create_instance(const ArrayList<Any>& params = {}) override {
+        virtual Any create_instance(const ArrayList<Any>& params = {}) const override {
             Any val{};
-            if (check_params_type(params)) {
+            if (is_suitable_to_invoke(params)) {
                 // Just praying for NRVO is working
 ## for param in params
                 Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
