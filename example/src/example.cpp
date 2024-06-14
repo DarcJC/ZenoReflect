@@ -29,6 +29,13 @@ int main(int argc, char* argv[]) {
 
     TypeBase* type = handle.get_reflected_type_or_null();
     ITypeConstructor* ctor = type->get_constructors()[0];
+
+    std::cout << "Args to invoke ctor: ";
+    for (const auto& t : ctor->get_params()) {
+        std::cout << t.name() << "  ";
+    }
+    std::cout << std::endl;
+
     zeno::IAmPrimitve reflect_inst = ctor->create_instance_typed<zeno::IAmPrimitve>({ Any(hand_made_inst) });
     std::cout << "Reflection copied: " << reflect_inst << std::endl;
     reflect_inst.i32 = 123;

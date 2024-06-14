@@ -110,6 +110,14 @@ namespace reflect
             new (static_cast<T*>(m_data) + m_size) T(zeno::reflect::forward<Ts>(vals)...);
             return m_size++;
         }
+
+        T* begin() const {
+            return static_cast<T*>(m_data);
+        }
+
+        T* end() const {
+            return static_cast<T*>(m_data) + m_size;
+        }
     };
 }
 }
