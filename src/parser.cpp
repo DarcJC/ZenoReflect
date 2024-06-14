@@ -150,6 +150,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                                 if (param_decl) {
                                     QualType type = param_decl->getType();
                                     m_context->template_header_generator.add_rtti_type(type);
+                                    m_context->template_header_generator.add_rtti_type(type.getUnqualifiedType());
                                 }
                             }
                         }
@@ -158,12 +159,15 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                         if (const CXXConstructorDecl* constructor_decl = dyn_cast<CXXConstructorDecl>(*it)) {
                             ++num_ctor;
 
+                            std::vector<std::string> ctor_params;
                             for (unsigned int i = 0; i < constructor_decl->getNumParams(); ++i) {
                                 const ParmVarDecl* param_decl = constructor_decl->getParamDecl(i);
                                 if (param_decl) {
                                     QualType type = param_decl->getType();
+                                    ctor_params.push_back(type.getCanonicalType().getAsString());
                                 }
                             }
+                            type_data["ctors"].push_back(ctor_params);
                         }
                     }
                     type_data["num_ctor"] = num_ctor;

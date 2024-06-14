@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <cstdint>
+#include <initializer_list> // Sadly we can't impl initializer_list by ourselves
 #include "reflect/macro.hpp"
 #include "reflect/traits/move.hpp"
 
@@ -23,7 +24,7 @@ namespace reflect
             }
             T* new_data = new T[new_capacity];
             for (size_t i = 0; i < m_size; ++i) {
-                new_data[i] = move(m_data[i]);
+                new_data[i] = zeno::reflect::move(m_data[i]);
             }
             delete[] m_data;
             m_data = new_data;
@@ -32,6 +33,11 @@ namespace reflect
     public:
         ArrayList(size_t init_size = 1) : m_size(0), m_capacity(init_size > 0 ? init_size : 1), m_data(new T[init_size > 0 ? init_size : 1]) {
             memset(m_data, 0, init_size * sizeof(T));
+        }
+        ArrayList(std::initializer_list<T> init) : m_size(0), m_capacity(init.size()), m_data(new T[init.size()]) {
+            for (const T& item : init) {
+                add_item(item);
+            }
         }
 
         ~ArrayList() {
@@ -70,7 +76,7 @@ namespace reflect
         void remove_at(size_t index) {
             if (is_valid_index(index)) {
                 for (size_t i = index; i < m_size - 1; ++i) {
-                    m_data[i] = move(m_data[i + 1]);
+                    m_data[i] = zeno::reflect::move(m_data[i + 1]);
                 }
             }
         }
@@ -96,7 +102,7 @@ namespace reflect
             if (m_size == m_capacity) {
                 resize_internal();
             }
-            new (m_data + m_size) T(forward<Ts>(vals)...);
+            new (m_data + m_size) T(zeno::reflect::forward<Ts>(vals)...);
             return m_size++;
         }
     };

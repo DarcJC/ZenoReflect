@@ -13,6 +13,9 @@ namespace zeno
 {
 namespace reflect 
 {
+    class TypeBase;
+    class ITypeConstructor;
+
     enum class TypeFlags : uint8_t {
         IsClass = 0,
         IsTemplateInstance,
@@ -24,24 +27,6 @@ namespace reflect
         IsMemberFieldPointer,
         IsMemberFunctionPointer,
         Max,
-    };
-
-    class ITypeConstructor {
-    public:
-        virtual void* new_instance(const ArrayList<Any>& params = {}) = 0;
-
-        template <typename T>
-        T* new_instance_typed(const ArrayList<Any>& params = {}) {
-            return reinterpret_cast<T*>(new_instance(params));
-        }
-
-        // template <typename T>
-        // TypeInstance<T> new_instance_proxied(const std::vector<std::any>& params = {}) {
-        //     return TypeInstance<T>(new_instance_typed<T>(params));
-        // }
-
-    protected:
-        class TypeBase* m_type = nullptr;
     };
 
     struct ReflectedTypeInfo {
@@ -101,6 +86,30 @@ namespace reflect
         }
     private:
         REFLECT_STATIC_CONSTEXPR TypeHandle(const T_NullTypeArg&);
+    };
+
+    class ITypeConstructor {
+    public:
+        template <typename T>
+        T* new_instance_typed(const ArrayList<Any>& params = {}) {
+            return reinterpret_cast<T*>(new_instance(params));
+        }
+
+        template <typename T>
+        T create_instance_typed(const ArrayList<Any>& params = {}) {
+            return any_cast<T>(create_instance(params));
+        }
+
+        virtual void* new_instance(const ArrayList<Any>& params = {}) = 0;
+
+        virtual Any create_instance(const ArrayList<Any>& params = {}) = 0;
+
+        virtual TypeHandle get_parent_type();
+
+    protected:
+        explicit ITypeConstructor(TypeHandle in_type);
+
+        TypeHandle m_type;
     };
 
     /// Utilities for type reflection

@@ -21,13 +21,13 @@ namespace reflect
 
     public:
         template <typename U, typename... Us>
-        Tuple(U&& head, Us&&... tail) : Tuple<Ts...>(forward<Us>(tail)...), m_elem(forward<U>(head)) {}
+        Tuple(U&& head, Us&&... tail) : Tuple<Ts...>(zeno::reflect::forward<Us>(tail)...), m_elem(zeno::reflect::forward<U>(head)) {}
 
         Tuple() = default;
 
         Tuple(const Tuple& other) : Tuple<Ts...>(other), m_elem(other.m_elem) {}
 
-        Tuple(Tuple&& other) : Tuple<Ts...>(move(other)), m_elem(move(other.m_elem)) {}
+        Tuple(Tuple&& other) : Tuple<Ts...>(zeno::reflect::move(other)), m_elem(zeno::reflect::move(other.m_elem)) {}
 
         Tuple& operator=(const Tuple& other) {
             if (this != &other) {
@@ -71,7 +71,7 @@ namespace reflect
 
     template <typename... Ts>
     Tuple<Ts...> make_tuple(Ts&&... args) {
-        return Tuple<Ts...>(forward<Ts>(args)...);
+        return Tuple<Ts...>(zeno::reflect::forward<Ts>(args)...);
     }
 }
 }

@@ -1,10 +1,16 @@
 R"INJA(
 #include "reflect/type"
+#include "reflect/traits/type_traits"
+#include "reflect/container/any"
 #include "reflect/reflection.generated.hpp"
+## for header_path in headers
+#include "{{ header_path }}"
+## endfor
 
 using namespace zeno::reflect;
 
 ## for type_info in types
+/// ==== Begin {{ type_info.qualified_name }} Register ====
 namespace {
     class Type{{- type_info.normal_name -}}_Instance : public TypeBase {
     public:
@@ -27,11 +33,64 @@ namespace {
         }
 
         inline static ArrayList<ITypeConstructor*>& get_internal_constructors() {
-            static ArrayList<ITypeConstructor*> internal_constructors { {{ type_info.num_ctor }} };
+            static ArrayList<ITypeConstructor*> internal_constructors { {{ type_info.num_ctor }} + 1 };
             return internal_constructors;
         }
 
     };
+
+## for params in type_info.ctors
+    class ConstructorWrapperFor{{- type_info.normal_name -}}_{{- loop.index -}} : public ITypeConstructor {
+    public:
+        ConstructorWrapperFor{{- type_info.normal_name -}}_{{- loop.index -}}() : ITypeConstructor(get_type<{{ type_info.canonical_typename }}>()) {}
+
+        static bool check_params_type(const ArrayList<Any>& params) {
+            if (params.size() != {{ length(params) }}) {
+                return false;
+            }
+## for param in params
+            if (params[{{ loop.index }}].type() != zeno::reflect::type_info<TTDecay<{{ param }}>>()) {
+                return false;
+            }
+## endfor
+            return true;
+        }
+
+        virtual void* new_instance(const ArrayList<Any>& params = {}) override {
+            if (check_params_type(params)) {
+## for param in params
+                Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
+                {{ param }} p{{- loop.index }} = any_cast<{{ param }}>(any{{- loop.index -}});
+## endfor
+                return new {{ type_info.canonical_typename }}
+                (
+## for param in params
+                    p{{- loop.index -}} {% if loop.index1 != length(params) %},{% endif %}
+## endfor
+                );
+            }
+            return nullptr;
+        }
+
+        virtual Any create_instance(const ArrayList<Any>& params = {}) override {
+            Any val{};
+            if (check_params_type(params)) {
+                // Just praying for NRVO is working
+## for param in params
+                Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
+                {{ param }} p{{- loop.index }} = any_cast<{{ param }}>(any{{- loop.index -}});
+## endfor
+                val.emplace<{{ type_info.canonical_typename }}>
+                (
+## for param in params
+                    p{{- loop.index -}} {% if loop.index1 != length(params) %},{% endif %}
+## endfor
+                );
+            }
+            return val;
+        }
+    };
+## endfor
 
     struct S{{- type_info.normal_name -}}Registrator {
         S{{- type_info.normal_name -}}Registrator() {
@@ -43,6 +102,11 @@ namespace {
 
             {
                 ArrayList<ITypeConstructor*>& constructors = type_impl->get_internal_constructors();
+                {
+## for params in type_info.ctors
+                    constructors.add_item(new ConstructorWrapperFor{{- type_info.normal_name -}}_{{- loop.index -}}());
+## endfor
+                }
             }
 
             (ReflectionRegistry::get())->add(type_impl);
@@ -50,5 +114,6 @@ namespace {
     };
     static S{{- type_info.normal_name -}}Registrator global_S{{- type_info.normal_name -}}Registrator{};
 }
+/// ==== End {{ type_info.qualified_name }} Register ====
 ## endfor
 )INJA";

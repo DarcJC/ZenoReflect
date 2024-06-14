@@ -92,3 +92,13 @@ const ReflectedTypeInfo& zeno::reflect::TypeBase::get_info() const
 {
     return m_type_info;
 }
+
+TypeHandle zeno::reflect::ITypeConstructor::get_parent_type()
+{
+    return m_type;
+}
+
+zeno::reflect::ITypeConstructor::ITypeConstructor(TypeHandle in_type)
+    : m_type(in_type)
+{
+}

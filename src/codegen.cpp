@@ -73,4 +73,5 @@ zeno::reflect::CodeCompilerState::CodeCompilerState()
 {
     types_register_data["types"] = std::vector<inja::json>{};
     types_register_data["prefix"] = "";
+    types_register_data["headers"] = GLOBAL_CONTROL_FLAGS->input_sources;
 }

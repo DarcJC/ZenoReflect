@@ -86,7 +86,9 @@ namespace reflect
 
     template <typename T>
     struct TDecay {
-        using Type = TTRemoveReference<typename TRemoveCV<typename TRemoveExtent<T>::Type>::Type>;
+        using NoExtentType = typename TRemoveExtent<T>::Type;
+        using NoCVType = typename TRemoveCV<NoExtentType>::Type;
+        using Type = typename TRemoveCV<TTRemoveReference<NoCVType>>::Type;
     };
 
     template <typename T>

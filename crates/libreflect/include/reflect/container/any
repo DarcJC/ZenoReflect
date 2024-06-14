@@ -51,7 +51,7 @@ namespace reflect
 
         template <typename T>
         Any(T&& value) {
-            emplace<TTDecay<T>>(forward<T>(value));
+            emplace<TTDecay<T>>(zeno::reflect::forward<T>(value));
         }
 
         Any& operator=(Any other) {
@@ -59,11 +59,15 @@ namespace reflect
             return *this;
         }
 
+        operator bool() const {
+            return has_value();
+        }
+
         template <typename T, typename... Args>
         void emplace(Args&&... args) {
             using DecayType = TTDecay<T>;
             reset();
-            m_value_container = new ValueContainer<DecayType>(DecayType(forward<Args>(args)...));
+            m_value_container = new ValueContainer<DecayType>(DecayType(zeno::reflect::forward<Args>(args)...));
         }
 
         void swap(Any& other) noexcept {
@@ -110,10 +114,10 @@ namespace reflect
             ValueContainer(const U& value, TTEnableIf<VTIsCopyConstructible<U>, U>* = nullptr): m_value(value) {}
 
             template <typename U = T>
-            ValueContainer(U&& value): m_value(move(value)) {}
+            ValueContainer(U&& value): m_value(zeno::reflect::move(value)) {}
 
             virtual const RTTITypeInfo& type() const override {
-                return type_info<TTDecay<TTRemovePointer<TTRemoveReference<ValueType>>>>();
+                return type_info<TTDecay<TTRemovePointer<ValueType>>>();
             }
 
             virtual bool is_type(const RTTITypeInfo& other_type) const override {
@@ -158,7 +162,7 @@ namespace reflect
     Any make_any(Args&&... args) {
         using DecayType = TTDecay<T>;
 
-        return Any(DecayType(forward<Args>(args)...));
+        return Any(DecayType(zeno::reflect::forward<Args>(args)...));
     }
 
     template <typename T>
