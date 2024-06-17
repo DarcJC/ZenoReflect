@@ -92,6 +92,10 @@ namespace reflect
             return m_value_container->type();
         }
 
+        REFLECT_CONSTEXPR static Any make_null() {
+            return Any();
+        }
+
     private:
         class IContainer {
         public:
