@@ -3,6 +3,7 @@
 #include <cstring>
 #include <cstdint>
 #include <cstdlib>
+#include <new>
 #include <initializer_list> // Sadly we can't impl initializer_list by ourselves
 #include "reflect/macro.hpp"
 #include "reflect/polyfill.hpp"
@@ -67,7 +68,7 @@ namespace reflect
             if (m_size == m_capacity) {
                 resize_internal();
             }
-            static_cast<T*>(m_data)[m_size] = value;
+            new (static_cast<T*>(m_data) + m_size) T(value);
             return m_size++;
         }
 
