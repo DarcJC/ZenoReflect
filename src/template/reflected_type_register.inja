@@ -12,42 +12,6 @@ using namespace zeno::reflect;
 ## for type_info in types
 /// ==== Begin {{ type_info.qualified_name }} Register ====
 namespace {
-    class Type{{- type_info.normal_name -}}_Instance : public TypeBase {
-    public:
-        using Super = TypeBase;
-
-        Type{{- type_info.normal_name -}}_Instance(const ReflectedTypeInfo& type_info) : Super(type_info) {
-        }
-
-        virtual std::size_t type_hash() const override {
-            return get_rtti_info().hash_code();
-        }
-
-        virtual const ArrayList<ITypeConstructor*>& get_constructors() const override {
-            return get_internal_constructors();
-        }
-
-        virtual const ArrayList<IMemberFunction*>& get_member_functions() const override {
-            return get_internal_member_functions();
-        }
-
-        static const RTTITypeInfo& get_rtti_info() {
-            // Note: namespace required here because MSVC has a pre-defined type named type_info
-            return zeno::reflect::type_info<{{ type_info.canonical_typename }}>();
-        }
-
-        inline static ArrayList<ITypeConstructor*>& get_internal_constructors() {
-            static ArrayList<ITypeConstructor*> internal_constructors { {{ type_info.num_ctor }} };
-            return internal_constructors;
-        }
-
-        inline static ArrayList<IMemberFunction*>& get_internal_member_functions() {
-            static ArrayList<IMemberFunction*> internal_funcs { {{ default(type_info.num_func, 0) }} };
-            return internal_funcs;
-        }
-
-    };
-
 ## for params in type_info.ctors
     class ConstructorWrapperFor{{- type_info.normal_name -}}_{{- loop.index -}} : public ITypeConstructor {
     public:
@@ -107,6 +71,37 @@ namespace {
     };
 ## endfor
 
+    class Type{{- type_info.normal_name -}}_Instance : public TypeBase {
+    public:
+        using Super = TypeBase;
+
+        Type{{- type_info.normal_name -}}_Instance(const ReflectedTypeInfo& type_info) : Super(type_info) {
+        }
+
+        virtual std::size_t type_hash() const override {
+            return get_rtti_info().hash_code();
+        }
+
+        virtual const ArrayList<ITypeConstructor*>& get_constructors() const override {
+            static ArrayList<ITypeConstructor*> ctors {
+## for params in type_info.ctors
+                new ConstructorWrapperFor{{- type_info.normal_name -}}_{{- loop.index -}}(),
+## endfor
+            };
+            return ctors;
+        }
+
+        virtual const ArrayList<IMemberFunction*>& get_member_functions() const override {
+            static ArrayList<IMemberFunction*> funcs {0};
+            return funcs;
+        }
+
+        static const RTTITypeInfo& get_rtti_info() {
+            // Note: namespace required here because MSVC has a pre-defined type named type_info
+            return zeno::reflect::type_info<{{ type_info.canonical_typename }}>();
+        }
+    };
+
     struct S{{- type_info.normal_name -}}Registrator {
         S{{- type_info.normal_name -}}Registrator() {
             ReflectedTypeInfo info {};
@@ -114,15 +109,6 @@ namespace {
             info.qualified_name = "{{ type_info.qualified_name }}";
             info.canonical_typename = "{{ type_info.canonical_typename }}";
             Type{{- type_info.normal_name -}}_Instance* type_impl = new Type{{- type_info.normal_name -}}_Instance(info);
-
-            {
-                ArrayList<ITypeConstructor*>& constructors = type_impl->get_internal_constructors();
-                {
-## for params in type_info.ctors
-                    constructors.add_item(new ConstructorWrapperFor{{- type_info.normal_name -}}_{{- loop.index -}}());
-## endfor
-                }
-            }
 
             (ReflectionRegistry::get())->add(type_impl);
         }
