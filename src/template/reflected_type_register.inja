@@ -56,7 +56,7 @@ namespace {
         virtual const ArrayList<RTTITypeInfo>& get_params() const override {
             static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in params
-                    type_info<{{ param }}>(),
+                    zeno::reflect::type_info<{{ param }}>(),
 ## endfor
             };
             return STATIC_LIST;
@@ -65,7 +65,7 @@ namespace {
         virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const override {
             static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in params
-                    type_info<TTDecay<{{ param }}>>(),
+                    zeno::reflect::type_info<TTDecay<{{ param }}>>(),
 ## endfor
             };
             return STATIC_LIST;
