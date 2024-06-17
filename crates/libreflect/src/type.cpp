@@ -118,13 +118,8 @@ ITypeConstructor* zeno::reflect::TypeBase::get_constructor_or_null(const ArrayLi
 
 zeno::reflect::ITypeConstructor::~ITypeConstructor() = default;
 
-TypeHandle zeno::reflect::ITypeConstructor::get_parent_type() const
-{
-    return m_type;
-}
-
 zeno::reflect::ITypeConstructor::ITypeConstructor(TypeHandle in_type)
-    : m_type(in_type)
+    : IBelongToParentType(m_type)
 {
 }
 
@@ -162,4 +157,19 @@ bool zeno::reflect::IHasParameter::is_suitable_to_invoke(const ArrayList<Any> &p
     }
 
     return true;
+}
+
+TypeHandle zeno::reflect::IBelongToParentType::get_parent_type() const
+{
+    return m_type;
+}
+
+zeno::reflect::IBelongToParentType::IBelongToParentType(TypeHandle in_type)
+    : m_type(zeno::reflect::move(in_type))
+{
+}
+
+zeno::reflect::IMemberFunction::IMemberFunction(TypeHandle in_type)
+    : IBelongToParentType(m_type)
+{
 }
