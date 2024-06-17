@@ -180,20 +180,20 @@ std::string convert_to_valid_cpp_var_name(std::string_view type_name)
 
 constexpr uint32_t FNV1aHash::hash_32_fnv1a(std::string_view str) const noexcept
 {
-    uint32_t hash = FNV1aInternal<uint32_t>::val;
+    uint32_t hash = internal::FNV1aInternal<uint32_t>::val;
     for (const unsigned char c : str) {
         hash = hash ^ c;
-        hash *= FNV1aInternal<uint32_t>::prime;
+        hash *= internal::FNV1aInternal<uint32_t>::prime;
     }
     return hash;
 }
 
 constexpr uint64_t FNV1aHash::hash_64_fnv1a(std::string_view str) const noexcept
 {
-    uint64_t hash = FNV1aInternal<uint64_t>::val;
+    uint64_t hash = internal::FNV1aInternal<uint64_t>::val;
     for (const unsigned char c : str) {
         hash = hash ^ c;
-        hash *= FNV1aInternal<uint64_t>::prime;
+        hash *= internal::FNV1aInternal<uint64_t>::prime;
     }
     return hash;
 }
