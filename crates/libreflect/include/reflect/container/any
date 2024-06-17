@@ -33,19 +33,19 @@ namespace reflect
 
     class Any {
     public:
-        ~Any() {
+        REFLECT_STATIC_CONSTEXPR ~Any() {
             reset();
         }
 
-        Any() = default;
+        REFLECT_STATIC_CONSTEXPR Any() = default;
 
-        Any(const Any& other) {
+        REFLECT_STATIC_CONSTEXPR Any(const Any& other) {
             if (other.has_value()) {
                 m_value_container = other.m_value_container->clone();
             }
         }
 
-        Any(Any&& other) noexcept : m_value_container(other.m_value_container) {
+        REFLECT_STATIC_CONSTEXPR Any(Any&& other) noexcept : m_value_container(other.m_value_container) {
             other.m_value_container = nullptr;
         }
 
@@ -80,7 +80,7 @@ namespace reflect
             return nullptr != m_value_container;
         }
 
-        void reset() {
+        REFLECT_STATIC_CONSTEXPR void reset() {
             delete m_value_container;
             m_value_container = nullptr;
         }
@@ -92,7 +92,7 @@ namespace reflect
             return m_value_container->type();
         }
 
-        REFLECT_CONSTEXPR static Any make_null() {
+        REFLECT_STATIC_CONSTEXPR static Any make_null() {
             return Any();
         }
 

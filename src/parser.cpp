@@ -138,6 +138,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                 type_data["qualified_name"] = record_qual_type.getAsString();
                 type_data["canonical_typename"] = record_qual_type.getCanonicalType().getAsString();
                 type_data["ctors"] = {};
+                type_data["funcs"] = {};
 
                 // Processing methods
                 {
@@ -153,9 +154,11 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                                     m_context->template_header_generator.add_rtti_type(type.getUnqualifiedType());
                                 }
                             }
+                            QualType type = method_decl->getReturnType().getCanonicalType();
+                            m_context->template_header_generator.add_rtti_type(type);
+                            m_context->template_header_generator.add_rtti_type(type.getUnqualifiedType());
                         }
 
-                        // Check is constructor
                         if (const CXXConstructorDecl* constructor_decl = dyn_cast<CXXConstructorDecl>(*it)) {
                             ++num_ctor;
 
@@ -168,9 +171,36 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                                 }
                             }
                             type_data["ctors"].push_back(ctor_params);
+                        } else if (const CXXDestructorDecl* destructor_decl = dyn_cast<CXXDestructorDecl>(*it)) {
+                        } else if (const CXXConversionDecl* conversion_decl = dyn_cast<CXXConversionDecl>(*it)) {
+                        } else if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it)) {
+                            inja::json func_data;
+                            func_data["name"] = method_decl->getNameAsString();
+                            func_data["ret"] = method_decl->getReturnType().getCanonicalType().getAsString();
+                            func_data["params"] = {};
+                            for (unsigned int i = 0; i < method_decl->getNumParams(); ++i) {
+                                const ParmVarDecl* param_decl = method_decl->getParamDecl(i);
+                                if (param_decl) {
+                                    QualType type = param_decl->getType();
+                                    func_data["params"].push_back(type.getCanonicalType().getAsString());
+                                }
+                            }
+                            func_data["static"] = method_decl->isStatic();
+                            func_data["const"] = method_decl->isConst();
+                            type_data["funcs"].push_back(func_data);
                         }
                     }
                     type_data["num_ctor"] = num_ctor;
+                }
+
+                {
+                    for (auto it = record_decl->field_begin(); it != record_decl->field_end(); ++it) {
+                        if (const FieldDecl* field_decl = dyn_cast<FieldDecl>(*it)) {
+                            QualType type = field_decl->getType();
+                            m_context->template_header_generator.add_rtti_type(type);
+                            m_context->template_header_generator.add_rtti_type(type.getUnqualifiedType());
+                        }
+                    }
                 }
 
                 m_context->m_compiler_state.types_register_data["types"].push_back(type_data);

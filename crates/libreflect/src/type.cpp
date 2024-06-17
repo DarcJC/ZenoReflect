@@ -119,7 +119,7 @@ ITypeConstructor* zeno::reflect::TypeBase::get_constructor_or_null(const ArrayLi
 zeno::reflect::ITypeConstructor::~ITypeConstructor() = default;
 
 zeno::reflect::ITypeConstructor::ITypeConstructor(TypeHandle in_type)
-    : IBelongToParentType(m_type)
+    : IBelongToParentType(in_type)
 {
 }
 
@@ -164,12 +164,20 @@ TypeHandle zeno::reflect::IBelongToParentType::get_parent_type() const
     return m_type;
 }
 
+zeno::reflect::IBelongToParentType::~IBelongToParentType()
+{
+}
+
 zeno::reflect::IBelongToParentType::IBelongToParentType(TypeHandle in_type)
     : m_type(zeno::reflect::move(in_type))
 {
 }
 
+zeno::reflect::IMemberFunction::~IMemberFunction()
+{
+}
+
 zeno::reflect::IMemberFunction::IMemberFunction(TypeHandle in_type)
-    : IBelongToParentType(m_type)
+    : IBelongToParentType(in_type)
 {
 }

@@ -12,6 +12,8 @@ using namespace zeno::reflect;
 ## for type_info in types
 /// ==== Begin {{ type_info.qualified_name }} Register ====
 namespace {
+
+    /// === Begin Constructor Wrappers ===
 ## for params in type_info.ctors
     class ConstructorWrapperFor{{- type_info.normal_name -}}_{{- loop.index -}} : public ITypeConstructor {
     public:
@@ -35,7 +37,7 @@ namespace {
             return STATIC_LIST;
         }
 
-        virtual void* new_instance(const ArrayList<Any>& params = {}) const override {
+        virtual void* new_instance(const ArrayList<Any>& params) const override {
             if (is_suitable_to_invoke(params)) {
 ## for param in params
                 Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
@@ -51,7 +53,7 @@ namespace {
             return nullptr;
         }
 
-        virtual Any create_instance(const ArrayList<Any>& params = {}) const override {
+        virtual Any create_instance(const ArrayList<Any>& params) const override {
             Any val{};
             if (is_suitable_to_invoke(params)) {
                 // Just praying for NRVO is working
@@ -70,7 +72,58 @@ namespace {
         }
     };
 ## endfor
+    /// === End Constructor Wrappers ===
 
+    /// === Begin Member Function Wrappers ===
+## for func in type_info.funcs
+    class Func_{{- type_info.normal_name -}}_{{- loop.index -}}_{{- func.name -}} : public IMemberFunction {
+    public:
+        Func_{{- type_info.normal_name -}}_{{- loop.index -}}_{{- func.name -}}() : IMemberFunction(get_type<{{ type_info.canonical_typename }}>()) {}
+
+        virtual const ArrayList<RTTITypeInfo>& get_params() const override {
+            static ArrayList<RTTITypeInfo> STATIC_LIST {
+## for param in func.params
+                    zeno::reflect::type_info<{{ param }}>(),
+## endfor
+            };
+            return STATIC_LIST;
+        }
+
+        virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const override {
+            static ArrayList<RTTITypeInfo> STATIC_LIST {
+## for param in func.params
+                    zeno::reflect::type_info<TTDecay<{{ param }}>>(),
+## endfor
+            };
+            return STATIC_LIST;
+        }
+
+        virtual TypeHandle get_return_type() const override {
+            return get_type<{{ func.ret }}>();
+        }
+
+        virtual Any invoke(const Any& clazz_object, const ArrayList<Any>& params) const override {
+{% if func.static %}
+            return invoke_static(params);
+{% else %}
+            if (clazz_object.type() == zeno::reflect::type_info<{{- type_info.canonical_typename -}}>()) {
+
+            }
+{% endif %}
+        }
+
+        virtual Any invoke_static(const ArrayList<Any>& params) const override {
+{% if func.static %}
+{% else %}
+            return Any::make_null();
+{% endif %}
+        }
+
+    };
+## endfor
+    /// === End Member Function Wrappers ===
+
+    /// === Begin Record Type Wrapper ===
     class Type{{- type_info.normal_name -}}_Instance : public TypeBase {
     public:
         using Super = TypeBase;
@@ -101,7 +154,9 @@ namespace {
             return zeno::reflect::type_info<{{ type_info.canonical_typename }}>();
         }
     };
+    /// === End Record Type Wrapper ===
 
+    /// === Begin Static Registor ===
     struct S{{- type_info.normal_name -}}Registrator {
         S{{- type_info.normal_name -}}Registrator() {
             ReflectedTypeInfo info {};
@@ -114,6 +169,7 @@ namespace {
         }
     };
     static S{{- type_info.normal_name -}}Registrator global_S{{- type_info.normal_name -}}Registrator{};
+    /// === End Static Registor ===
 }
 /// ==== End {{ type_info.qualified_name }} Register ====
 ## endfor

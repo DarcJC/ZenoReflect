@@ -107,6 +107,7 @@ namespace reflect
     class LIBREFLECT_API IBelongToParentType {
     public:
         virtual TypeHandle get_parent_type() const;
+        virtual ~IBelongToParentType();
     protected:
         explicit IBelongToParentType(TypeHandle in_type);
 
@@ -135,6 +136,12 @@ namespace reflect
     };
 
     class LIBREFLECT_API IMemberFunction : public IBelongToParentType, public IHasParameter {
+    public:
+        virtual ~IMemberFunction();
+        virtual TypeHandle get_return_type() const = 0;
+        virtual Any invoke(const Any& clazz_object, const ArrayList<Any>& params = {}) const = 0;
+        virtual Any invoke_static(const ArrayList<Any>& params = {}) const = 0;
+
     protected:
         explicit IMemberFunction(TypeHandle in_type);
     };
