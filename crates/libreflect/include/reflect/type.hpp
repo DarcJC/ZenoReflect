@@ -92,7 +92,7 @@ namespace reflect
         REFLECT_STATIC_CONSTEXPR TypeHandle(const T_NullTypeArg&);
     };
 
-    class IHasParameter {
+    class LIBREFLECT_API IHasParameter {
     public:
         virtual ~IHasParameter();
 
@@ -103,7 +103,7 @@ namespace reflect
         virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const = 0;
     };
 
-    class ITypeConstructor : public IHasParameter {
+    class LIBREFLECT_API ITypeConstructor : public IHasParameter {
     public:
         virtual ~ITypeConstructor();
 
@@ -129,7 +129,7 @@ namespace reflect
         TypeHandle m_type;
     };
 
-    class IMemberFunction : public IHasParameter {
+    class LIBREFLECT_API IMemberFunction : public IHasParameter {
     };
 
     /// Utilities for type reflection
