@@ -93,6 +93,18 @@ const ReflectedTypeInfo& zeno::reflect::TypeBase::get_info() const
     return m_type_info;
 }
 
+ArrayList<ITypeConstructor *> zeno::reflect::TypeBase::get_constructor(const ArrayList<RTTITypeInfo>& types) const
+{
+    const ArrayList<ITypeConstructor*>& available_ctors = get_constructors();
+    ArrayList<ITypeConstructor*> suitable_ctors{available_ctors.size()};
+    for (auto* ctor : available_ctors) {
+        if (ctor->is_suitable_with_params(types)) {
+            suitable_ctors.add_item(ctor);
+        }
+    }
+    return suitable_ctors;
+}
+
 zeno::reflect::ITypeConstructor::~ITypeConstructor() = default;
 
 TypeHandle zeno::reflect::ITypeConstructor::get_parent_type() const
@@ -107,7 +119,24 @@ zeno::reflect::ITypeConstructor::ITypeConstructor(TypeHandle in_type)
 
 zeno::reflect::IHasParameter::~IHasParameter() = default;
 
-bool zeno::reflect::IHasParameter::is_suitable_to_invoke(const ArrayList<Any>& params) const {
+bool zeno::reflect::IHasParameter::is_suitable_with_params(const ArrayList<RTTITypeInfo>& types) const
+{
+    const ArrayList<RTTITypeInfo>& signature_erased = get_params_dacayed();
+    if (types.size() < signature_erased.size()) {
+        return false;
+    }
+
+    for (int i = 0; i < signature_erased.size(); ++i) {
+        if (types[i] != signature_erased[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool zeno::reflect::IHasParameter::is_suitable_to_invoke(const ArrayList<Any> &params) const
+{
     const ArrayList<RTTITypeInfo>& signature_erased = get_params_dacayed();
     if (params.size() < signature_erased.size()) {
         return false;

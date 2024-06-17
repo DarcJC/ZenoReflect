@@ -56,6 +56,7 @@ namespace reflect
 
         virtual const ArrayList<ITypeConstructor*>& get_constructors() const = 0;
         virtual const ArrayList<IMemberFunction*>& get_member_functions() const = 0;
+        virtual ArrayList<ITypeConstructor*> get_constructor(const ArrayList<RTTITypeInfo>&) const;
     };
 
     struct T_NullTypeArg {};
@@ -95,6 +96,7 @@ namespace reflect
     public:
         virtual ~IHasParameter();
 
+        virtual bool is_suitable_with_params(const ArrayList<RTTITypeInfo>& types = {}) const;
         virtual bool is_suitable_to_invoke(const ArrayList<Any>& params = {}) const;
 
         virtual const ArrayList<RTTITypeInfo>& get_params() const = 0;
