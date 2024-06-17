@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Hand Made: " << hand_made_inst << std::endl;
 
     TypeBase* type = handle.get_reflected_type_or_null();
-    ITypeConstructor* ctor = type->get_constructor({ zeno::reflect::type_info<zeno::IAmPrimitve>() })[0];
+    ITypeConstructor* ctor = type->get_constructor_or_null({ zeno::reflect::type_info<const zeno::IAmPrimitve&>() });
 
     std::cout << "Args to invoke ctor: ";
     for (const auto& t : ctor->get_params()) {

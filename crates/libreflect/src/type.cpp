@@ -105,6 +105,17 @@ ArrayList<ITypeConstructor *> zeno::reflect::TypeBase::get_constructor(const Arr
     return suitable_ctors;
 }
 
+ITypeConstructor* zeno::reflect::TypeBase::get_constructor_or_null(const ArrayList<RTTITypeInfo>& params) const
+{
+    const ArrayList<ITypeConstructor*>& available_ctors = get_constructors();
+    for (ITypeConstructor* ctor : available_ctors) {
+        if (ctor->is_suitable_with_params(params)) {
+            return ctor;
+        }
+    }
+    return nullptr;
+}
+
 zeno::reflect::ITypeConstructor::~ITypeConstructor() = default;
 
 TypeHandle zeno::reflect::ITypeConstructor::get_parent_type() const

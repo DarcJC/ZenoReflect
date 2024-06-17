@@ -57,6 +57,7 @@ namespace reflect
         virtual const ArrayList<ITypeConstructor*>& get_constructors() const = 0;
         virtual const ArrayList<IMemberFunction*>& get_member_functions() const = 0;
         virtual ArrayList<ITypeConstructor*> get_constructor(const ArrayList<RTTITypeInfo>&) const;
+        virtual ITypeConstructor* get_constructor_or_null(const ArrayList<RTTITypeInfo>& params) const;
     };
 
     struct T_NullTypeArg {};
