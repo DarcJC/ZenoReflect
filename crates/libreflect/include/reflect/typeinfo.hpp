@@ -48,14 +48,16 @@ namespace reflect
 #ifdef ZENO_REFLECT_PROCESSING
         return Default;
 #else
-        if REFLECT_FORCE_CONSTEPXR (VTIsSame<void, T>) {
-            static RTTITypeInfo Void = { "void", 3563412735833858527ULL };
-            return Void;
-        } else {
-            static_assert(false, "\r\n==== Reflection Error ====\r\nThe type_info of current type not implemented. Have you marked it out ?\r\nTry '#include \"reflect/reflection.generated.hpp\"' in the traslation unit where you used zeno::reflect::type_info. \r\n==== Reflection Error End ====");
-        }
+        static_assert(false, "\r\n==== Reflection Error ====\r\nThe type_info of current type not implemented. Have you marked it out ?\r\nTry '#include \"reflect/reflection.generated.hpp\"' in the traslation unit where you used zeno::reflect::type_info. \r\n==== Reflection Error End ====");
         return Default;
 #endif
+    }
+
+    // We need to instantiate type_info<void> here for Any
+    template <>
+    REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<void>() {
+        static RTTITypeInfo Void = { "void", 3563412735833858527ULL };
+        return Void;
     }
 }
 }

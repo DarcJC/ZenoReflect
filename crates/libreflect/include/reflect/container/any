@@ -193,7 +193,7 @@ namespace any
     Any make_any(Args&&... args) {
         using DecayType = TTDecay<T>;
 
-        return Any(DecayType(zeno::reflect::forward<Args>(args)...));
+        return Any(zeno::reflect::move(DecayType(zeno::reflect::forward<Args>(args)...)));
     }
 
     template <typename T>
