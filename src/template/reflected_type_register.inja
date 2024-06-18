@@ -165,6 +165,10 @@ namespace {
 {% endif %}
         }
 
+        virtual StringView get_name() override {
+            return StringView("{{ func.name }}");
+        }
+
     };
 ## endfor
     /// === End Member Function Wrappers ===
@@ -191,7 +195,11 @@ namespace {
         }
 
         virtual const ArrayList<IMemberFunction*>& get_member_functions() const override {
-            static ArrayList<IMemberFunction*> funcs {0};
+            static ArrayList<IMemberFunction*> funcs {
+## for func in type_info.funcs
+                new Func_{{- type_info.normal_name -}}_{{- loop.index -}}_{{- func.name -}}(),
+## endfor
+            };
             return funcs;
         }
 

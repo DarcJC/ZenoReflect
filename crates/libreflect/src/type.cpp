@@ -180,3 +180,7 @@ zeno::reflect::IMemberFunction::IMemberFunction(TypeHandle in_type)
     : IBelongToParentType(in_type)
 {
 }
+
+zeno::reflect::IHasName::~IHasName()
+{
+}

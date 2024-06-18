@@ -104,6 +104,13 @@ namespace reflect
         virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const = 0;
     };
 
+    class LIBREFLECT_API IHasName {
+    public:
+        virtual ~IHasName();
+
+        virtual StringView get_name() = 0;
+    };
+
     class LIBREFLECT_API IBelongToParentType {
     public:
         virtual TypeHandle get_parent_type() const;
@@ -135,7 +142,7 @@ namespace reflect
         explicit ITypeConstructor(TypeHandle in_type);
     };
 
-    class LIBREFLECT_API IMemberFunction : public IBelongToParentType, public IHasParameter {
+    class LIBREFLECT_API IMemberFunction : public IBelongToParentType, public IHasParameter, public IHasName {
     public:
         virtual ~IMemberFunction();
         virtual TypeHandle get_return_type() const = 0;
