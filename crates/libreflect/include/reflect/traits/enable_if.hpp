@@ -121,6 +121,11 @@ namespace reflect
     LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsMemberPointer = TIsMemberPointer<T>::value;
     // ==== Is Member Pointer ====
 
+    template <typename>
+    struct TInPlaceType {
+        explicit TInPlaceType() = default;
+    };
+
 } // namespace reflect 
 } // namespace zeno
 

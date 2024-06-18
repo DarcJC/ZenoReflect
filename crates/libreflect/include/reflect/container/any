@@ -123,6 +123,11 @@ namespace any
             emplace<TTDecay<T>>(zeno::reflect::forward<T>(value));
         }
 
+        template <typename T, typename... Args>
+        Any(TInPlaceType<T>, Args&&... args) {
+            emplace<TTDecay<T>>(zeno::reflect::forward<Args>(args)...);
+        }
+
         Any& operator=(Any other) {
             swap(other);
             return *this;
@@ -193,7 +198,11 @@ namespace any
     Any make_any(Args&&... args) {
         using DecayType = TTDecay<T>;
 
-        return Any(zeno::reflect::move(DecayType(zeno::reflect::forward<Args>(args)...)));
+        // Old impl depends on compiler RVO
+        // return Any(zeno::reflect::move(DecayType(zeno::reflect::forward<Args>(args)...)));
+        
+        // Forward parameters directly into Any constructors
+        return Any(TInPlaceType<DecayType>(), zeno::reflect::forward<Args>(args)...);
     }
 
     template <typename T>
