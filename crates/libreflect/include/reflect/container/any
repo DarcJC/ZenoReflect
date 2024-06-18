@@ -197,6 +197,11 @@ namespace any
         // ==== Friend Functions ====
     };
 
+    /**
+     * @brief Create any in-place of type T with args.
+     * @tparam T Type to been created.
+     * @tparam Args Arguments to be forwarded to constructor.
+     */
     template <typename T, typename... Args>
     Any make_any(Args&&... args) {
         using DecayType = TTDecay<T>;
@@ -208,6 +213,13 @@ namespace any
         return Any(TInPlaceType<DecayType>(), zeno::reflect::forward<Args>(args)...);
     }
 
+    /**
+     * @brief Cast any to type T. 
+     * @tparam T Type to be casted.
+     * @param operand Any to be casted.
+     * 
+     * @note If T is a value type, it will be copied from operand to returned value.
+     */
     template <typename T>
     T any_cast(Any& operand) {
         using NonRef = TTDecay<T>;
@@ -223,6 +235,13 @@ namespace any
         return static_cast<any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value;
     }
 
+    /**
+     * @brief Cast any to type T. 
+     * @tparam T Type to be casted.
+     * @param operand Any to be casted.
+     * 
+     * @note If T is a value type, it will be copied from operand to returned value.
+     */
     template <typename T>
     T any_cast(const Any& operand) {
         using NonRef = TTDecay<T>;
