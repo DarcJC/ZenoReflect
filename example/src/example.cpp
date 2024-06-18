@@ -73,5 +73,13 @@ int main(int argc, char* argv[]) {
     Any type_erased_inst = ctor->create_instance({ Any(hand_made_inst) });
     std::cout << "基于反射信息输出对象: \n" << type_erased_inst << std::endl;
 
+    // 输出所有的反射类型
+    {
+        auto& registry = zeno::reflect::ReflectionRegistry::get();
+        for (const auto& type : registry->all()) {
+            std::cout << "反射类型: " << type->get_info().canonical_typename.c_str() << std::endl;
+        }
+    }
+
     return 0;
 }

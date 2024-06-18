@@ -1,4 +1,6 @@
 #include "data.h"
+#include "reflect/core.hpp"
+#include "reflect/reflection.generated.hpp"
 
 namespace zeno {
 

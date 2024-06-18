@@ -137,9 +137,9 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                 type_data["normal_name"] = normalized_name;
                 type_data["qualified_name"] = record_qual_type.getAsString();
                 type_data["canonical_typename"] = record_qual_type.getCanonicalType().getAsString();
-                type_data["ctors"] = {};
-                type_data["funcs"] = {};
-                type_data["fields"] = {};
+                type_data["ctors"] = inja::json::array();
+                type_data["funcs"] = inja::json::array();
+                type_data["fields"] = inja::json::array();
 
                 // Processing methods
                 {
