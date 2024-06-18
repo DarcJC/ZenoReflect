@@ -16,6 +16,27 @@ namespace zeno {
         os << "i32 = " << p.i32;
         return os;
     }
+
+namespace reflect {
+
+    std::ostream& operator<<(std::ostream& os, const Any& any) {
+        if (any.has_value()) {
+            TypeHandle type_visitor = any.type();
+            os << "===\t" << type_visitor->get_info().canonical_typename.c_str() << "\t===\n";
+            const auto& fields =  type_visitor->get_member_fields();
+            for (const auto& field_visitor : fields) {
+                os << "\t" << field_visitor->get_name().c_str() << "\t=\t";
+                if (field_visitor->get_field_type() == get_type<int>()) {
+                    os << *field_visitor->get_field_ptr_typed<int>(any) << "\n";
+                }
+            }
+            os << "===========================================";
+        } else {
+            os << "<nullany>";
+        }
+        return os;
+    }
+}
 }
 
 int main(int argc, char* argv[]) {
@@ -40,6 +61,9 @@ int main(int argc, char* argv[]) {
     std::cout << "Reflection copied: " << reflect_inst << std::endl;
     reflect_inst.i32 = 123;
     std::cout << "Modified copied: " << reflect_inst << std::endl;
+
+    Any type_erased_inst = ctor->create_instance({ Any(hand_made_inst) });
+    std::cout << "Print any: \n" << type_erased_inst << std::endl;
 
     return 0;
 }

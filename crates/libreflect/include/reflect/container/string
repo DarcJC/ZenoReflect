@@ -171,6 +171,14 @@ namespace reflect
             emplace(s);
             return *this;
         }
+
+        bool operator==(const StringViewBase& other) const {
+            return Util::strcmp(m_data, other.m_data);
+        }
+
+        bool operator!=(const StringViewBase& other) const {
+            return !(*this == other);
+        }
     };
 
     using StringView = StringViewBase<char>;
