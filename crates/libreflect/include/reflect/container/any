@@ -16,6 +16,75 @@ namespace reflect
 
     class Any;
 
+namespace any
+{
+    class IContainer {
+    public:
+        virtual ~IContainer() {}
+        virtual const RTTITypeInfo& type() const = 0;
+        virtual bool is_type(const RTTITypeInfo& other_type) const = 0;
+        virtual IContainer* clone() const = 0;
+    };
+
+
+    template <typename T>
+    class ValueContainer : public IContainer {
+    public:
+        using ValueType = T;
+
+        ValueType m_value;
+
+        template <typename U = T>
+        ValueContainer(const U& value, TTEnableIf<VTIsCopyConstructible<U>, U>* = nullptr): m_value(value) {}
+
+        template <typename U = T>
+        ValueContainer(U&& value): m_value(zeno::reflect::move(value)) {}
+
+        virtual const RTTITypeInfo& type() const override {
+            return type_info<TTDecay<TTRemovePointer<ValueType>>>();
+        }
+
+        virtual bool is_type(const RTTITypeInfo& other_type) const override {
+#if REFLECT_LIBRARY_ANY_FASTPATH
+            return other_type.equal_fast(other_type);
+#else
+            return other_type == this->type();
+#endif
+        }
+
+        virtual IContainer* clone() const override {
+            if REFLECT_CONSTEXPR (VTIsCopyConstructible<T>) {
+                return new ValueContainer<ValueType>(m_value);
+            } else {
+                throw AnyCloneError();
+            }
+        }
+    };
+
+    template <>
+    class ValueContainer<void> : public IContainer {
+    public:
+        using ValueType = void;
+
+        virtual const RTTITypeInfo& type() const override {
+            return type_info<ValueType>();
+        }
+
+        virtual bool is_type(const RTTITypeInfo& other_type) const override {
+#if REFLECT_LIBRARY_ANY_FASTPATH
+            return other_type.equal_fast(other_type);
+#else
+            return other_type == this->type();
+#endif
+        }
+
+        virtual IContainer* clone() const override {
+            return new ValueContainer<void>();
+        }
+    };
+
+};
+
     template <typename T, typename... Args>
     Any make_any(Args&&... args);
 
@@ -67,11 +136,11 @@ namespace reflect
         void emplace(Args&&... args) {
             using DecayType = TTDecay<T>;
             reset();
-            m_value_container = new ValueContainer<DecayType>(DecayType(zeno::reflect::forward<Args>(args)...));
+            m_value_container = new any::ValueContainer<DecayType>(DecayType(zeno::reflect::forward<Args>(args)...));
         }
 
         void swap(Any& other) noexcept {
-            IContainer* other_container = other.m_value_container;
+            any::IContainer* other_container = other.m_value_container;
             other.m_value_container = m_value_container;
             m_value_container = other_container;
         }
@@ -97,74 +166,9 @@ namespace reflect
         }
 
     private:
-        class IContainer {
-        public:
-            virtual ~IContainer() {}
-            virtual const RTTITypeInfo& type() const = 0;
-            virtual bool is_type(const RTTITypeInfo& other_type) const = 0;
-            virtual IContainer* clone() const = 0;
-        };
+        Any(any::IContainer* container) : m_value_container(container) {};
 
-        Any(IContainer* container) : m_value_container(container) {};
-
-        template <typename T>
-        class ValueContainer : public IContainer {
-        public:
-            using ValueType = T;
-
-            ValueType m_value;
-
-            template <typename U = T>
-            ValueContainer(const U& value, TTEnableIf<VTIsCopyConstructible<U>, U>* = nullptr): m_value(value) {}
-
-            template <typename U = T>
-            ValueContainer(U&& value): m_value(zeno::reflect::move(value)) {}
-
-            virtual const RTTITypeInfo& type() const override {
-                return type_info<TTDecay<TTRemovePointer<ValueType>>>();
-            }
-
-            virtual bool is_type(const RTTITypeInfo& other_type) const override {
-#if REFLECT_LIBRARY_ANY_FASTPATH
-                return other_type.equal_fast(other_type);
-#else
-                return other_type == this->type();
-#endif
-            }
-
-            virtual IContainer* clone() const override {
-                if REFLECT_CONSTEXPR (VTIsCopyConstructible<T>) {
-                    return new ValueContainer<ValueType>(m_value);
-                } else {
-                    throw AnyCloneError();
-                }
-            }
-        };
-
-        template <>
-        class ValueContainer<void> : public IContainer {
-        public:
-            using ValueType = void;
-
-            virtual const RTTITypeInfo& type() const override {
-                return type_info<ValueType>();
-            }
-
-            virtual bool is_type(const RTTITypeInfo& other_type) const override {
-#if REFLECT_LIBRARY_ANY_FASTPATH
-                return other_type.equal_fast(other_type);
-#else
-                return other_type == this->type();
-#endif
-            }
-
-
-            virtual IContainer* clone() const override {
-                return new ValueContainer<void>();
-            }
-        };
-
-        IContainer* m_value_container = nullptr;
+        any::IContainer* m_value_container = nullptr;
 
         // ==== Friend Functions ====
         template <typename T, typename... Args>
@@ -204,7 +208,7 @@ namespace reflect
             throw AnyCastTypeError();
         }
 
-        return static_cast<Any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value;
+        return static_cast<any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value;
     }
 
     template <typename T>
@@ -219,14 +223,14 @@ namespace reflect
             throw AnyCastTypeError();
         }
 
-        return static_cast<const Any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value;
+        return static_cast<const any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value;
     }
 
     template<typename T>
     T* any_cast(Any* operand) noexcept {
         using NonRef = TTDecay<T>;
         if (operand && operand->has_value() && operand->m_value_container->is_type(type_info<NonRef>())) {
-            return &static_cast<Any::ValueContainer<NonRef>*>(operand->m_value_container)->m_value;
+            return &static_cast<any::ValueContainer<NonRef>*>(operand->m_value_container)->m_value;
         }
         return nullptr;
     }
@@ -235,7 +239,7 @@ namespace reflect
     const T* any_cast(const Any* operand) noexcept {
         using NonRef = TTDecay<T>;
         if (operand && operand->has_value() && operand->m_value_container->is_type(type_info<NonRef>())) {
-            return &static_cast<const Any::ValueContainer<NonRef>*>(operand->m_value_container)->m_value;
+            return &static_cast<const any::ValueContainer<NonRef>*>(operand->m_value_container)->m_value;
         }
         return nullptr;
     }
