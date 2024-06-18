@@ -27,7 +27,7 @@ ReflectTypeMap* zeno::reflect::ReflectionRegistry::operator->()
 
 #define RTM_TO_TYPED_MAPS(var) static_cast < std::map < KeyType, ValueType> *>(var)
 
-                                                                     zeno::reflect::ReflectTypeMap::ReflectTypeMap()
+zeno::reflect::ReflectTypeMap::ReflectTypeMap()
 {
     m_opaque_data = new std::map<KeyType, ValueType>();
 }
@@ -59,5 +59,27 @@ auto zeno::reflect::ReflectTypeMap::get(KeyType hash) -> ValueType
     if (auto it = ptr->find(hash); it != ptr->end()) {
         return it->second;
     }
+    return nullptr;
+}
+
+auto zeno::reflect::ReflectTypeMap::all() const -> ArrayList<ValueType>
+{
+    ArrayList<ValueType> res(size());
+    auto* ptr = RTM_TO_TYPED_MAPS(m_opaque_data);
+    for (auto& [key, val] : *ptr) {
+        res.add_item(val);
+    }
+    return res;
+}
+
+auto zeno::reflect::ReflectTypeMap::find_by_canonical_name(const StringView& in_view) -> ValueType 
+{
+    auto* ptr = RTM_TO_TYPED_MAPS(m_opaque_data);
+    for (auto& [key, val] : *ptr) {
+        if (val->get_info().canonical_typename == in_view) {
+            return val;
+        }
+    }
+
     return nullptr;
 }
