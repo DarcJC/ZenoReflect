@@ -187,6 +187,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             }
                             func_data["static"] = method_decl->isStatic();
                             func_data["const"] = method_decl->isConst();
+                            func_data["noexcept"] = method_decl->getExceptionSpecType() == clang::EST_BasicNoexcept || method_decl->getExceptionSpecType() == clang::EST_NoexceptTrue;
                             type_data["funcs"].push_back(func_data);
                         }
                     }
@@ -199,6 +200,11 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             QualType type = field_decl->getType();
                             m_context->template_header_generator.add_rtti_type(type);
                             m_context->template_header_generator.add_rtti_type(type.getUnqualifiedType());
+
+                            inja::json field_data;
+                            field_data["name"] = field_decl->getNameAsString();
+                            field_data["type"] = type.getCanonicalType().getAsString();
+                            field_data["normal_type"] = zeno::reflect::convert_to_valid_cpp_var_name(type.getCanonicalType().getAsString());
                         }
                     }
                 }

@@ -28,7 +28,7 @@ namespace zeno
         signed int i32;
 
         ZNODE(Name="我日你妈") 
-        void DoSomething(int value);
+        void DoSomething(int value) const;
     };
 }
 

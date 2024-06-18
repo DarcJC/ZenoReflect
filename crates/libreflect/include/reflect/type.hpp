@@ -31,6 +31,15 @@ namespace reflect
         Max,
     };
 
+    enum class Qualifier : uint8_t {
+        None = 0,
+        Const = 1 << 0,
+        Static = 1 << 1,
+        Volatile = 1 << 2,
+        NoExcept = 1 << 3,
+        Mutable = 1 << 4,
+    };
+
     struct ReflectedTypeInfo {
         // A prefix name. Used to avoid name conflicts between difference modules
         StringView prefix;
@@ -121,6 +130,17 @@ namespace reflect
         TypeHandle m_type;
     };
 
+    class LIBREFLECT_API IHasQualifier {
+    public:
+        virtual ~IHasQualifier();
+
+        virtual bool is_static() const;
+        virtual bool is_const() const;
+        virtual bool is_volatile() const;
+        virtual bool is_no_except() const;
+        virtual bool is_mutable() const;
+    };
+
     class LIBREFLECT_API ITypeConstructor : public IBelongToParentType, public IHasParameter {
     public:
         virtual ~ITypeConstructor();
@@ -142,7 +162,7 @@ namespace reflect
         explicit ITypeConstructor(TypeHandle in_type);
     };
 
-    class LIBREFLECT_API IMemberFunction : public IBelongToParentType, public IHasParameter, public IHasName {
+    class LIBREFLECT_API IMemberFunction : public IBelongToParentType, public IHasParameter, public IHasName, public IHasQualifier {
     public:
         virtual ~IMemberFunction();
         virtual TypeHandle get_return_type() const = 0;
@@ -151,6 +171,11 @@ namespace reflect
 
     protected:
         explicit IMemberFunction(TypeHandle in_type);
+    };
+
+    class LIBREFLECT_API IMemberField : public IBelongToParentType, public IHasName {
+    public:
+        virtual ~IMemberField();
     };
 
     /// Utilities for type reflection

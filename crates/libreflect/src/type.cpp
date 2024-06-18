@@ -184,3 +184,36 @@ zeno::reflect::IMemberFunction::IMemberFunction(TypeHandle in_type)
 zeno::reflect::IHasName::~IHasName()
 {
 }
+
+zeno::reflect::IMemberField::~IMemberField()
+{
+}
+
+zeno::reflect::IHasQualifier::~IHasQualifier()
+{
+}
+
+bool zeno::reflect::IHasQualifier::is_static() const
+{
+    return false;
+}
+
+bool zeno::reflect::IHasQualifier::is_const() const
+{
+    return false;
+}
+
+bool zeno::reflect::IHasQualifier::is_volatile() const
+{
+    return false;
+}
+
+bool zeno::reflect::IHasQualifier::is_no_except() const
+{
+    return false;
+}
+
+bool zeno::reflect::IHasQualifier::is_mutable() const
+{
+    return false;
+}

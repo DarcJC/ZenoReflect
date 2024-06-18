@@ -7,7 +7,7 @@
 
 using namespace zeno::reflect;
 
-void zeno::IAmPrimitve::DoSomething(int value) {
+void zeno::IAmPrimitve::DoSomething(int value) const {
     std::cout << "Doing something " << value << "x ..." << std::endl;
 }
 

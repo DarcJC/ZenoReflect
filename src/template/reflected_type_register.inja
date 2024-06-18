@@ -169,6 +169,17 @@ namespace {
             return StringView("{{ func.name }}");
         }
 
+        virtual bool is_static() const override {
+            return {{ func.static }};
+        }
+
+        virtual bool is_const() const override {
+            return {{ func.const }};
+        }
+
+        virtual bool is_no_except() const override {
+            return {{ func.noexcept }};
+        }
     };
 ## endfor
     /// === End Member Function Wrappers ===
