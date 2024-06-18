@@ -107,6 +107,9 @@ namespace zeno::reflect
 
         template <ICodeCompiler T = RTTITypeGenerator<>>
         void add_rtti_type(clang::QualType type) {
+            if (type.getAsString() == "void") {
+                return;
+            }
             m_rtti_block << RTTITypeGenerator(type).compile(m_compiler_state);
         }
     };

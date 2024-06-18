@@ -224,6 +224,7 @@ ReflectionASTConsumer::ReflectionASTConsumer(zeno::reflect::CodeCompilerState &s
 void ReflectionASTConsumer::HandleTranslationUnit(ASTContext &context)
 {
     scoped_context = &context;
+    // template_header_generator.add_rtti_type(context.VoidTy);
 
     const std::string& gen_template_header_path = m_header_path;
 

@@ -145,13 +145,12 @@ bool zeno::reflect::IHasParameter::is_suitable_with_params(const ArrayList<RTTIT
 bool zeno::reflect::IHasParameter::is_suitable_to_invoke(const ArrayList<Any> &params) const
 {
     const ArrayList<RTTITypeInfo>& signature_erased = get_params_dacayed();
-    const ArrayList<RTTITypeInfo>& signature = get_params();
     if (params.size() < signature_erased.size()) {
         return false;
     }
 
     for (int i = 0; i < signature_erased.size(); ++i) {
-        if (params[i].type() != signature_erased[i] && params[i].type() != signature[i]) {
+        if (params[i].type() != signature_erased[i]) {
             return false;
         }
     }

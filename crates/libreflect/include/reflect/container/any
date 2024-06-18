@@ -141,6 +141,29 @@ namespace reflect
             }
         };
 
+        template <>
+        class ValueContainer<void> : public IContainer {
+        public:
+            using ValueType = void;
+
+            virtual const RTTITypeInfo& type() const override {
+                return type_info<ValueType>();
+            }
+
+            virtual bool is_type(const RTTITypeInfo& other_type) const override {
+#if REFLECT_LIBRARY_ANY_FASTPATH
+                return other_type.equal_fast(other_type);
+#else
+                return other_type == this->type();
+#endif
+            }
+
+
+            virtual IContainer* clone() const override {
+                return new ValueContainer<void>();
+            }
+        };
+
         IContainer* m_value_container = nullptr;
 
         // ==== Friend Functions ====
