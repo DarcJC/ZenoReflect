@@ -40,6 +40,9 @@ namespace any
         template <typename U = T>
         ValueContainer(U&& value): m_value(zeno::reflect::move(value)) {}
 
+        template <typename U, typename... Args>
+        ValueContainer(TInPlaceType<U>, Args&&... args) : m_value(zeno::reflect::forward<Args>(args)...) {}
+
         virtual const RTTITypeInfo& type() const override {
             return type_info<TTDecay<TTRemovePointer<ValueType>>>();
         }
@@ -141,7 +144,7 @@ namespace any
         void emplace(Args&&... args) {
             using DecayType = TTDecay<T>;
             reset();
-            m_value_container = new any::ValueContainer<DecayType>(DecayType(zeno::reflect::forward<Args>(args)...));
+            m_value_container = new any::ValueContainer<DecayType>(TInPlaceType<DecayType>(), zeno::reflect::forward<Args>(args)...);
         }
 
         void swap(Any& other) noexcept {
