@@ -184,6 +184,33 @@ namespace {
 ## endfor
     /// === End Member Function Wrappers ===
 
+    /// === Begin Member Field Wrappers ===
+## for field in type_info.fields
+    class Field_{{- type_info.normal_name -}}_{{- loop.index -}}_{{- field.name -}} : public IMemberField {
+    public:
+        Field_{{- type_info.normal_name -}}_{{- loop.index -}}_{{- field.name -}}() : IMemberField(get_type<{{- type_info.canonical_typename -}}>()) {}
+
+        virtual void* get_field_ptr(const Any& clazz_object) const override {
+            if (clazz_object.type() == zeno::reflect::type_info<{{- type_info.canonical_typename -}}>()) {
+                Any& clazz_object_ = const_cast<Any&>(clazz_object);
+                auto& clazz = any_cast<{{- type_info.qualified_name -}}&>(clazz_object_);
+                return &clazz.{{ field.name }};
+            }
+            return nullptr;
+        }
+
+        virtual TypeHandle get_field_type() const override {
+            return get_type<{{ field.type }}>();
+        }
+
+        virtual StringView get_name() override {
+            return StringView("{{ field.name }}");
+        }
+
+    };
+## endfor
+    /// === End Member Field Wrappers ===
+
     /// === Begin Record Type Wrapper ===
     class Type{{- type_info.normal_name -}}_Instance : public TypeBase {
     public:
@@ -212,6 +239,15 @@ namespace {
 ## endfor
             };
             return funcs;
+        }
+
+        virtual const ArrayList<IMemberField*>& get_member_fields() const override {
+            static ArrayList<IMemberField*> fields {
+## for field in type_info.fields
+                new Field_{{- type_info.normal_name -}}_{{- loop.index -}}_{{- field.name -}}(),
+## endfor
+            };
+            return fields;
         }
 
         static const RTTITypeInfo& get_rtti_info() {

@@ -139,6 +139,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                 type_data["canonical_typename"] = record_qual_type.getCanonicalType().getAsString();
                 type_data["ctors"] = {};
                 type_data["funcs"] = {};
+                type_data["fields"] = {};
 
                 // Processing methods
                 {
@@ -205,6 +206,8 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             field_data["name"] = field_decl->getNameAsString();
                             field_data["type"] = type.getCanonicalType().getAsString();
                             field_data["normal_type"] = zeno::reflect::convert_to_valid_cpp_var_name(type.getCanonicalType().getAsString());
+
+                            type_data["fields"].push_back(field_data);
                         }
                     }
                 }

@@ -189,6 +189,11 @@ zeno::reflect::IMemberField::~IMemberField()
 {
 }
 
+zeno::reflect::IMemberField::IMemberField(TypeHandle in_type)
+    : IBelongToParentType(in_type)
+{
+}
+
 zeno::reflect::IHasQualifier::~IHasQualifier()
 {
 }
@@ -216,4 +221,8 @@ bool zeno::reflect::IHasQualifier::is_no_except() const
 bool zeno::reflect::IHasQualifier::is_mutable() const
 {
     return false;
+}
+
+zeno::reflect::IHasMetadata::~IHasMetadata()
+{
 }
