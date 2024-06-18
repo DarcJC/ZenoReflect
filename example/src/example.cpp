@@ -20,12 +20,19 @@ namespace zeno {
 namespace reflect {
 
     std::ostream& operator<<(std::ostream& os, const Any& any) {
-        if (any.has_value()) {
+        // 检查any容器是否为空 也可以用any.has_value()
+        if (any) {
+            // 获取类型句柄 这玩意大小只有 aligned(sizeof(size_t) + sizeof(bool), sizeof(size_t)) 可以随意拷贝
             TypeHandle type_visitor = any.type();
+            // 打印信息
             os << "===\t" << type_visitor->get_info().canonical_typename.c_str() << "\t===\n";
+            // 获取类型所有字段的访问器
             const auto& fields =  type_visitor->get_member_fields();
+            // 遍历类型字段
             for (const auto& field_visitor : fields) {
+                // 打印字段名称
                 os << "\t" << field_visitor->get_name().c_str() << "\t=\t";
+                // 各种类型的输出适配器 这里只实现了int的
                 if (field_visitor->get_field_type() == get_type<int>()) {
                     os << *field_visitor->get_field_ptr_typed<int>(any) << "\n";
                 }
@@ -41,29 +48,30 @@ namespace reflect {
 
 int main(int argc, char* argv[]) {
 
+    // 获取类型名称
     TypeHandle handle = get_type<zeno::IAmPrimitve>();
-    std::cout << "Type name: " << handle->get_info().canonical_typename.c_str() << std::endl;
+    std::cout << "类型名称: " << handle->get_info().canonical_typename.c_str() << std::endl;
 
     zeno::IAmPrimitve hand_made_inst{};
     hand_made_inst.i32 = 456;
-    std::cout << "Hand Made: " << hand_made_inst << std::endl;
+    std::cout << "直接构造: " << hand_made_inst << std::endl;
 
     TypeBase* type = handle.get_reflected_type_or_null();
     ITypeConstructor* ctor = type->get_constructor_or_null({ zeno::reflect::type_info<const zeno::IAmPrimitve&>() });
 
-    std::cout << "Args to invoke ctor: ";
+    std::cout << "这是调用构造函数所需的参数: ";
     for (const auto& t : ctor->get_params()) {
         std::cout << t.name() << "  ";
     }
     std::cout << std::endl;
 
     zeno::IAmPrimitve reflect_inst = ctor->create_instance_typed<zeno::IAmPrimitve>({ Any(hand_made_inst) });
-    std::cout << "Reflection copied: " << reflect_inst << std::endl;
+    std::cout << "使用反射调用拷贝构造函数创建的新实例: " << reflect_inst << std::endl;
     reflect_inst.i32 = 123;
-    std::cout << "Modified copied: " << reflect_inst << std::endl;
+    std::cout << "可以像正常对象一样访问: " << reflect_inst << std::endl;
 
     Any type_erased_inst = ctor->create_instance({ Any(hand_made_inst) });
-    std::cout << "Print any: \n" << type_erased_inst << std::endl;
+    std::cout << "基于反射信息输出对象: \n" << type_erased_inst << std::endl;
 
     return 0;
 }
