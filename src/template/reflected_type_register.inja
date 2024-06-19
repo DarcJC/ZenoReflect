@@ -37,6 +37,17 @@ namespace {
             return STATIC_LIST;
         }
 
+        virtual Any get_param_default_value(size_t index) override {
+## for param in ctor.params
+{% if param.has_default_arg %}
+            if (index == {{ loop.index }}) {
+                return { {{ param.default_arg }} };
+            }
+{% endif %}
+## endfor
+            return Any::make_null();
+        }
+
         virtual void* new_instance(const ArrayList<Any>& params) const override {
             if (is_suitable_to_invoke(params)) {
 ## for param in ctor.params
@@ -100,6 +111,17 @@ namespace {
 
         virtual TypeHandle get_return_type() const override {
             return get_type<{{ func.ret }}>();
+        }
+
+        virtual Any get_param_default_value(size_t index) override {
+## for param in func.params
+{% if param.has_default_arg %}
+            if (index == {{ loop.index }}) {
+                return { {{ param.default_arg }} };
+            }
+{% endif %}
+## endfor
+            return Any::make_null();
         }
 
         virtual Any invoke(const Any& clazz_object, const ArrayList<Any>& params) const override {

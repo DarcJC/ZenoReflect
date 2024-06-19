@@ -127,6 +127,8 @@ namespace reflect
 
         virtual const ArrayList<RTTITypeInfo>& get_params() const = 0;
         virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const = 0;
+
+        virtual Any get_param_default_value(size_t index) = 0;
     };
 
     class LIBREFLECT_API IHasName {
