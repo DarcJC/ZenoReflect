@@ -63,13 +63,19 @@ namespace reflect
     // We need to instantiate type_info<void> here for Any
     template <>
     REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<void>() {
-        static RTTITypeInfo Void = { "void", 3563412735833858527ULL, 0 };
+        static RTTITypeInfo Void = { "void", 1ULL, 0 };
+        return Void;
+    }
+
+    template <>
+    REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<void*>() {
+        static RTTITypeInfo Void = { "void*", 2ULL, 0 };
         return Void;
     }
 
     template <>
     REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<decltype(nullptr)>() {
-        static RTTITypeInfo NullPtr = { "nullptr", 1ULL, 0 };
+        static RTTITypeInfo NullPtr = { "nullptr", 3ULL, 0 };
         return NullPtr;
     }
 }

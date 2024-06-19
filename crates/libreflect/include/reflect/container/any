@@ -3,6 +3,7 @@
 #include "reflect/polyfill.hpp"
 #include "reflect/typeinfo.hpp"
 #include "reflect/traits/type_traits"
+#include <type_traits>
 
 namespace zeno
 {
@@ -80,6 +81,60 @@ namespace any
         }
     };
 
+    template <typename T>
+    class ValueContainer<T*> : public IContainer {
+    public:
+        using ValueType = T*;
+        ValueType m_value;
+
+        ValueContainer(ValueType value = nullptr) : m_value(value) {}
+
+        virtual const RTTITypeInfo& type() const override {
+            return type_info<ValueType>();
+        }
+
+        virtual bool is_type(const RTTITypeInfo& other_type) const override {
+#if REFLECT_LIBRARY_ANY_FASTPATH
+            return other_type.equal_fast(this->type());
+#else
+            return other_type == this->type();
+#endif
+        }
+
+        virtual IContainer* clone() const override {
+            if REFLECT_CONSTEXPR (VTIsCopyConstructible<T*>) {
+                return new ValueContainer<ValueType>(m_value);
+            } else {
+                ZENO_CHECK(VTIsCopyConstructible<T*>);
+            }
+        }
+    };
+
+    template <>
+    class ValueContainer<void*> : public IContainer {
+    public:
+        using ValueType = void*;
+        ValueType m_value;
+
+        ValueContainer(ValueType value = nullptr) : m_value(value) {}
+
+        virtual const RTTITypeInfo& type() const override {
+            return type_info<ValueType>();
+        }
+
+        virtual bool is_type(const RTTITypeInfo& other_type) const override {
+#if REFLECT_LIBRARY_ANY_FASTPATH
+            return other_type.equal_fast(this->type());
+#else
+            return other_type == this->type();
+#endif
+        }
+
+        virtual IContainer* clone() const override {
+            return new ValueContainer<void*>(m_value);
+        }
+    };
+
 };
 
     template <typename T, typename... Args>
@@ -125,6 +180,11 @@ namespace any
             emplace<TTDecay<T>>(zeno::reflect::forward<Args>(args)...);
         }
 
+        template <typename T, typename... Args>
+        Any(TInPlaceType<T*>, Args&&... args) {
+            emplace<TTDecay<T>*>(zeno::reflect::forward<Args>(args)...);
+        }
+
         Any& operator=(const Any& other) {
             Any(other).swap(*this);
             return *this;
@@ -147,9 +207,16 @@ namespace any
 
         template <typename T, typename... Args>
         void emplace(Args&&... args) {
-            using DecayType = TTDecay<T>;
-            reset();
-            m_value_container = new any::ValueContainer<DecayType>(TInPlaceType<DecayType>(), zeno::reflect::forward<Args>(args)...);
+            if REFLECT_FORCE_CONSTEPXR (VTIsPointer<T>) {
+                // TODO: Fix TTDecay
+                using DecayType = std::decay_t<T>;
+                reset();
+                m_value_container = new any::ValueContainer<DecayType>(zeno::reflect::forward<Args>(args)...);
+            } else {
+                using DecayType = TTDecay<T>;
+                reset();
+                m_value_container = new any::ValueContainer<DecayType>(TInPlaceType<DecayType>(), zeno::reflect::forward<Args>(args)...);
+            }
         }
 
         void swap(Any& other) noexcept {
@@ -207,13 +274,11 @@ namespace any
      */
     template <typename T, typename... Args>
     Any make_any(Args&&... args) {
-        using DecayType = TTDecay<T>;
-
         // Old impl depends on compiler RVO
         // return Any(zeno::reflect::move(DecayType(zeno::reflect::forward<Args>(args)...)));
         
         // Forward parameters directly into Any constructors
-        return Any(TInPlaceType<DecayType>(), zeno::reflect::forward<Args>(args)...);
+        return Any(TInPlaceType<T>(), zeno::reflect::forward<Args>(args)...);
     }
 
     /**

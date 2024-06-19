@@ -41,7 +41,7 @@ namespace {
 ## for param in ctor.params
 {% if param.has_default_arg %}
             if (index == {{ loop.index }}) {
-                return { {{ param.default_arg }} };
+                return { TInPlaceType<{{ param.type }}>{}, {{ param.default_arg }} };
             }
 {% endif %}
 ## endfor
@@ -117,7 +117,7 @@ namespace {
 ## for param in func.params
 {% if param.has_default_arg %}
             if (index == {{ loop.index }}) {
-                return { {{ param.default_arg }} };
+                return { TInPlaceType<{{ param.type }}>{}, {{ param.default_arg }} };
             }
 {% endif %}
 ## endfor
