@@ -131,8 +131,13 @@ namespace any
             emplace<TTDecay<T>>(zeno::reflect::forward<Args>(args)...);
         }
 
-        Any& operator=(Any other) {
-            swap(other);
+        Any& operator=(const Any& other) {
+            Any(other).swap(*this);
+            return *this;
+        }
+
+        Any& operator=(Any&& other) {
+            Any(zeno::reflect::move(other)).swap(*this);
             return *this;
         }
 
