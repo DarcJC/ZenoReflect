@@ -69,6 +69,7 @@ namespace reflect
         virtual const ArrayList<IMemberField*>& get_member_fields() const = 0;
         virtual ArrayList<ITypeConstructor*> get_constructor(const ArrayList<RTTITypeInfo>&) const;
         virtual ITypeConstructor* get_constructor_or_null(const ArrayList<RTTITypeInfo>& params) const;
+        virtual ITypeConstructor& get_constructor_checked(const ArrayList<RTTITypeInfo>& params) const;
     };
 
     struct T_NullTypeArg {};

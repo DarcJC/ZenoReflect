@@ -1,5 +1,6 @@
 #include "reflect/type.hpp"
 #include "reflect/registry.hpp"
+#include "reflect/utils/assert"
 #include "type.hpp"
 
 using namespace zeno::reflect;
@@ -114,6 +115,13 @@ ITypeConstructor* zeno::reflect::TypeBase::get_constructor_or_null(const ArrayLi
         }
     }
     return nullptr;
+}
+
+ITypeConstructor &zeno::reflect::TypeBase::get_constructor_checked(const ArrayList<RTTITypeInfo> &params) const
+{
+    ITypeConstructor* ctor = get_constructor_or_null(params);
+    ZENO_CHECK(nullptr != ctor);
+    return *ctor;
 }
 
 zeno::reflect::ITypeConstructor::~ITypeConstructor() = default;

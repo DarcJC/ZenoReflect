@@ -9,6 +9,7 @@
 #include "reflect/polyfill.hpp"
 #include "reflect/traits/move.hpp"
 #include "reflect/traits/reference.hpp"
+#include "reflect/utils/assert"
 
 namespace zeno
 {
@@ -88,10 +89,12 @@ namespace reflect
         }
 
         LIBREFLECT_INLINE T& operator[](size_t index) {
+            ZENO_CHECK(is_valid_index(index));
             return static_cast<T*>(m_data)[index];
         }
 
         LIBREFLECT_INLINE const T& operator[](size_t index) const {
+            ZENO_CHECK(is_valid_index(index));
             return static_cast<T*>(m_data)[index];
         }
 

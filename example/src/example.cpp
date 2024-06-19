@@ -57,20 +57,20 @@ int main(int argc, char* argv[]) {
     std::cout << "直接构造: " << hand_made_inst << std::endl;
 
     TypeBase* type = handle.get_reflected_type_or_null();
-    ITypeConstructor* ctor = type->get_constructor_or_null({ zeno::reflect::type_info<const zeno::IAmPrimitve&>() });
+    ITypeConstructor& ctor = type->get_constructor_checked({ zeno::reflect::type_info<const zeno::IAmPrimitve&>() });
 
     std::cout << "这是调用构造函数所需的参数: ";
-    for (const auto& t : ctor->get_params()) {
+    for (const auto& t : ctor.get_params()) {
         std::cout << t.name() << "  ";
     }
     std::cout << std::endl;
 
-    zeno::IAmPrimitve reflect_inst = ctor->create_instance_typed<zeno::IAmPrimitve>({ Any(hand_made_inst) });
+    zeno::IAmPrimitve reflect_inst = ctor.create_instance_typed<zeno::IAmPrimitve>({ Any(hand_made_inst) });
     std::cout << "使用反射调用拷贝构造函数创建的新实例: " << reflect_inst << std::endl;
     reflect_inst.i32 = 123;
     std::cout << "可以像正常对象一样访问: " << reflect_inst << std::endl;
 
-    Any type_erased_inst = ctor->create_instance({ Any(reflect_inst) });
+    Any type_erased_inst = ctor.create_instance({ Any(reflect_inst) });
     std::cout << "基于反射信息输出对象: \n" << type_erased_inst << std::endl;
 
     // 或者也可以通过直接赋值给Any 也支持移动语义
