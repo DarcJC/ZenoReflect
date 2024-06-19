@@ -195,8 +195,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             for (unsigned int i = 0; i < method_decl->getNumParams(); ++i) {
                                 const ParmVarDecl* param_decl = method_decl->getParamDecl(i);
                                 inja::json param_data = zeno::reflect::parse_param_data(param_decl);
-                                QualType type = param_decl->getType();
-                                func_data["params"].push_back(type.getCanonicalType().getAsString());
+                                func_data["params"].push_back(param_data);
                             }
                             func_data["static"] = method_decl->isStatic();
                             func_data["const"] = method_decl->isConst();

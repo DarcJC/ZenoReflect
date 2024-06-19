@@ -83,7 +83,7 @@ namespace {
         virtual const ArrayList<RTTITypeInfo>& get_params() const override {
             static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in func.params
-                    zeno::reflect::type_info<{{ param }}>(),
+                    zeno::reflect::type_info<{{ param.type }}>(),
 ## endfor
             };
             return STATIC_LIST;
@@ -92,7 +92,7 @@ namespace {
         virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const override {
             static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in func.params
-                    zeno::reflect::type_info<TTDecay<{{ param }}>>(),
+                    zeno::reflect::type_info<TTDecay<{{ param.type }}>>(),
 ## endfor
             };
             return STATIC_LIST;
@@ -112,7 +112,7 @@ namespace {
                     auto& clazz = any_cast<{{- type_info.qualified_name -}}&>(clazz_object_);
 ## for param in func.params
                     Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
-                    {{ param }} p{{- loop.index }} = any_cast<{{ param }}>(any{{- loop.index -}});
+                    {{ param.type }} p{{- loop.index }} = any_cast<{{ param.type }}>(any{{- loop.index -}});
 ## endfor
 {% if func.ret == "void" %}
                     clazz.{{- func.name -}}
