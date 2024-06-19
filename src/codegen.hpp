@@ -77,6 +77,7 @@ namespace zeno::reflect
             data["cppType"] = cppType;
             data["name"] = name;
             data["hash"] = hash_value;
+            data["isPointer"] = m_qual_type->isPointerType();
             
             return inja::render(text::RTTI, data);
         }

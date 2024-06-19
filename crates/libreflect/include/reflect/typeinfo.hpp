@@ -11,10 +11,16 @@ namespace reflect
 {
     class RTTITypeInfo;
 
+    enum TypeFlag {
+        TF_None = 0,
+        TF_IsPointer = 1 << 0,
+    };
+
     class LIBREFLECT_API RTTITypeInfo {
     public:
         // Important: This constructor is internal, don't use it
-        REFLECT_CONSTEXPR RTTITypeInfo(const char* in_name, std::size_t hashcode): m_name(in_name), m_hashcode(hashcode) {}
+        REFLECT_CONSTEXPR RTTITypeInfo(const char* in_name, std::size_t hashcode, size_t flags) : m_name(in_name), m_hashcode(hashcode), m_flags(flags) {}
+
         RTTITypeInfo(const RTTITypeInfo& other);
         RTTITypeInfo(RTTITypeInfo&& other);
         RTTITypeInfo& operator=(const RTTITypeInfo& other);
@@ -39,12 +45,13 @@ namespace reflect
 
         const char* m_name;
         size_t m_hashcode;
+        size_t m_flags;
     };
 
     // SFINAE
     template <typename T>
     static REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info() {
-        static REFLECT_STATIC_CONSTEXPR RTTITypeInfo Default = {"<default_type>", 0}; 
+        static REFLECT_STATIC_CONSTEXPR RTTITypeInfo Default = {"<default_type>", 0, 0 }; 
 #ifdef ZENO_REFLECT_PROCESSING
         return Default;
 #else
@@ -56,8 +63,14 @@ namespace reflect
     // We need to instantiate type_info<void> here for Any
     template <>
     REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<void>() {
-        static RTTITypeInfo Void = { "void", 3563412735833858527ULL };
+        static RTTITypeInfo Void = { "void", 3563412735833858527ULL, 0 };
         return Void;
+    }
+
+    template <>
+    REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<decltype(nullptr)>() {
+        static RTTITypeInfo NullPtr = { "nullptr", 1ULL, 0 };
+        return NullPtr;
     }
 }
 }

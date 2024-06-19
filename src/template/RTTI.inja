@@ -8,7 +8,11 @@ namespace reflect
 {
     template <>
     REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<{{cppType}}>() {
-        static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {"{{ name }}", {{ hash }}ULL};
+        static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {
+            "{{ name }}",
+            {{ hash }}ULL,
+            static_cast<size_t>({%- if isPointer -%}TF_IsPointer | {%- endif -%} TF_None )
+        };
         return s;
     }
 }

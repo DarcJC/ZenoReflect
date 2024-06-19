@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
     std::cout << "直接构造: " << hand_made_inst << std::endl;
 
     TypeBase* type = handle.get_reflected_type_or_null();
-    ITypeConstructor& ctor = type->get_constructor_checked({ zeno::reflect::type_info<int>() });
+    ITypeConstructor& ctor = type->get_constructor_checked({ zeno::reflect::type_info<int>(), zeno::reflect::type_info<int*>() });
 
     std::cout << "这是调用构造函数所需的参数: ";
     for (const auto& t : ctor.get_params()) {
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
     }
     std::cout << std::endl;
 
-    zeno::IAmPrimitve reflect_inst = ctor.create_instance_typed<zeno::IAmPrimitve>({ Any(345) });
+    zeno::IAmPrimitve reflect_inst = ctor.create_instance_typed<zeno::IAmPrimitve>({ Any(345), ctor.get_param_default_value(1) });
     std::cout << "使用反射调用拷贝构造函数创建的新实例: " << reflect_inst << std::endl;
     reflect_inst.i32 = 123;
     std::cout << "可以像正常对象一样访问: " << reflect_inst << std::endl;
