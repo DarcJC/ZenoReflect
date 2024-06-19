@@ -8,12 +8,6 @@ namespace zeno
 {
 namespace reflect
 {
-    struct AnyError {};
-    struct AnyCloneError : public AnyError {};
-    struct AnyCastError : public AnyError {};
-    struct AnyCastNullError : public AnyError {};
-    struct AnyCastTypeError : public AnyError {};
-
     class Any;
 
 namespace any
@@ -59,7 +53,7 @@ namespace any
             if REFLECT_CONSTEXPR (VTIsCopyConstructible<T>) {
                 return new ValueContainer<ValueType>(m_value);
             } else {
-                throw AnyCloneError();
+                ZENO_CHECK(VTIsCopyConstructible<T>);
             }
         }
     };
@@ -174,9 +168,7 @@ namespace any
         }
 
         const RTTITypeInfo& type() const {
-            if (!has_value()) {
-                throw AnyCastError();
-            }
+            ZENO_CHECK_MSG(has_value(), "RTTI type is not available for <nullany>");
             return m_value_container->type();
         }
 
@@ -235,13 +227,8 @@ namespace any
     T any_cast(Any& operand) {
         using NonRef = TTDecay<T>;
 
-        if (!operand.has_value()) {
-            throw AnyCastNullError();
-        }
-
-        if (!operand.m_value_container->is_type(type_info<NonRef>())) {
-            throw AnyCastTypeError();
-        }
+        ZENO_CHECK_MSG(operand.has_value(), "Can't cast using <nullany>");
+        ZENO_CHECK_MSG(operand.m_value_container->is_type(type_info<NonRef>()), "Type cast to no matched");
 
         return static_cast<any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value;
     }
@@ -257,13 +244,8 @@ namespace any
     T any_cast(const Any& operand) {
         using NonRef = TTDecay<T>;
 
-        if (!operand.has_value()) {
-            throw AnyCastNullError();
-        }
-
-        if (!operand.m_value_container->is_type(type_info<NonRef>())) {
-            throw AnyCastTypeError();
-        }
+        ZENO_CHECK_MSG(operand.has_value(), "Can't cast using <nullany>");
+        ZENO_CHECK_MSG(operand.m_value_container->is_type(type_info<NonRef>()), "Type cast to no matched");
 
         return static_cast<const any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value;
     }
