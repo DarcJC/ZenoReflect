@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <type_traits>
 #include "reflect/polyfill.hpp"
 #include "reflect/container/string"
 #include "reflect/container/arraylist"
@@ -95,7 +96,11 @@ namespace reflect
 
         template <typename T>
         static REFLECT_STATIC_CONSTEXPR TypeHandle from_rtti() {
-            return { type_info<TTDecay<T>>() };
+            if REFLECT_FORCE_CONSTEPXR (VTIsPointer<T>) {
+                return { type_info<std::decay_t<T>*>() };
+            } else {
+                return { type_info<std::decay_t<T>>() };
+            }
         }
     
         inline static REFLECT_STATIC_CONSTEXPR TypeHandle nulltype() {
