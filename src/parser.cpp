@@ -150,7 +150,6 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
 
                 // Processing methods
                 {
-                    unsigned int num_ctor = 0;
                     for (auto it = record_decl->method_begin(); it != record_decl->method_end(); ++it) {
                         // Register all param types used
                         if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it)) {
@@ -167,18 +166,25 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             m_context->template_header_generator.add_rtti_type(type.getUnqualifiedType());
                         }
 
-                        if (const CXXConstructorDecl* constructor_decl = dyn_cast<CXXConstructorDecl>(*it); constructor_decl && constructor_decl->getAccess() == clang::AS_public) {
-                            ++num_ctor;
+                        // If is aggregate type then add list initialization as a constructor
+                        // if (record_decl->isAggregate()) {
+                        //     std::vector<std::string> ctor_params;
+                        //     for (const FieldDecl* field : record_decl->fields())  {
+                        //         QualType type = field->getType();
+                        //         ctor_params.push_back(type.getCanonicalType().getAsString());
+                        //     }
+                        //     type_data["ctors"].push_back(ctor_params);
+                        // }
 
-                            std::vector<std::string> ctor_params;
+                        if (const CXXConstructorDecl* constructor_decl = dyn_cast<CXXConstructorDecl>(*it); constructor_decl && constructor_decl->getAccess() == clang::AS_public) {
+                            inja::json ctor_data;
+                            ctor_data["params"] = {};
                             for (unsigned int i = 0; i < constructor_decl->getNumParams(); ++i) {
                                 const ParmVarDecl* param_decl = constructor_decl->getParamDecl(i);
-                                if (param_decl) {
-                                    QualType type = param_decl->getType();
-                                    ctor_params.push_back(type.getCanonicalType().getAsString());
-                                }
+                                inja::json param_data = zeno::reflect::parse_param_data(param_decl);
+                                ctor_data["params"].push_back(param_data);
                             }
-                            type_data["ctors"].push_back(ctor_params);
+                            type_data["ctors"].push_back(ctor_data);
                         } else if (const CXXDestructorDecl* destructor_decl = dyn_cast<CXXDestructorDecl>(*it)) {
                         } else if (const CXXConversionDecl* conversion_decl = dyn_cast<CXXConversionDecl>(*it)) {
                         } else if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it); method_decl && method_decl->getAccess() == clang::AS_public) {
@@ -188,10 +194,9 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             func_data["params"] = {};
                             for (unsigned int i = 0; i < method_decl->getNumParams(); ++i) {
                                 const ParmVarDecl* param_decl = method_decl->getParamDecl(i);
-                                if (param_decl) {
-                                    QualType type = param_decl->getType();
-                                    func_data["params"].push_back(type.getCanonicalType().getAsString());
-                                }
+                                inja::json param_data = zeno::reflect::parse_param_data(param_decl);
+                                QualType type = param_decl->getType();
+                                func_data["params"].push_back(type.getCanonicalType().getAsString());
                             }
                             func_data["static"] = method_decl->isStatic();
                             func_data["const"] = method_decl->isConst();
@@ -199,7 +204,6 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             type_data["funcs"].push_back(func_data);
                         }
                     }
-                    type_data["num_ctor"] = num_ctor;
                 }
 
                 {

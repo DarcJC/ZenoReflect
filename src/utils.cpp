@@ -4,6 +4,9 @@
 #include <cassert>
 #include "utils.hpp"
 #include "args.hpp"
+#include "clang/AST/ASTContext.h"
+#include "clang/AST/Expr.h"
+#include "clang/AST/PrettyPrinter.h"
 
 namespace zeno {
 
@@ -176,6 +179,38 @@ std::string convert_to_valid_cpp_var_name(std::string_view type_name)
     }
 
     return varName;
+}
+
+std::string clang_expr_to_string(const clang::Expr *expr)
+{
+    if (!expr) {
+        return "nullptr";
+    }
+    
+    clang::LangOptions lang_opts;
+    lang_opts.CPlusPlus = true;
+    clang::PrintingPolicy policy(lang_opts);
+
+    std::string str;
+    llvm::raw_string_ostream stream(str);
+    expr->printPretty(stream, nullptr, policy);
+
+    return str;
+}
+
+inja::json parse_param_data(const clang::ParmVarDecl * param_decl)
+{
+
+    inja::json param_data;
+    clang::QualType type = param_decl->getType();
+    param_data["type"] = type.getCanonicalType().getAsString();
+    param_data["has_default_arg"] = param_decl->hasDefaultArg();
+    if (param_decl->hasDefaultArg()) {
+        param_data["default_arg"] = zeno::reflect::clang_expr_to_string(param_decl->getDefaultArg());
+    }
+
+    return param_data;
+
 }
 
 constexpr uint32_t FNV1aHash::hash_32_fnv1a(std::string_view str) const noexcept

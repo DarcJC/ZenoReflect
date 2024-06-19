@@ -14,15 +14,15 @@ using namespace zeno::reflect;
 namespace {
 
     /// === Begin Constructor Wrappers ===
-## for params in type_info.ctors
+## for ctor in type_info.ctors
     class ConstructorWrapperFor{{- type_info.normal_name -}}_{{- loop.index -}} : public ITypeConstructor {
     public:
         ConstructorWrapperFor{{- type_info.normal_name -}}_{{- loop.index -}}() : ITypeConstructor(get_type<{{ type_info.canonical_typename }}>()) {}
 
         virtual const ArrayList<RTTITypeInfo>& get_params() const override {
             static ArrayList<RTTITypeInfo> STATIC_LIST {
-## for param in params
-                    zeno::reflect::type_info<{{ param }}>(),
+## for param in ctor.params
+                    zeno::reflect::type_info<{{ param.type }}>(),
 ## endfor
             };
             return STATIC_LIST;
@@ -30,8 +30,8 @@ namespace {
 
         virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const override {
             static ArrayList<RTTITypeInfo> STATIC_LIST {
-## for param in params
-                    zeno::reflect::type_info<TTDecay<{{ param }}>>(),
+## for param in ctor.params
+                    zeno::reflect::type_info<TTDecay<{{ param.type }}>>(),
 ## endfor
             };
             return STATIC_LIST;
@@ -39,16 +39,16 @@ namespace {
 
         virtual void* new_instance(const ArrayList<Any>& params) const override {
             if (is_suitable_to_invoke(params)) {
-## for param in params
+## for param in ctor.params
                 Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
-                {{ param }} p{{- loop.index }} = any_cast<{{ param }}>(any{{- loop.index -}});
+                {{ param.type }} p{{- loop.index }} = any_cast<{{ param.type }}>(any{{- loop.index -}});
 ## endfor
                 return new {{ type_info.canonical_typename }}
-                (
-## for param in params
-                    p{{- loop.index -}} {% if loop.index1 != length(params) %},{% endif %}
+                {
+## for param in ctor.params
+                    p{{- loop.index -}} {% if loop.index1 != length(ctor.params) %},{% endif %}
 ## endfor
-                );
+                };
             }
             return nullptr;
         }
@@ -57,14 +57,14 @@ namespace {
             Any val{};
             if (is_suitable_to_invoke(params)) {
                 // Just praying for NRVO is working
-## for param in params
+## for param in ctor.params
                 Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
-                {{ param }} p{{- loop.index }} = any_cast<{{ param }}>(any{{- loop.index -}});
+                {{ param.type }} p{{- loop.index }} = any_cast<{{ param.type }}>(any{{- loop.index -}});
 ## endfor
                 val.emplace<{{ type_info.canonical_typename }}>
                 (
-## for param in params
-                    p{{- loop.index -}} {% if loop.index1 != length(params) %},{% endif %}
+## for param in ctor.params
+                    p{{- loop.index -}} {% if loop.index1 != length(ctor.params) %},{% endif %}
 ## endfor
                 );
             }
@@ -166,7 +166,7 @@ namespace {
         }
 
         virtual StringView get_name() override {
-            return StringView("{{ func.name }}");
+            return "{{ func.name }}";
         }
 
         virtual bool is_static() const override {
@@ -204,7 +204,7 @@ namespace {
         }
 
         virtual StringView get_name() override {
-            return StringView("{{ field.name }}");
+            return "{{ field.name }}";
         }
 
     };

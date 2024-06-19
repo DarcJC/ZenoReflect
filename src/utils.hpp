@@ -9,6 +9,12 @@
 #include <vector>
 #include <format>
 #include <string_view>
+#include "inja/inja.hpp"
+
+namespace clang {
+    class Expr;
+    class ParmVarDecl;
+}
 
 namespace zeno {
 
@@ -36,6 +42,9 @@ void truncate_file(const std::string& path);
 
 std::string normalize_filename(std::string_view input);
 std::string convert_to_valid_cpp_var_name(std::string_view type_name);
+
+std::string clang_expr_to_string(const clang::Expr* expr);
+inja::json parse_param_data(const clang::ParmVarDecl* param_decl);
 
 namespace internal {
     template <typename T>

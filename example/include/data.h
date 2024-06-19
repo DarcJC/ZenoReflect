@@ -1,6 +1,7 @@
 #pragma once
 
 // #include "reflect/type"
+#include <limits>
 #include "reflect/reflection.generated.hpp"
 
 namespace test {
@@ -23,7 +24,9 @@ using Yeppp = test::inner::Oops;
 namespace zeno
 {
     struct ZRECORD(我是你爹=真, 测试=(组1, Group 2, Group 3), 123=true, 456) IAmPrimitve : public AliasType1 {
-        IAmPrimitve(const IAmPrimitve&) = default;
+        IAmPrimitve(int val = std::numeric_limits<int>::max()) {
+            i32 = val;
+        }
 
         signed int i32;
 
