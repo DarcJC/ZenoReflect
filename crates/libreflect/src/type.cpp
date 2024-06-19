@@ -18,20 +18,7 @@ zeno::reflect::TypeHandle::TypeHandle(const RTTITypeInfo &rtti_info)
 }
 
 bool TypeHandle::operator==(const TypeHandle& other) const {
-    TypeBase* self_type = nullptr;
-    if (is_reflected_type) {
-        self_type = m_handle.type_info;
-    } else {
-        self_type = get_reflected_type_or_null();
-    }
-
-    TypeBase* other_type = other.get_reflected_type_or_null();
-
-    if (nullptr == other_type || nullptr == self_type) {
-        return nullptr == other_type && nullptr == self_type;
-    }
-    
-    return *self_type == *other_type;
+    return this->type_hash() == other.type_hash();
 }
 
 bool TypeHandle::operator!=(const TypeHandle& other) const {
