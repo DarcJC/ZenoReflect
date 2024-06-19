@@ -141,6 +141,12 @@ namespace any
             return *this;
         }
 
+        template <typename ValueType>
+        Any& operator=(ValueType&& rhs) {
+            Any(zeno::reflect::forward<ValueType>(rhs)).swap(*this);
+            return *this;
+        }
+
         operator bool() const {
             return has_value();
         }

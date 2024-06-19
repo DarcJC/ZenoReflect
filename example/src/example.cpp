@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
     std::cout << "类型名称: " << handle->get_info().canonical_typename.c_str() << std::endl;
 
     zeno::IAmPrimitve hand_made_inst{};
-    hand_made_inst.i32 = 456;
+    hand_made_inst.i32 = 789;
     std::cout << "直接构造: " << hand_made_inst << std::endl;
 
     TypeBase* type = handle.get_reflected_type_or_null();
@@ -70,8 +70,12 @@ int main(int argc, char* argv[]) {
     reflect_inst.i32 = 123;
     std::cout << "可以像正常对象一样访问: " << reflect_inst << std::endl;
 
-    Any type_erased_inst = ctor->create_instance({ Any(hand_made_inst) });
+    Any type_erased_inst = ctor->create_instance({ Any(reflect_inst) });
     std::cout << "基于反射信息输出对象: \n" << type_erased_inst << std::endl;
+
+    // 或者也可以通过直接赋值给Any 也支持移动语义
+    Any use_operator_equal = hand_made_inst;
+    std::cout << "直接赋值构造Any: \n" << use_operator_equal << std::endl;
 
     // 输出所有的反射类型
     {
