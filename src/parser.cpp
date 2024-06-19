@@ -122,6 +122,13 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
         const Type* record_type = record_decl->getTypeForDecl();
         QualType record_qual_type(record_type, 0);
         m_context->template_header_generator.add_rtti_type(record_qual_type);
+        m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getConstType(record_qual_type));
+        m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getLValueReferenceType(record_qual_type));
+        m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getRValueReferenceType(record_qual_type));
+        m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getLValueReferenceType(m_context->scoped_context->getConstType(record_qual_type)));
+        if (GLOBAL_CONTROL_FLAGS->verbose) {
+            m_context->scoped_context->DumpRecordLayout(record_decl, llvm::outs());
+        }
 
         {
             const std::string normalized_name = zeno::reflect::convert_to_valid_cpp_var_name(record_qual_type.getCanonicalType().getAsString());
