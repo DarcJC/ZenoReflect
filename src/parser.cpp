@@ -167,7 +167,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             m_context->template_header_generator.add_rtti_type(type.getUnqualifiedType());
                         }
 
-                        if (const CXXConstructorDecl* constructor_decl = dyn_cast<CXXConstructorDecl>(*it)) {
+                        if (const CXXConstructorDecl* constructor_decl = dyn_cast<CXXConstructorDecl>(*it); constructor_decl && constructor_decl->getAccess() == clang::AS_public) {
                             ++num_ctor;
 
                             std::vector<std::string> ctor_params;
@@ -181,7 +181,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             type_data["ctors"].push_back(ctor_params);
                         } else if (const CXXDestructorDecl* destructor_decl = dyn_cast<CXXDestructorDecl>(*it)) {
                         } else if (const CXXConversionDecl* conversion_decl = dyn_cast<CXXConversionDecl>(*it)) {
-                        } else if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it)) {
+                        } else if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it); method_decl && method_decl->getAccess() == clang::AS_public) {
                             inja::json func_data;
                             func_data["name"] = method_decl->getNameAsString();
                             func_data["ret"] = method_decl->getReturnType().getCanonicalType().getAsString();
@@ -204,7 +204,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
 
                 {
                     for (auto it = record_decl->field_begin(); it != record_decl->field_end(); ++it) {
-                        if (const FieldDecl* field_decl = dyn_cast<FieldDecl>(*it)) {
+                        if (const FieldDecl* field_decl = dyn_cast<FieldDecl>(*it); field_decl && field_decl->getAccess() == clang::AS_public) {
                             QualType type = field_decl->getType();
                             m_context->template_header_generator.add_rtti_type(type);
                             m_context->template_header_generator.add_rtti_type(type.getUnqualifiedType());
