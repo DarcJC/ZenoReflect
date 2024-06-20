@@ -5,7 +5,7 @@ using namespace zeno::reflect;
 
 class ExitManager : public IExitManager {
     virtual void graceful_exit(uint8_t exit_code) override {
-        // TODO: Trigger graceful exit event
+        // Use std::atexit to finish your job before program exit
         exit(exit_code);
     }
 };

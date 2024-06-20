@@ -126,6 +126,22 @@ namespace reflect
         explicit TInPlaceType() = default;
     };
 
+    // ==== Is Assignable ====
+    template <typename T, typename U, typename = void>
+    struct TIsAssignable : TFalseType {};
+
+    template <typename T, typename U>
+    struct TIsAssignable<T, U, 
+        TVoid<
+            decltype(declval<T>() = declval<U>())
+        >
+    > : TTrueType {};
+
+    template <typename T, typename U>
+    LIBREFLECT_INLINE REFLECT_FORCE_CONSTEPXR bool VTIsAssignable = TIsAssignable<T, U>::value;
+    // ==== Is Assignable ====
+
+
 } // namespace reflect 
 } // namespace zeno
 

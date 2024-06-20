@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <cstddef>
+
 #if !defined(ZENO_REFLECT_PROCESSING)
     #define ZENO_ANNOTATE(...)
     #define ZRECORD(...)

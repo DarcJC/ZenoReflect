@@ -42,7 +42,7 @@ namespace reflect
 
         ArrayList(std::initializer_list<T> init) : m_size(0), m_capacity(init.size()), m_data(malloc(sizeof(T) * init.size())) {
             for (const T& item : init) {
-                add_item(item);
+                add_item(zeno::reflect::move( const_cast<T&>(item) ));
             }
         }
 
@@ -70,6 +70,14 @@ namespace reflect
                 resize_internal();
             }
             new (static_cast<T*>(m_data) + m_size) T(value);
+            return m_size++;
+        }
+
+        size_t add_item(T&& value) {
+            if (m_size == m_capacity) {
+                resize_internal();
+            }
+            new (static_cast<T*>(m_data) + m_size) T(zeno::reflect::forward<T>(value));
             return m_size++;
         }
 
