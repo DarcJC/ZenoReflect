@@ -46,7 +46,22 @@ namespace reflect {
 }
 }
 
+void fix_console_encoding();
+
+#ifdef _MSC_VER
+#include <windows.h>
+
+void fix_console_encoding() {
+    SetConsoleOutputCP(CP_UTF8);
+    std::locale::global(std::locale("en_US.UTF-8"));
+}
+
+#else
+void fix_console_encoding() {}
+#endif
+
 int main(int argc, char* argv[]) {
+    fix_console_encoding();
 
     // 获取类型名称
     TypeHandle handle = get_type<zeno::IAmPrimitve>();
