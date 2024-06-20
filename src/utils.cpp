@@ -142,43 +142,43 @@ std::string normalize_filename(std::string_view input)
 
 std::string convert_to_valid_cpp_var_name(std::string_view type_name)
 {
-    std::string varName;
-    bool lastWasColon = false;
+    std::string var_name;
+    bool last_was_colon = false;
 
     for (std::size_t i = 0; i < type_name.size(); ++i) {
         char ch = type_name[i];
 
         // RecordTypes => struct, class, union
         if (type_name.substr(i, 6) == "struct" && (i + 6 == type_name.size() || type_name[i + 6] == ' ')) {
-            varName += "struct_";
+            var_name += "struct_";
             i += 6; // "struct"
         } else if (type_name.substr(i, 5) == "class" && (i + 5 == type_name.size() || type_name[i + 5] == ' ')) {
-            varName += "class_";
+            var_name += "class_";
             i += 5; // "class"
         } else if (type_name.substr(i, 5) == "union" && (i + 5 == type_name.size() || type_name[i + 5] == ' ')) {
-            varName += "union_";
+            var_name += "union_";
             i += 5; // "union"
-        } else if (std::isalnum(ch)) { // Valid chars
-            varName += ch;
-            lastWasColon = false;
+        } else if (std::isalnum(static_cast<unsigned char>(ch))) { // Valid chars
+            var_name += ch;
+            last_was_colon = false;
         } else if (ch == ':' || ch == ' ') {
-            if (!lastWasColon && !varName.empty() && varName.back() != '_') {
-                varName += '_';  // Replace ":" or " "
+            if (!last_was_colon && !var_name.empty() && var_name.back() != '_') {
+                var_name += '_';  // Replace ":" or " "
             }
-            lastWasColon = (ch == ':');
+            last_was_colon = (ch == ':');
         }
     }
 
-    if (!varName.empty() && varName.back() == '_') {
-        varName.pop_back();
+    if (!var_name.empty() && var_name.back() == '_') {
+        var_name.pop_back();
     }
 
     // Ensure not started with number
-    if (!varName.empty() && std::isdigit(varName[0])) {
-        varName = "_" + varName;
+    if (!var_name.empty() && std::isdigit(static_cast<unsigned char>(var_name[0]))) {
+        var_name = "_" + var_name;
     }
 
-    return varName;
+    return var_name;
 }
 
 std::string clang_expr_to_string(const clang::Expr *expr)
