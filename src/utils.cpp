@@ -198,6 +198,15 @@ std::string clang_expr_to_string(const clang::Expr *expr)
     return str;
 }
 
+std::string clang_type_name_no_tag(const clang::QualType& type)
+{
+    clang::LangOptions lang_opts;
+    lang_opts.CPlusPlus = true;
+    clang::PrintingPolicy policy(lang_opts);
+    policy.SuppressTagKeyword = true;
+    return type.getAsString(policy);
+}
+
 inja::json parse_param_data(const clang::ParmVarDecl * param_decl)
 {
 
@@ -211,6 +220,19 @@ inja::json parse_param_data(const clang::ParmVarDecl * param_decl)
 
     return param_data;
 
+}
+
+inja::json parse_param_data(const clang::FieldDecl *param_decl)
+{
+    inja::json param_data;
+    clang::QualType type = param_decl->getType();
+    param_data["type"] = type.getCanonicalType().getAsString();
+    param_data["has_default_arg"] = param_decl->hasInClassInitializer();
+    if (param_decl->hasInClassInitializer()) {
+        param_data["default_arg"] = zeno::reflect::clang_expr_to_string(param_decl->getInClassInitializer());
+    }
+
+    return param_data;
 }
 
 constexpr uint32_t FNV1aHash::hash_32_fnv1a(std::string_view str) const noexcept

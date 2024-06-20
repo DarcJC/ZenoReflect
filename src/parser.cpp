@@ -142,7 +142,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
             if (!found) {
                 inja::json type_data;
                 type_data["normal_name"] = normalized_name;
-                type_data["qualified_name"] = record_qual_type.getAsString();
+                type_data["qualified_name"] = zeno::reflect::clang_type_name_no_tag(record_qual_type);
                 type_data["canonical_typename"] = record_qual_type.getCanonicalType().getAsString();
                 type_data["ctors"] = inja::json::array();
                 type_data["funcs"] = inja::json::array();
@@ -167,14 +167,18 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                         }
 
                         // If is aggregate type then add list initialization as a constructor
-                        // if (record_decl->isAggregate()) {
-                        //     std::vector<std::string> ctor_params;
-                        //     for (const FieldDecl* field : record_decl->fields())  {
-                        //         QualType type = field->getType();
-                        //         ctor_params.push_back(type.getCanonicalType().getAsString());
-                        //     }
-                        //     type_data["ctors"].push_back(ctor_params);
-                        // }
+                        // NOTE: Empty base class optimization might lead to, a class with empty base class is a aggregate class
+                        // But if you try list initialization on it, it will be a compiler error there.
+                        if (record_decl->isAggregate() && record_decl->getNumBases() == 0) {
+                            inja::json ctor_data;
+                            ctor_data["is_aggregate_initialize"] = true;
+                            ctor_data["params"] = {};
+                            for (const FieldDecl* field : record_decl->fields())  {
+                                QualType type = field->getType();
+                                ctor_data["params"].push_back(zeno::reflect::parse_param_data(field));
+                            }
+                            type_data["ctors"].push_back(ctor_data);
+                        }
 
                         if (const CXXConstructorDecl* constructor_decl = dyn_cast<CXXConstructorDecl>(*it); constructor_decl && constructor_decl->getAccess() == clang::AS_public) {
                             inja::json ctor_data;

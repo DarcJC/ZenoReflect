@@ -14,6 +14,9 @@
 namespace clang {
     class Expr;
     class ParmVarDecl;
+    class FieldDecl;
+    class CXXRecordDecl;
+    class QualType;
 }
 
 namespace zeno {
@@ -44,7 +47,9 @@ std::string normalize_filename(std::string_view input);
 std::string convert_to_valid_cpp_var_name(std::string_view type_name);
 
 std::string clang_expr_to_string(const clang::Expr* expr);
+std::string clang_type_name_no_tag(const clang::QualType& type);
 inja::json parse_param_data(const clang::ParmVarDecl* param_decl);
+inja::json parse_param_data(const clang::FieldDecl* param_decl);
 
 namespace internal {
     template <typename T>

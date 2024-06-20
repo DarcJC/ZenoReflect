@@ -74,9 +74,15 @@ namespace {
 ## endfor
                 val.emplace<{{ type_info.canonical_typename }}>
                 (
+{% if default(ctor.is_aggregate_initialize, false) %}
+                    {{ type_info.qualified_name }} {
+{% endif %}
 ## for param in ctor.params
                     p{{- loop.index -}} {% if loop.index1 != length(ctor.params) %},{% endif %}
 ## endfor
+{% if default(ctor.is_aggregate_initialize, false) %}
+                    }
+{% endif %}
                 );
             }
             return val;

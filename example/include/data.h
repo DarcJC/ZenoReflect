@@ -5,7 +5,9 @@
 #include "reflect/reflection.generated.hpp"
 
 namespace test {
-struct Parent {};
+struct Parent {
+    int abc;
+};
 namespace inner {
 struct Oops {
     int field1;
@@ -23,12 +25,13 @@ using Yeppp = test::inner::Oops;
 
 namespace zeno
 {
-    struct ZRECORD(我是你爹=真, 测试=(组1, Group 2, Group 3), 123=true, 456) IAmPrimitve : public AliasType1 {
-        IAmPrimitve(int val = std::numeric_limits<int>::max(), int* x = nullptr) {
-            i32 = val;
-        }
+    struct ZRECORD(我是你爹=真, 测试=(组1, Group 2, Group 3), 123=true, 456) IAmPrimitve {
+        // IAmPrimitve(int val = std::numeric_limits<int>::max(), int* x = nullptr) {
+        //     i32 = val;
+        // }
+        // IAmPrimitve(const IAmPrimitve&) = default;
 
-        signed int i32;
+        signed int i32 = 10086;
 
         ZNODE(Name="我日你妈") 
         void DoSomething(int value) const;
