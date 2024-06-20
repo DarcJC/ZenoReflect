@@ -119,7 +119,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
         }
         
         // Generate rtti information
-        const Type* record_type = record_decl->getTypeForDecl();
+        const clang::Type* record_type = record_decl->getTypeForDecl();
         QualType record_qual_type(record_type, 0);
         m_context->template_header_generator.add_rtti_type(record_qual_type);
         m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getConstType(record_qual_type));
