@@ -29,7 +29,7 @@ namespace zeno
         // IAmPrimitve(int val = std::numeric_limits<int>::max(), int* x = nullptr) {
         //     i32 = val;
         // }
-        // IAmPrimitve(const IAmPrimitve&) = default;
+        IAmPrimitve(const IAmPrimitve&) = default;
 
         signed int i32 = 10086;
 

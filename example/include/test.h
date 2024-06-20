@@ -4,7 +4,7 @@
 
 namespace zeno {
 
-    class ABC {
+    class ZRECORD() ABC {
     public:
         ABC() = delete;
     };

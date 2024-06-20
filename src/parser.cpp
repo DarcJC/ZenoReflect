@@ -172,7 +172,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                         if (record_decl->isAggregate() && record_decl->getNumBases() == 0) {
                             inja::json ctor_data;
                             ctor_data["is_aggregate_initialize"] = true;
-                            ctor_data["params"] = {};
+                            ctor_data["params"] = inja::json::array();
                             for (const FieldDecl* field : record_decl->fields())  {
                                 QualType type = field->getType();
                                 ctor_data["params"].push_back(zeno::reflect::parse_param_data(field));
@@ -181,21 +181,23 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                         }
 
                         if (const CXXConstructorDecl* constructor_decl = dyn_cast<CXXConstructorDecl>(*it); constructor_decl && constructor_decl->getAccess() == clang::AS_public) {
-                            inja::json ctor_data;
-                            ctor_data["params"] = {};
-                            for (unsigned int i = 0; i < constructor_decl->getNumParams(); ++i) {
-                                const ParmVarDecl* param_decl = constructor_decl->getParamDecl(i);
-                                inja::json param_data = zeno::reflect::parse_param_data(param_decl);
-                                ctor_data["params"].push_back(param_data);
+                            if (!constructor_decl->isDeleted()) {
+                                inja::json ctor_data;
+                                ctor_data["params"] = inja::json::array();
+                                for (unsigned int i = 0; i < constructor_decl->getNumParams(); ++i) {
+                                    const ParmVarDecl* param_decl = constructor_decl->getParamDecl(i);
+                                    inja::json param_data = zeno::reflect::parse_param_data(param_decl);
+                                    ctor_data["params"].push_back(param_data);
+                                }
+                                type_data["ctors"].push_back(ctor_data);
                             }
-                            type_data["ctors"].push_back(ctor_data);
                         } else if (const CXXDestructorDecl* destructor_decl = dyn_cast<CXXDestructorDecl>(*it)) {
                         } else if (const CXXConversionDecl* conversion_decl = dyn_cast<CXXConversionDecl>(*it)) {
                         } else if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it); method_decl && method_decl->getAccess() == clang::AS_public) {
                             inja::json func_data;
                             func_data["name"] = method_decl->getNameAsString();
                             func_data["ret"] = method_decl->getReturnType().getCanonicalType().getAsString();
-                            func_data["params"] = {};
+                            func_data["params"] = inja::json::array();
                             for (unsigned int i = 0; i < method_decl->getNumParams(); ++i) {
                                 const ParmVarDecl* param_decl = method_decl->getParamDecl(i);
                                 inja::json param_data = zeno::reflect::parse_param_data(param_decl);
