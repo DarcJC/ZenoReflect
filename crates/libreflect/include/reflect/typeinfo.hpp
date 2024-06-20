@@ -3,6 +3,7 @@
 #include <cstddef>
 #include "reflect/macro.hpp"
 #include "reflect/polyfill.hpp"
+#include "reflect/utils/assert"
 #include "reflect/traits/type_traits"
 
 namespace zeno
@@ -55,7 +56,13 @@ namespace reflect
 #ifdef ZENO_REFLECT_PROCESSING
         return Default;
 #else
+
+        // IDK why some old MSVC will instantiate this template in libreflect
+#if defined(_MSC_VER) && _MSC_VER < 1940
+        ZENO_CHECK_MSG(false, "\r\n==== Reflection Error ====\r\nThe type_info of current type not implemented. Have you marked it out ?\r\nTry '#include \"reflect/reflection.generated.hpp\"' in the traslation unit where you used zeno::reflect::type_info. \r\n==== Reflection Error End ====");
+#else
         static_assert(false, "\r\n==== Reflection Error ====\r\nThe type_info of current type not implemented. Have you marked it out ?\r\nTry '#include \"reflect/reflection.generated.hpp\"' in the traslation unit where you used zeno::reflect::type_info. \r\n==== Reflection Error End ====");
+#endif
         return Default;
 #endif
     }
