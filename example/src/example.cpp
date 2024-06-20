@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
     reflect_inst.i32 = 123;
     std::cout << "可以像正常对象一样访问: " << reflect_inst << std::endl;
 
-    Any type_erased_inst = ctor.create_instance({ Any(678) });
+    Any type_erased_inst = ctor.create_instance({ Any(678), ctor.get_param_default_value(1) });
     std::cout << "基于反射信息输出对象: \n" << type_erased_inst << std::endl;
 
     // 或者也可以通过直接赋值给Any 也支持移动语义
