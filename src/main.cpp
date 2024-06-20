@@ -5,9 +5,6 @@
 int main(int argc, char* argv[]) {
     ControlFlags flags = parse_args(argc, argv);
     GLOBAL_CONTROL_FLAGS = &flags;
-    if (GLOBAL_CONTROL_FLAGS->verbose) {
-        GLOBAL_CONTROL_FLAGS->print();
-    }
 
     ReflectionModel model{};
     pre_generate_reflection_model();

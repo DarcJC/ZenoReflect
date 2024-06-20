@@ -182,7 +182,7 @@ namespace any
 
         template <typename T, typename... Args>
         Any(TInPlaceType<T*>, Args&&... args) {
-            emplace<std::decay_t<T>*>(zeno::reflect::forward<Args>(args)...);
+            emplace<std::decay_t<T>>(zeno::reflect::forward<Args>(args)...);
         }
 
         Any& operator=(const Any& other) {

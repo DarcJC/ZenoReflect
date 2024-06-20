@@ -95,9 +95,6 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
 {
     if (const CXXRecordDecl* record_decl = result.Nodes.getNodeAs<CXXRecordDecl>(ASTLabels::RECORD_LABEL)) {
         if (!record_decl->hasDefinition()) {
-            if (GLOBAL_CONTROL_FLAGS->verbose) {
-                llvm::outs() << "[debug] «" << record_decl->getNameAsString() << "» is only a declaration, skipped.\n";
-            }
             return;
         }
 
@@ -126,6 +123,8 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
         m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getLValueReferenceType(record_qual_type));
         m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getRValueReferenceType(record_qual_type));
         m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getLValueReferenceType(m_context->scoped_context->getConstType(record_qual_type)));
+        m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getPointerType(m_context->scoped_context->getConstType(record_qual_type)));
+        m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getPointerType(record_qual_type));
         if (GLOBAL_CONTROL_FLAGS->verbose) {
             m_context->scoped_context->DumpRecordLayout(record_decl, llvm::outs());
         }
@@ -147,6 +146,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                 type_data["ctors"] = inja::json::array();
                 type_data["funcs"] = inja::json::array();
                 type_data["fields"] = inja::json::array();
+                type_data["base_classes"] = inja::json::array();
 
                 // Processing methods
                 {
@@ -224,6 +224,26 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             field_data["normal_type"] = zeno::reflect::convert_to_valid_cpp_var_name(type.getCanonicalType().getAsString());
 
                             type_data["fields"].push_back(field_data);
+                        }
+                    }
+                }
+
+                {
+                    for (auto it = record_decl->bases_begin(); it != record_decl->bases_end(); ++it) {
+                        if (const CXXBaseSpecifier* base_decl = it) {
+                            inja::json base_data;
+                            QualType type = base_decl->getType().getCanonicalType();
+                            base_data["type"] = zeno::reflect::clang_type_name_no_tag(type);
+
+                            m_context->template_header_generator.add_rtti_type(type);
+                            m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getConstType(type));
+                            m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getLValueReferenceType(type));
+                            m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getRValueReferenceType(type));
+                            m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getLValueReferenceType(m_context->scoped_context->getConstType(type)));
+                            m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getPointerType(m_context->scoped_context->getConstType(type)));
+                            m_context->template_header_generator.add_rtti_type(m_context->scoped_context->getPointerType(type));
+
+                            type_data["base_classes"].push_back(base_data);
                         }
                     }
                 }

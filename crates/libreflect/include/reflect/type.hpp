@@ -50,30 +50,6 @@ namespace reflect
         bool internal_flags[static_cast<size_t>(TypeFlags::Max)] = { false };
     };
 
-    class LIBREFLECT_API TypeBase {
-    protected:
-        TypeBase(const ReflectedTypeInfo& type_info);
-
-        ReflectedTypeInfo m_type_info;
-    public:
-        TypeBase() = delete;
-        virtual ~TypeBase() = default;
-
-        virtual bool operator==(const TypeBase& other) const;
-        virtual bool operator!=(const TypeBase& other) const;
-
-        virtual std::size_t type_hash() const = 0;
-        virtual const RTTITypeInfo& get_rtti_info() const = 0;
-        virtual const ReflectedTypeInfo& get_info() const;
-
-        virtual const ArrayList<ITypeConstructor*>& get_constructors() const = 0;
-        virtual const ArrayList<IMemberFunction*>& get_member_functions() const = 0;
-        virtual const ArrayList<IMemberField*>& get_member_fields() const = 0;
-        virtual ArrayList<ITypeConstructor*> get_constructor(const ArrayList<RTTITypeInfo>&) const;
-        virtual ITypeConstructor* get_constructor_or_null(const ArrayList<RTTITypeInfo>& params) const;
-        virtual ITypeConstructor& get_constructor_checked(const ArrayList<RTTITypeInfo>& params) const;
-    };
-
     struct T_NullTypeArg {};
 
     class LIBREFLECT_API TypeHandle {
@@ -97,11 +73,7 @@ namespace reflect
 
         template <typename T>
         static REFLECT_STATIC_CONSTEXPR TypeHandle from_rtti() {
-            if REFLECT_FORCE_CONSTEPXR (VTIsPointer<T>) {
-                return { type_info<std::decay_t<T>*>() };
-            } else {
-                return { type_info<std::decay_t<T>>() };
-            }
+            return { type_info<std::decay_t<T>>() };
         }
     
         inline static REFLECT_STATIC_CONSTEXPR TypeHandle nulltype() {
@@ -109,6 +81,32 @@ namespace reflect
         }
     private:
         REFLECT_STATIC_CONSTEXPR TypeHandle(const T_NullTypeArg&);
+    };
+
+    class LIBREFLECT_API TypeBase {
+    protected:
+        TypeBase(const ReflectedTypeInfo& type_info);
+
+        ReflectedTypeInfo m_type_info;
+    public:
+        TypeBase() = delete;
+        virtual ~TypeBase() = default;
+
+        virtual bool operator==(const TypeBase& other) const;
+        virtual bool operator!=(const TypeBase& other) const;
+
+        virtual std::size_t type_hash() const = 0;
+        virtual const RTTITypeInfo& get_rtti_info() const = 0;
+        virtual const ReflectedTypeInfo& get_info() const;
+
+        virtual const ArrayList<ITypeConstructor*>& get_constructors() const = 0;
+        virtual const ArrayList<IMemberFunction*>& get_member_functions() const = 0;
+        virtual const ArrayList<IMemberField*>& get_member_fields() const = 0;
+        virtual ArrayList<ITypeConstructor*> get_constructor(const ArrayList<RTTITypeInfo>&) const;
+        virtual ITypeConstructor* get_constructor_or_null(const ArrayList<RTTITypeInfo>& params) const;
+        virtual ITypeConstructor& get_constructor_checked(const ArrayList<RTTITypeInfo>& params) const;
+
+        virtual const ArrayList<TypeHandle>& get_base_classes() const = 0;
     };
 
     /// Utilities for type reflection

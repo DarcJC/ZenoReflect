@@ -52,17 +52,17 @@ std::vector<std::string> get_parser_command_args(const std::string &cpp_version,
         result.push_back(header);
     }
 
-    if (verbose) {
-        result.push_back("-v");
-    }
+    // if (verbose) {
+    //     result.push_back("-v");
+    // }
 
-    if (verbose) {
-        std::cout << "[debug] Arguments passing to Clang:\t\"";
-        for (const std::string& str : result) {
-            std::cout << str << " ";
-        }
-        std::cout << "\"" << std::endl;
-    }
+    // if (verbose) {
+    //     std::cout << "[debug] Arguments passing to Clang:\t\"";
+    //     for (const std::string& str : result) {
+    //         std::cout << str << " ";
+    //     }
+    //     std::cout << "\"" << std::endl;
+    // }
 
     return result;
 }

@@ -63,9 +63,6 @@ namespace zeno::reflect
                 return "";
             }
             if (state.type_hash_flag.contains(hash_value)) {
-                if (GLOBAL_CONTROL_FLAGS->verbose) {
-                    llvm::outs() << "[debug] Generating duplicated RTTI, skipped \"" << cppType << "\"\n";
-                }
                 return "";
             }
             state.type_hash_flag.insert_or_assign(hash_value, 1);
