@@ -63,6 +63,7 @@ namespace reflect
         virtual bool operator!=(const TypeBase& other) const;
 
         virtual std::size_t type_hash() const = 0;
+        virtual const RTTITypeInfo& get_rtti_info() const = 0;
         virtual const ReflectedTypeInfo& get_info() const;
 
         virtual const ArrayList<ITypeConstructor*>& get_constructors() const = 0;

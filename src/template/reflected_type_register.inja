@@ -245,6 +245,10 @@ namespace {
             return get_rtti_info().hash_code();
         }
 
+        virtual const RTTITypeInfo& get_rtti_info() const override {
+            return zeno::reflect::type_info<{{ type_info.canonical_typename }}>();
+        }
+
         virtual const ArrayList<ITypeConstructor*>& get_constructors() const override {
             static ArrayList<ITypeConstructor*> ctors {
 ## for params in type_info.ctors
@@ -270,11 +274,6 @@ namespace {
 ## endfor
             };
             return fields;
-        }
-
-        static const RTTITypeInfo& get_rtti_info() {
-            // Note: namespace required here because MSVC has a pre-defined type named type_info
-            return zeno::reflect::type_info<{{ type_info.canonical_typename }}>();
         }
     };
     /// === End Record Type Wrapper ===
