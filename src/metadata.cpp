@@ -11,7 +11,7 @@ MetadataType string_to_metadata_type(const std::string &str)
         return MetadataType::Struct;
     } else if (str == "enum") {
         return MetadataType::Enum;
-    } else if (str == "function") {
+    } else if (str == "function" || str == "method") {
         return MetadataType::Function;
     } else if (str == "enum_value") {
         return MetadataType::EnumValue;

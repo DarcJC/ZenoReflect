@@ -30,7 +30,7 @@ namespace zeno
 
         signed int i32 = 10086;
 
-        ZNODE(Name="做些事") 
+        ZMETHOD(Name="做些事") 
         void DoSomething(int value) const;
     };
 
@@ -38,6 +38,7 @@ namespace zeno
         
         基类测试() = default;
 
+        ZPROPERTY(DisplayName = "Field 1")
         const char* 字段1 = "Hello World";
     };
 }

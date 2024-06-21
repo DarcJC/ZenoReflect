@@ -98,20 +98,9 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
             return;
         }
 
-        bool is_reflected_record_type = false;
-        MetadataContainer container;
+        inja::json metadata;
 
-        if (record_decl->hasAttrs()) {
-            for (const auto* attr : record_decl->attrs()) {
-                if (const AnnotateAttr *Annotate = dyn_cast<AnnotateAttr>(attr)) {
-                    container = MetadataParser::parse(Annotate->getAnnotation().str());
-                    is_reflected_record_type = true;
-                    break;
-                }
-            }
-        }
-
-        if (!is_reflected_record_type) {
+        if (!zeno::reflect::parse_metadata(metadata, record_decl)) {
             return;
         }
         
@@ -150,7 +139,6 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
 
                 // Metadata
                 {
-                    inja::json metadata = zeno::reflect::parse_metadata(container);
                     std::string metadata_interface = inja::render(zeno::reflect::text::REFLECTED_METADATA, metadata);
                     type_data["metadata"] = metadata_interface;
                 }
@@ -213,6 +201,12 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             func_data["static"] = method_decl->isStatic();
                             func_data["const"] = method_decl->isConst();
                             func_data["noexcept"] = method_decl->getExceptionSpecType() == clang::EST_BasicNoexcept || method_decl->getExceptionSpecType() == clang::EST_NoexceptTrue;
+
+                            std::string method_metadata;
+                            if (zeno::reflect::parse_metadata(method_metadata, method_decl)) {
+                                func_data["metadata"] = method_metadata;
+                            }
+
                             type_data["funcs"].push_back(func_data);
                         }
                     }
@@ -229,6 +223,11 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             field_data["name"] = field_decl->getNameAsString();
                             field_data["type"] = type.getCanonicalType().getAsString();
                             field_data["normal_type"] = zeno::reflect::convert_to_valid_cpp_var_name(type.getCanonicalType().getAsString());
+
+                            std::string field_metadata;
+                            if (zeno::reflect::parse_metadata(field_metadata, field_decl)) {
+                                field_data["metadata"] = field_metadata;
+                            }
 
                             type_data["fields"].push_back(field_data);
                         }

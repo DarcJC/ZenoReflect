@@ -4,9 +4,15 @@
 #include <cassert>
 #include "utils.hpp"
 #include "args.hpp"
+#include "template/template_literal"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/PrettyPrinter.h"
+#include "clang/Frontend/CompilerInvocation.h"
+#include "clang/Tooling/Tooling.h"
+#include "clang/Tooling/CommonOptionsParser.h"
+#include "clang/ASTMatchers/ASTMatchers.h"
+#include "clang/ASTMatchers/ASTMatchFinder.h"
 
 namespace zeno {
 
@@ -269,6 +275,30 @@ inja::json parse_metadata(const MetadataContainer &metadata)
     data["properties"] = properties_json;
 
     return data;
+}
+
+bool parse_metadata(inja::json &out, const clang::Decl *decl)
+{
+    if (clang::AnnotateAttr* attr = decl->getAttr<clang::AnnotateAttr>()) {
+        MetadataContainer container = MetadataParser::parse(attr->getAnnotation().str());
+
+        out = parse_metadata(container);
+
+        return true;
+    }
+
+    return false;
+}
+
+bool parse_metadata(std::string &out, const clang::Decl *decl)
+{
+    inja::json data;
+    if (parse_metadata(data, decl)) {
+        out = inja::render(zeno::reflect::text::REFLECTED_METADATA, data);
+        return true;
+    }
+
+    return false;
 }
 
 constexpr uint32_t FNV1aHash::hash_32_fnv1a(std::string_view str) const noexcept

@@ -210,6 +210,7 @@ namespace {
         virtual bool is_no_except() const override {
             return {{ func.noexcept }};
         }
+{{- default(func.metadata, "") -}}
     };
 ## endfor
     /// === End Member Function Wrappers ===
@@ -236,7 +237,7 @@ namespace {
         virtual StringView get_name() override {
             return "{{ field.name }}";
         }
-
+{{- default(field.metadata, "") -}}
     };
 ## endfor
     /// === End Member Field Wrappers ===
