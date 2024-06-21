@@ -2,13 +2,14 @@
 
 #include <cstdint>
 #include <cstddef>
+#include "reflect/macro.hpp"
 #include "reflect/container/unique_ptr"
 
 namespace zeno
 {
 namespace reflect
 {
-    class IMetadataValue {
+    class LIBREFLECT_API IMetadataValue {
     public:
         static UniquePtr<IMetadataValue> create_string(const char* str);
         static UniquePtr<IMetadataValue> create_list();
@@ -24,7 +25,7 @@ namespace reflect
         virtual void list_add_item(UniquePtr<IMetadataValue>&& value);
     };
 
-    class IRawMetadata {
+    class LIBREFLECT_API IRawMetadata {
     public:
         static UniquePtr<IRawMetadata> create();
 
