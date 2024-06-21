@@ -9,6 +9,7 @@
 #include "reflect/macro.hpp"
 #include "reflect/traits/type_traits"
 #include "reflect/container/arraylist"
+#include "reflect/metadata.hpp"
 
 namespace zeno
 {
@@ -83,7 +84,14 @@ namespace reflect
         REFLECT_STATIC_CONSTEXPR TypeHandle(const T_NullTypeArg&);
     };
 
-    class LIBREFLECT_API TypeBase {
+    class LIBREFLECT_API ICanHasMetadata {
+    public:
+        virtual ~ICanHasMetadata();
+
+        virtual const IRawMetadata* get_metadata() const;
+    };
+
+    class LIBREFLECT_API TypeBase : public ICanHasMetadata {
     protected:
         TypeBase(const ReflectedTypeInfo& type_info);
 
@@ -163,11 +171,6 @@ namespace reflect
         virtual bool is_mutable() const;
     };
 
-    class LIBREFLECT_API IHasMetadata {
-    public:
-        virtual ~IHasMetadata();
-    };
-
     class LIBREFLECT_API ITypeConstructor : public IBelongToParentType, public IHasParameter {
     public:
         virtual ~ITypeConstructor();
@@ -189,7 +192,7 @@ namespace reflect
         explicit ITypeConstructor(TypeHandle in_type);
     };
 
-    class LIBREFLECT_API IMemberFunction : public IBelongToParentType, public IHasParameter, public IHasName, public IHasQualifier, public IHasMetadata {
+    class LIBREFLECT_API IMemberFunction : public IBelongToParentType, public IHasParameter, public IHasName, public IHasQualifier, public ICanHasMetadata {
     public:
         virtual ~IMemberFunction();
         virtual TypeHandle get_return_type() const = 0;
@@ -200,7 +203,7 @@ namespace reflect
         explicit IMemberFunction(TypeHandle in_type);
     };
 
-    class LIBREFLECT_API IMemberField : public IBelongToParentType, public IHasName, public IHasMetadata {
+    class LIBREFLECT_API IMemberField : public IBelongToParentType, public IHasName, public ICanHasMetadata {
     public:
         template <typename T>
         T* get_field_ptr_typed(const Any& clazz_object) {

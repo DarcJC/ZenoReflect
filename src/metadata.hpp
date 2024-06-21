@@ -18,6 +18,8 @@ enum class MetadataType : uint8_t {
 
 MetadataType string_to_metadata_type(const std::string& str);
 
+std::string metadata_type_to_string(MetadataType type);
+
 struct MetadataContainer {
     using Value = std::variant<std::string, std::vector<std::string>>;
 

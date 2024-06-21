@@ -9,6 +9,7 @@
 #include <vector>
 #include <format>
 #include <string_view>
+#include "metadata.hpp"
 #include "inja/inja.hpp"
 
 namespace clang {
@@ -50,6 +51,8 @@ std::string clang_expr_to_string(const clang::Expr* expr);
 std::string clang_type_name_no_tag(const clang::QualType& type);
 inja::json parse_param_data(const clang::ParmVarDecl* param_decl);
 inja::json parse_param_data(const clang::FieldDecl* param_decl);
+
+inja::json parse_metadata(const MetadataContainer& metadata);
 
 namespace internal {
     template <typename T>

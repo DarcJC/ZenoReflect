@@ -148,6 +148,13 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                 type_data["fields"] = inja::json::array();
                 type_data["base_classes"] = inja::json::array();
 
+                // Metadata
+                {
+                    inja::json metadata = zeno::reflect::parse_metadata(container);
+                    std::string metadata_interface = inja::render(zeno::reflect::text::REFLECTED_METADATA, metadata);
+                    type_data["metadata"] = metadata_interface;
+                }
+
                 // Processing methods
                 {
                     for (auto it = record_decl->method_begin(); it != record_decl->method_end(); ++it) {

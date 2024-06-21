@@ -21,6 +21,7 @@ namespace reflect
         virtual bool is_list() const;
         virtual size_t list_length() const;
         virtual const IMetadataValue* list_get_item(size_t index) const;
+        virtual void list_add_item(UniquePtr<IMetadataValue>&& value);
     };
 
     class IRawMetadata {
@@ -31,7 +32,7 @@ namespace reflect
 
         virtual const IMetadataValue* get_value(const char* key) const = 0;
 
-        virtual void set_value(const char* key, zeno::reflect::UniquePtr<zeno::reflect::IMetadataValue>&& value) = 0;
+        virtual void set_value(const char* key, UniquePtr<IMetadataValue>&& value) = 0;
     };
 }
 }

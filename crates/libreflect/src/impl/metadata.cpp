@@ -47,6 +47,10 @@ protected:
         return m_value_list[index].get();
     }
 
+    virtual void list_add_item(UniquePtr<IMetadataValue>&& value) override {
+        m_value_list.add_item(zeno::reflect::forward<UniquePtr<IMetadataValue>>(value));
+    }
+
     friend class RawMetadata;
 };
 
@@ -123,4 +127,8 @@ const IMetadataValue *zeno::reflect::IMetadataValue::list_get_item(size_t index)
 {
     ZENO_CHECK_MSG(false, "This value isn't a list");
     return nullptr;
+}
+
+void zeno::reflect::IMetadataValue::list_add_item(UniquePtr<IMetadataValue> &&value)
+{
 }

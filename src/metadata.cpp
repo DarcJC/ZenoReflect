@@ -23,6 +23,24 @@ MetadataType string_to_metadata_type(const std::string &str)
     return MetadataType::None;
 }
 
+std::string metadata_type_to_string(MetadataType type)
+{
+    if (type == MetadataType::Struct) {
+        return "struct";
+    } else if (type == MetadataType::Enum) {
+        return "enum";
+    } else if (type == MetadataType::Function) {
+        return "function";
+    } else if (type == MetadataType::EnumValue) {
+        return "enum_value";
+    } else if (type == MetadataType::StructField) {
+        return "field";
+    } else if (type == MetadataType::FunctionParameter) {
+        return "param";
+    }
+    return "none";
+}
+
 MetadataContainer parse_metadata_dsl(const std::string &in_dsl)
 {
     return MetadataParser::parse(in_dsl);

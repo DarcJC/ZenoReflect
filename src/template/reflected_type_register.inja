@@ -2,6 +2,8 @@ R"INJA(
 #include "reflect/type"
 #include "reflect/traits/type_traits"
 #include "reflect/container/any"
+#include "reflect/container/unique_ptr"
+#include "reflect/metadata.hpp"
 #include "reflect/reflection.generated.hpp"
 ## for header_path in headers
 #include "{{ header_path }}"
@@ -291,6 +293,7 @@ namespace {
 
             return bases;
         }
+{{ type_info.metadata }}
     };
     /// === End Record Type Wrapper ===
 

@@ -92,11 +92,15 @@ int main(int argc, char* argv[]) {
     Any use_operator_equal = hand_made_inst;
     std::cout << "直接赋值构造Any: \n" << use_operator_equal << std::endl;
 
-    // 输出所有的反射类型
+    // 输出所有有DisplayName的反射类型
     {
         auto& registry = zeno::reflect::ReflectionRegistry::get();
         for (const auto& type : registry->all()) {
-            std::cout << "反射类型: " << type->get_info().canonical_typename.c_str() << std::endl;
+            if (const IRawMetadata * metadata = type->get_metadata()) {
+                if (const IMetadataValue* value = metadata->get_value("DisplayName")) {
+                    std::cout << "反射类型 " << type->get_info().canonical_typename.c_str() << " 的 DisplayName = \"" << value->as_string() << "\"" << std::endl;
+                }
+            }
         }
     }
 

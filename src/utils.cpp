@@ -235,6 +235,42 @@ inja::json parse_param_data(const clang::FieldDecl *param_decl)
     return param_data;
 }
 
+inja::json parse_metadata(const MetadataContainer &metadata)
+{
+    inja::json data;
+
+    inja::json properties_json;
+    properties_json["MetadataType"] = metadata_type_to_string(metadata.type);
+
+    for (const auto& [key, value] : metadata.properties) {
+        if (key == "") {
+            continue;
+        }
+        std::visit([&properties_json, &key](auto&& arg) {
+            using T = std::decay_t<decltype(arg)>;
+            inja::json value_data;
+            if constexpr (std::is_same_v<T, std::string>) {
+                value_data["value"] = arg;
+                value_data["is_string"] = true;
+                properties_json[key] = value_data;
+            } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+                inja::json value_data;
+                inja::json array;
+                for (const auto& item : arg) {
+                    array.push_back(item);
+                }
+                value_data["value"] = array;
+                value_data["is_array"] = true;
+                properties_json[key] = value_data;
+            }
+        }, value);
+    }
+
+    data["properties"] = properties_json;
+
+    return data;
+}
+
 constexpr uint32_t FNV1aHash::hash_32_fnv1a(std::string_view str) const noexcept
 {
     uint32_t hash = internal::FNV1aInternal<uint32_t>::val;

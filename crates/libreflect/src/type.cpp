@@ -218,6 +218,11 @@ bool zeno::reflect::IHasQualifier::is_mutable() const
     return false;
 }
 
-zeno::reflect::IHasMetadata::~IHasMetadata()
+zeno::reflect::ICanHasMetadata::~ICanHasMetadata()
 {
+}
+
+const IRawMetadata *zeno::reflect::ICanHasMetadata::get_metadata() const
+{
+    return nullptr;
 }
