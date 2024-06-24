@@ -13,14 +13,16 @@
 #include "utils.hpp"
 #include "args.hpp"
 
+class ReflectionASTConsumer;
 
 namespace zeno::reflect
 {
     struct CodeCompilerState {
         std::unordered_map<size_t, uint8_t> type_hash_flag;
         inja::json types_register_data;
+        ReflectionASTConsumer* m_consumer;
 
-        CodeCompilerState();
+        CodeCompilerState(ReflectionASTConsumer* in_consumer);
     };
     
     template <typename T>

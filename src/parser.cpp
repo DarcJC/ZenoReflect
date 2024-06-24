@@ -188,9 +188,10 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             }
                         } else if (const CXXDestructorDecl* destructor_decl = dyn_cast<CXXDestructorDecl>(*it)) {
                         } else if (const CXXConversionDecl* conversion_decl = dyn_cast<CXXConversionDecl>(*it)) {
-                        } else if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it); method_decl && method_decl->getAccess() == clang::AS_public) {
+                        } else if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it); method_decl && method_decl->getAccess() == clang::AS_public && !method_decl->isOverloadedOperator()) {
+
                             inja::json func_data;
-                            func_data["name"] = method_decl->getNameAsString();
+                            func_data["name"] = zeno::reflect::convert_to_valid_cpp_var_name(method_decl->getNameAsString());
                             func_data["ret"] = method_decl->getReturnType().getCanonicalType().getAsString();
                             func_data["params"] = inja::json::array();
                             for (unsigned int i = 0; i < method_decl->getNumParams(); ++i) {
@@ -270,6 +271,7 @@ ReflectionASTConsumer::ReflectionASTConsumer(zeno::reflect::CodeCompilerState &s
     , m_header_path(header_path)
     , template_header_generator(zeno::reflect::TemplateHeaderGenerator{state})
 {
+    state.m_consumer = this;
 }
 
 void ReflectionASTConsumer::HandleTranslationUnit(ASTContext &context)

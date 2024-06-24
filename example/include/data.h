@@ -2,6 +2,7 @@
 
 // #include "reflect/type"
 #include <limits>
+#include <string>
 #include "reflect/reflection.generated.hpp"
 
 namespace test {
@@ -29,6 +30,8 @@ namespace zeno
         IAmPrimitve(const IAmPrimitve&) = default;
 
         signed int i32 = 10086;
+
+        std::string s = "测试内容";
 
         ZMETHOD(Name="做些事") 
         void DoSomething(int value) const;

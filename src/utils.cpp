@@ -172,6 +172,18 @@ std::string convert_to_valid_cpp_var_name(std::string_view type_name)
                 var_name += '_';  // Replace ":" or " "
             }
             last_was_colon = (ch == ':');
+        } else if (ch == '+') {
+            var_name += "Plus";
+        } else if (ch == '-') {
+            var_name += "Minus";
+        } else if (ch == '/') {
+            var_name += "Div";
+        } else if (ch == '*') {
+            var_name += "Mul";
+        } else if (ch == '<') {
+            var_name += "LAB";
+        } else if (ch == '>') {
+            var_name += "RAB";
         }
     }
 

@@ -99,8 +99,9 @@ public:
     void add_type_mapping(const std::string& alias_name, clang::QualType real_name);
 
     zeno::reflect::TemplateHeaderGenerator template_header_generator;
-private:
+
     clang::ASTContext* scoped_context = nullptr;
+private:
     std::unique_ptr<RecordTypeMatchCallback> record_type_handler = std::make_unique<RecordTypeMatchCallback>(this);
     std::unique_ptr<TypeAliasMatchCallback> type_alias_handler = std::make_unique<TypeAliasMatchCallback>(this);
 

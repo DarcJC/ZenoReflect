@@ -1,4 +1,6 @@
 #include "codegen.hpp"
+#include "clang/AST/DeclTemplate.h"
+#include "parser.hpp"
 
 zeno::reflect::TemplateHeaderGenerator::TemplateHeaderGenerator(CodeCompilerState &state)
     : m_compiler_state(state)
@@ -26,6 +28,11 @@ std::string zeno::reflect::ForwardDeclarationGenerator::compile(CodeCompilerStat
 {
     std::stringstream buf;
     const clang::Type *type = m_qual_type.getTypePtr();
+
+    if (const clang::TemplateSpecializationType* spec_type = type->getAs<clang::TemplateSpecializationType>()) {
+        buf << "// !!! importance: This is a template specialization << \"" << spec_type->getTypeClassName() << "\", doesn't generate forward declaration\r\n";
+        return buf.str();
+    }
 
     if (type->isRecordType()) {
         // struct / class / union ?
@@ -56,20 +63,21 @@ std::string zeno::reflect::ForwardDeclarationGenerator::compile(CodeCompilerStat
         }
 
         for (auto it = namespaces.rbegin(); it != namespaces.rend(); ++it) {
-            buf << "namespace " << *it << " {\n";
+            buf << "namespace " << *it << " {\r\n";
         }
 
         buf << declaration << std::endl;
 
         for (size_t i = 0; i < namespaces.size(); ++i) {
-            buf << "}\n";
+            buf << "}\r\n";
         }
     }
 
     return buf.str();
 }
 
-zeno::reflect::CodeCompilerState::CodeCompilerState()
+zeno::reflect::CodeCompilerState::CodeCompilerState(ReflectionASTConsumer* in_consumer)
+    : m_consumer(in_consumer)
 {
     types_register_data["types"] = std::vector<inja::json>{};
     types_register_data["prefix"] = "";

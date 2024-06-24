@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
     pre_generate_reflection_model();
 
     int32_t result = 0;
-    zeno::reflect::CodeCompilerState compiler_state;
+    zeno::reflect::CodeCompilerState compiler_state {nullptr};
     for (const std::string& filepath : GLOBAL_CONTROL_FLAGS->input_sources) {
         std::optional<std::string> source_str = zeno::reflect::read_file(filepath);
         if (!source_str.has_value()) {
