@@ -44,5 +44,14 @@ namespace zeno
         ZPROPERTY(DisplayName = "Field 1")
         const char* 字段1 = "Hello World";
     };
+
+    class ZRECORD(Test=true) Hhhh {
+    public:
+        Hhhh() = delete;
+
+        int a1;
+        std::string test;
+
+    };
 }
 

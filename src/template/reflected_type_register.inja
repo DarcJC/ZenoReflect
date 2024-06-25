@@ -55,12 +55,11 @@ namespace {
             if (is_suitable_to_invoke(params)) {
 ## for param in ctor.params
                 Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
-                {{ param.type }} p{{- loop.index }} = any_cast<{{ param.type }}>(any{{- loop.index -}});
 ## endfor
                 return new {{ type_info.canonical_typename }}
                 {
 ## for param in ctor.params
-                    p{{- loop.index -}} {% if loop.index1 != length(ctor.params) %},{% endif %}
+                    any_cast<{{ param.type }}>(any{{- loop.index -}}){% if loop.index1 != length(ctor.params) %},{% endif %}
 ## endfor
                 };
             }
@@ -73,7 +72,6 @@ namespace {
                 // Just praying for NRVO is working
 ## for param in ctor.params
                 Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
-                {{ param.type }} p{{- loop.index }} = any_cast<{{ param.type }}>(any{{- loop.index -}});
 ## endfor
                 val.emplace<{{ type_info.canonical_typename }}>
                 (
@@ -81,7 +79,7 @@ namespace {
                     {{ type_info.qualified_name }} {
 {% endif %}
 ## for param in ctor.params
-                    p{{- loop.index -}} {% if loop.index1 != length(ctor.params) %},{% endif %}
+                    any_cast<{{ param.type }}>(any{{- loop.index -}}){% if loop.index1 != length(ctor.params) %},{% endif %}
 ## endfor
 {% if default(ctor.is_aggregate_initialize, false) %}
                     }
@@ -143,13 +141,12 @@ namespace {
                     auto& clazz = any_cast<{{- type_info.qualified_name -}}&>(clazz_object_);
 ## for param in func.params
                     Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
-                    {{ param.type }} p{{- loop.index }} = any_cast<{{ param.type }}>(any{{- loop.index -}});
 ## endfor
 {% if func.ret == "void" %}
                     clazz.{{- func.name -}}
                     (
 ## for param in func.params
-                        p{{{- loop.index -}} {% if loop.index1 != length(func.params) %},{% endif %}
+                        any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
 ## endfor
                     );
                     return Any::make_null();
@@ -157,7 +154,7 @@ namespace {
                     return clazz.{{- func.name -}}
                     (
 ## for param in func.params
-                        p{{{- loop.index -}} {% if loop.index1 != length(func.params) %},{% endif %}
+                        any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
 ## endfor
                     );
 {% endif %}
@@ -172,13 +169,12 @@ namespace {
             if (is_suitable_to_invoke(params)) {
 ## for param in func.params
                 Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
-                {{ param }} p{{- loop.index }} = any_cast<{{ param }}>(any{{- loop.index -}});
 ## endfor
 {% if func.ret == "void" %}
                 {{- type_info.canonical_typename -}}::{{- func.name -}}
                 (
 ## for param in func.params
-                    p{{{- loop.index -}} {% if loop.index1 != length(func.params) %},{% endif %}
+                    any_cast<{{ param }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
 ## endfor
                 );
                 return Any::make_null();
@@ -186,7 +182,7 @@ namespace {
                 return {{- type_info.canonical_typename -}}::{{- func.name -}}
                 (
 ## for param in func.params
-                    p{{{- loop.index -}} {% if loop.index1 != length(func.params) %},{% endif %}
+                    any_cast<{{ param }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
 ## endfor
                 );
 {% endif %}
