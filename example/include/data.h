@@ -1,6 +1,6 @@
 #pragma once
 
-// #include "reflect/type"
+#include "reflect/core.hpp"
 #include <limits>
 #include <string>
 #include "reflect/reflection.generated.hpp"
@@ -47,8 +47,6 @@ namespace zeno
 
     class ZRECORD(Test=true) Hhhh {
     public:
-        Hhhh() = delete;
-
         int a1;
         std::string test;
 

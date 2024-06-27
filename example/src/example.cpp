@@ -107,5 +107,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    Any 我是一个Any = zeno::reflect::make_any<std::string>( "好吧" );
+    std::cout << "类型是: " << 我是一个Any.type().name() << "\t值是: " << any_cast<std::string&>(我是一个Any) << std::endl;
+
     return 0;
 }
