@@ -15,6 +15,9 @@ namespace reflect
     enum TypeFlag {
         TF_None = 0,
         TF_IsPointer = 1 << 0,
+        TF_IsRValueRef = 1 << 1,
+        TF_IsLValueRef = 1 << 2,
+        TF_IsConst = 1 << 3,
     };
 
     class LIBREFLECT_API RTTITypeInfo {
@@ -29,6 +32,8 @@ namespace reflect
 
         const char* name() const;
         size_t hash_code() const;
+        size_t flags() const;
+        bool has_flags(size_t in_flags) const;
 
         /**
          * Compare two type info using hash code.

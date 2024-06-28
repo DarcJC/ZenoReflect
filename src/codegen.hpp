@@ -78,6 +78,9 @@ namespace zeno::reflect
             data["name"] = name;
             data["hash"] = hash_value;
             data["isPointer"] = m_qual_type->isPointerType();
+            data["isRValueRef"] = m_qual_type->isRValueReferenceType();
+            data["isLValueRef"] = m_qual_type->isLValueReferenceType();
+            data["isConst"] = m_qual_type.isConstQualified();
             
             return inja::render(text::RTTI, data);
         }
