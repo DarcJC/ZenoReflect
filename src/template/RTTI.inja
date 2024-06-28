@@ -1,6 +1,8 @@
 R"INJA(
 ///////////////////////////
 /// Begin RTTI of "{{ cppType }}"
+#ifndef _REFLECT_RTTI_GUARD_{{- name_normalized -}}_{{- hash }}
+#define _REFLECT_RTTI_GUARD_{{- name_normalized -}}_{{- hash }} 1
 {{ default(forwordDecl, "") }}
 namespace zeno
 {
@@ -17,6 +19,7 @@ namespace reflect
     }
 }
 }
+#endif // _REFLECT_RTTI_GUARD_{{- name_normalized -}}_{{- hash }}
 /// End RTTI of "{{ cppType }}"
 ///////////////////////////
 )INJA";

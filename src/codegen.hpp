@@ -74,6 +74,7 @@ namespace zeno::reflect
             const std::string forward_decl = ForwordDeclGenerator(m_qual_type).compile(state);
             data["forwordDecl"] = forward_decl;
             data["cppType"] = cppType;
+            data["name_normalized"] = zeno::reflect::convert_to_valid_cpp_var_name(cppType);
             data["name"] = name;
             data["hash"] = hash_value;
             data["isPointer"] = m_qual_type->isPointerType();

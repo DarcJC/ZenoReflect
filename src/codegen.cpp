@@ -31,7 +31,7 @@ std::string zeno::reflect::ForwardDeclarationGenerator::compile(CodeCompilerStat
     const std::string clazz_name = m_qual_type.getAsString();
     
     if (const clang::TemplateSpecializationType* spec_type = type->getAs<clang::TemplateSpecializationType>(); spec_type || clazz_name.ends_with('>')) {
-        buf << "// !!! importance: This is a template specialization << \"" << clazz_name << "\", doesn't generate forward declaration\r\n";
+        buf << "// !!! importance: This is a template specialization \"" << clazz_name << "\", doesn't generate forward declaration.\r\n";
         return buf.str();
     }
 
