@@ -28,7 +28,7 @@ using Yeppp = test::inner::Oops;
 
 namespace zeno
 {
-    struct ZRECORD(测试1=真, 组测试=(组1, Group 2, Group 3), 123=true, 456, DisplayName="我是一个Prim") IAmPrimitve {
+    struct ZRECORD(测试1="真", 组测试=("组1", "Group 2", "Group 3"), a123="true", DisplayName="我是一个Prim") IAmPrimitve {
         IAmPrimitve(const IAmPrimitve&) = default;
 
         signed int i32 = 10086;
@@ -47,7 +47,7 @@ namespace zeno
         const char* 字段1 = "Hello World";
     };
 
-    class ZRECORD(Test=true) Hhhh {
+    class ZRECORD(Test="true") Hhhh {
     public:
         int a1;
         std::string test;

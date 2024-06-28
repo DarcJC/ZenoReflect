@@ -325,7 +325,7 @@ inja::json parse_metadata(const MetadataContainer &metadata)
 bool parse_metadata(inja::json &out, const clang::Decl *decl)
 {
     if (clang::AnnotateAttr* attr = decl->getAttr<clang::AnnotateAttr>()) {
-        MetadataContainer container = MetadataParser::parse(attr->getAnnotation().str());
+        MetadataContainer container = parse_metadata_dsl(attr->getAnnotation().str());
 
         out = parse_metadata(container);
 
