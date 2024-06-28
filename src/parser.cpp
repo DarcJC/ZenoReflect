@@ -29,7 +29,9 @@ ParserErrorCode generate_reflection_model(const TranslationUnit &unit, Reflectio
     out_model.debug_name = unit.identity_name;
     std::vector<std::string> args = zeno::reflect::get_parser_command_args(GLOBAL_CONTROL_FLAGS->cpp_version, GLOBAL_CONTROL_FLAGS->include_dirs, GLOBAL_CONTROL_FLAGS->pre_include_headers, GLOBAL_CONTROL_FLAGS->verbose);
 
-    const std::string gen_template_header_path = zeno::reflect::get_file_path_in_header_output(std::format("reflect/{}.generated.hpp", zeno::reflect::normalize_filename(unit.identity_name)));
+    const std::string template_header_dir = zeno::reflect::get_file_path_in_header_output(std::format("reflect/{}", GLOBAL_CONTROL_FLAGS->target_name));
+    const std::string gen_template_header_path = std::format("{}/{}.generated.hpp", template_header_dir, zeno::reflect::normalize_filename(unit.identity_name));
+    zeno::reflect::mkdirs(template_header_dir);
     zeno::reflect::truncate_file(gen_template_header_path);
     out_model.generated_headers.insert(gen_template_header_path);
 
@@ -47,11 +49,16 @@ ParserErrorCode generate_reflection_model(const TranslationUnit &unit, Reflectio
 
 ParserErrorCode post_generate_reflection_model(const ReflectionModel &model, const zeno::reflect::CodeCompilerState& state)
 {
+    const std::string generated_header_dir = zeno::reflect::get_file_path_in_header_output("reflect");
     const std::string generated_header_path = zeno::reflect::get_file_path_in_header_output("reflect/reflection.generated.hpp");
     std::ofstream ghp_stream(generated_header_path, std::ios::out | std::ios::trunc);
     ghp_stream << "#pragma once" << "\r\n";
-    for (const std::string& s : model.generated_headers) {
-        ghp_stream << std::format("#include \"{}\"", zeno::reflect::relative_path_to_header_output(s)) << "\r\n";
+    auto header_list = zeno::reflect::find_files_with_extension(generated_header_dir, ".hpp");
+    for (const std::string& s : header_list) {
+        const auto relative_path = zeno::reflect::relative_path_to_header_output(s);
+        if (zeno::reflect::relative_path_to_header_output(generated_header_path) != relative_path) {
+            ghp_stream << std::format("#include \"{}\"", relative_path) << "\r\n";
+        }
     }
 
     const std::string generated_target_source = GLOBAL_CONTROL_FLAGS->target_type_register_source_path;
@@ -81,11 +88,6 @@ void TemplateSpecializationMatchCallback::run(const MatchFinder::MatchResult &re
             }
         }
     }
-
-    // if (decll && m_context) {
-        // zeno::reflect::RTTITypeGenerator rtti(underlying_type);
-        // m_context->template_header_generator.add_rtti_block(rtti);
-    // }
 }
 
 RecordTypeMatchCallback::RecordTypeMatchCallback(ReflectionASTConsumer *context) : m_context(context) {}

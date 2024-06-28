@@ -124,7 +124,8 @@ std::vector<std::string_view> split(std::string_view str, std::string_view delim
 
 std::string get_file_path_in_header_output(std::string_view filename)
 {
-    return std::format("{}/{}", GLOBAL_CONTROL_FLAGS->output_dir, filename);
+    return std::filesystem::path(GLOBAL_CONTROL_FLAGS->output_dir) / std::filesystem::path(filename);
+    // return std::format("{}/{}", GLOBAL_CONTROL_FLAGS->output_dir, filename);
 }
 
 std::string relative_path_to_header_output(std::string_view abs_path)
@@ -139,6 +140,39 @@ void truncate_file(const std::string &path)
 {
     std::ofstream s(path, std::ios::out | std::ios::trunc);
     s.close();
+}
+
+bool mkdirs(std::string_view path)
+{
+    std::filesystem::path dir_path(path);
+    try {
+        if (std::filesystem::create_directories(dir_path)) {
+            return true;
+        }
+    } catch (const std::filesystem::filesystem_error& err) {
+        std::cout << "error: " << err.what() << "\n";
+    }
+
+    return false;
+}
+
+std::vector<std::string> find_files_with_extension(std::string_view root, std::string_view extension)
+{
+    std::vector<std::string> matching_files;
+
+    try {
+        if (std::filesystem::exists(root) && std::filesystem::is_directory(root)) {
+            for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
+                if (entry.is_regular_file() && entry.path().extension() == extension) {
+                    matching_files.push_back(entry.path().string());
+                }
+            }
+        }
+    } catch (const std::filesystem::filesystem_error& err) {
+        std::cout << "error: " << err.what() << "\n";
+    }
+
+    return matching_files;
 }
 
 std::string normalize_filename(std::string_view input)

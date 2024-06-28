@@ -74,7 +74,7 @@ function(zeno_declare_reflection_support target reflection_headers)
         WORKING_DIRECTORY
             ${CMAKE_CURRENT_BINARY_DIR}
         COMMAND 
-            $<TARGET_FILE:ZenoReflect::generator> --include_dirs=\"$<JOIN:${INCLUDE_DIRS},${splitor}>,${SYSTEM_IMPLICIT_INCLUDE_DIRS}\" --pre_include_header="${LIBREFLECT_PCH_PATH}" --input_source=\"${source_paths_string}\" --header_output="${ZENO_REFLECTION_GENERATED_HEADERS_DIR}" --stdc++=${CMAKE_CXX_STANDARD} $<IF:$<CONFIG:Debug>,-v,> --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}"
+            $<TARGET_FILE:ZenoReflect::generator> --include_dirs=\"$<JOIN:${INCLUDE_DIRS},${splitor}>,${SYSTEM_IMPLICIT_INCLUDE_DIRS}\" --pre_include_header="${LIBREFLECT_PCH_PATH}" --input_source=\"${source_paths_string}\" --header_output="${ZENO_REFLECTION_GENERATED_HEADERS_DIR}" --stdc++=${CMAKE_CXX_STANDARD} $<IF:$<CONFIG:Debug>,-v,> --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}" --target_name="${target}"
         SOURCES 
             ${reflection_headers} 
         COMMENT 
