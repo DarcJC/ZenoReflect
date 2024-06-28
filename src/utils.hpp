@@ -19,6 +19,7 @@ namespace clang {
     class CXXRecordDecl;
     class QualType;
     class Decl;
+    class Type;
 }
 
 namespace zeno {
@@ -56,6 +57,8 @@ inja::json parse_param_data(const clang::FieldDecl* param_decl);
 inja::json parse_metadata(const MetadataContainer& metadata);
 bool parse_metadata(inja::json& out, const clang::Decl* decl);
 bool parse_metadata(std::string& out, const clang::Decl* decl);
+
+const clang::Type* get_underlying_type(const clang::Type* type);
 
 namespace internal {
     template <typename T>

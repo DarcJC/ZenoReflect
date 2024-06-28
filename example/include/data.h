@@ -1,8 +1,10 @@
 #pragma once
 
 #include "reflect/core.hpp"
+#include "reflect/type"
 #include <limits>
 #include <string>
+#include <vector>
 #include "reflect/reflection.generated.hpp"
 
 namespace test {
@@ -53,3 +55,4 @@ namespace zeno
     };
 }
 
+REFLECT_REGISTER_RTTI_TYPE_MANUAL(std::vector<std::string>)

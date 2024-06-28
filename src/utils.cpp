@@ -313,6 +313,20 @@ bool parse_metadata(std::string &out, const clang::Decl *decl)
     return false;
 }
 
+const clang::Type *get_underlying_type(const clang::Type *type)
+{
+    while (type) {
+        if (const clang::ElaboratedType* et = clang::dyn_cast<clang::ElaboratedType>(type)) {
+            type = et->getNamedType().getTypePtr();
+        } else if (const clang::TypedefType* tt = clang::dyn_cast<clang::TypedefType>(type)) {
+            type = tt->getDecl()->getUnderlyingType().getTypePtr();
+        } else {
+            break;
+        }
+    }
+    return type;
+}
+
 constexpr uint32_t FNV1aHash::hash_32_fnv1a(std::string_view str) const noexcept
 {
     uint32_t hash = internal::FNV1aInternal<uint32_t>::val;
