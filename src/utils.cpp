@@ -124,8 +124,7 @@ std::vector<std::string_view> split(std::string_view str, std::string_view delim
 
 std::string get_file_path_in_header_output(std::string_view filename)
 {
-    return std::filesystem::path(GLOBAL_CONTROL_FLAGS->output_dir) / std::filesystem::path(filename);
-    // return std::format("{}/{}", GLOBAL_CONTROL_FLAGS->output_dir, filename);
+    return (std::filesystem::path(GLOBAL_CONTROL_FLAGS->output_dir) / std::filesystem::path(filename)).string();
 }
 
 std::string relative_path_to_header_output(std::string_view abs_path)
