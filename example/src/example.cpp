@@ -115,5 +115,11 @@ int main(int argc, char* argv[]) {
         int a = 0;
     }
 
+    // 测试赋值
+    zeno::reflect::Any ann = zeno::reflect::make_any<int>(10);
+    zeno::reflect::Any ann2 = ann;
+    auto xx = ann2.has_value() ? zeno::reflect::any_cast<int>(ann2) : 0;
+
+
     return 0;
 }

@@ -61,7 +61,12 @@ namespace any
 
         template <typename T>
         Any(T&& value) {
-            emplace<std::decay_t<T>>(zeno::reflect::forward<T>(value));
+            using DecayType = std::decay_t<T>;
+            if REFLECT_FORCE_CONSTEPXR (VTIsSame<DecayType, Any>) {
+                emplace(zeno::reflect::forward<Any>(value));
+            } else {
+                emplace<DecayType>(zeno::reflect::forward<T>(value));
+            }
         }
 
         template <typename T, typename... Args>
@@ -104,6 +109,22 @@ namespace any
                 m_value_container = new any::ValueContainer<DecayType>(zeno::reflect::forward<Args>(args)...);
             } else {
                 m_value_container = new any::ValueContainer<DecayType>(TInPlaceType<DecayType>(), zeno::reflect::forward<Args>(args)...);
+            }
+        }
+
+        void emplace(Any&& any) {
+            reset();
+            if (&any != this) {
+                m_value_container = any.m_value_container;
+                any.m_value_container = nullptr;
+                any.reset();
+            }
+        }
+
+        void emplace(const Any& any) {
+            reset();
+            if (&any != this && any.m_value_container) {
+                m_value_container = any.m_value_container->clone();
             }
         }
 
