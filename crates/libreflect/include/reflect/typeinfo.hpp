@@ -92,3 +92,32 @@ namespace reflect
     }
 }
 }
+
+#ifndef _REFLECT_RTTI_GUARD_class_zeno_reflect_Any_15554020952442124146
+#define _REFLECT_RTTI_GUARD_class_zeno_reflect_Any_15554020952442124146 1
+namespace zeno
+{
+namespace reflect
+{
+    class Any;
+}
+}
+
+
+namespace zeno
+{
+namespace reflect
+{
+    template <>
+    REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<class zeno::reflect::Any>() {
+        static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {
+            "class zeno::reflect::Any",
+            15554020952442124146ULL,
+            static_cast<size_t>(
+                TF_None )
+        };
+        return s;
+    }
+}
+}
+#endif // _REFLECT_RTTI_GUARD_class_zeno_reflect_Any_15554020952442124146
