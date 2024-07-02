@@ -63,7 +63,7 @@ namespace any
         Any(T&& value) {
             using DecayType = std::decay_t<T>;
             if REFLECT_FORCE_CONSTEPXR (VTIsSame<DecayType, Any>) {
-                emplace(zeno::reflect::forward<Any>(value));
+                emplace(zeno::reflect::forward<T>(value));
             } else {
                 emplace<DecayType>(zeno::reflect::forward<T>(value));
             }
