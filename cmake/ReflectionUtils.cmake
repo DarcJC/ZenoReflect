@@ -42,9 +42,9 @@ function (get_target_include_dirs_recursive target result)
     set(${result} ${${result}} PARENT_SCOPE)
 endfunction(get_target_include_dirs_recursive)
 
-set(INTERMEDIATE_FILE_BASE_DIR "${CMAKE_BINARY_DIR}/intermediate")
-
 function(zeno_declare_reflection_support target reflection_headers)
+    set(INTERMEDIATE_FILE_BASE_DIR "${CMAKE_BINARY_DIR}/intermediate")
+
     # Call this function after all target source has been added
     set(splitor ",")
 
