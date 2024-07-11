@@ -6,7 +6,7 @@ namespace zeno
 {
 namespace reflect
 {
-    class IReflectedObject {
+    class LIBREFLECT_API IReflectedObject {
     public:
         virtual ~IReflectedObject() = default;
 
