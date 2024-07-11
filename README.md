@@ -1,6 +1,6 @@
 # Zeno Reflect
 
-本项目应该支持C++17及以上的C++标准。
+This project should support C++17 and above C++ standards.
 
 [English](docs/README-en.md) | [中文](docs/README-zh.md)
 
