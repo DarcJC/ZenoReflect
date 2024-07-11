@@ -6,15 +6,26 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if (REFLECT_BUILD_EXAMPLE)
 
-    add_executable(ReflectExample
-        src/example.cpp
-    )
-    target_include_directories(ReflectExample PRIVATE include)
-
     make_absolute_paths(REFLECTION_HEADERS 
         include/data.h
         include/test.h
     ) 
-    zeno_declare_reflection_support(ReflectExample "${REFLECTION_HEADERS}")
+
+    function(add_single_file_test_target name)
+        set(target_name Reflect-Tests-${name})
+        add_executable(${target_name}
+            "src/${name}.cpp"
+        )
+        target_include_directories(${target_name} PUBLIC
+            include
+        )
+        target_compile_definitions(${target_name} PRIVATE
+            REFLECT_TEST_NAME="${name}"
+        )
+        zeno_declare_reflection_support(${target_name} "${REFLECTION_HEADERS}")
+    endfunction(add_single_file_test_target)
+
+    add_single_file_test_target(example)
+    add_single_file_test_target(field_visit)
 
 endif()
