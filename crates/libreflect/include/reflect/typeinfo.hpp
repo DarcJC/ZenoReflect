@@ -23,7 +23,7 @@ namespace reflect
     class LIBREFLECT_API RTTITypeInfo {
     public:
         // Important: This constructor is internal, don't use it
-        REFLECT_CONSTEXPR RTTITypeInfo(const char* in_name, std::size_t hashcode, size_t flags) : m_name(in_name), m_hashcode(hashcode), m_flags(flags) {}
+        REFLECT_CONSTEXPR RTTITypeInfo(const char* in_name, std::size_t hashcode, size_t flags, const RTTITypeInfo* decayed = nullptr) : m_name(in_name), m_hashcode(hashcode), m_flags(flags), m_decayed(decayed) {}
 
         RTTITypeInfo(const RTTITypeInfo& other);
         RTTITypeInfo(RTTITypeInfo&& other);
@@ -34,6 +34,8 @@ namespace reflect
         size_t hash_code() const;
         size_t flags() const;
         bool has_flags(size_t in_flags) const;
+
+        const RTTITypeInfo* get_decayed_type() const;
 
         /**
          * Compare two type info using hash code.
@@ -52,6 +54,7 @@ namespace reflect
         const char* m_name;
         size_t m_hashcode;
         size_t m_flags;
+        const RTTITypeInfo* m_decayed = nullptr;
     };
 
     // SFINAE
@@ -75,14 +78,8 @@ namespace reflect
     // We need to instantiate type_info<void> here for Any
     template <>
     REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<void>() {
-        static RTTITypeInfo Void = { "void", 1ULL, 0 };
-        return Void;
-    }
-
-    template <>
-    REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<void*>() {
-        static RTTITypeInfo Void = { "void*", 2ULL, 0 };
-        return Void;
+        static RTTITypeInfo NullPtr = { "void", 1ULL, 0 };
+        return NullPtr;
     }
 
     template <>
@@ -119,4 +116,81 @@ namespace reflect
 }
 #endif // _REFLECT_RTTI_GUARD_zeno_reflect_Any_15554020952442124146
 /// End RTTI of "zeno::reflect::Any"
+///////////////////////////
+
+///////////////////////////
+/// Begin RTTI of "const void *"
+#ifndef _REFLECT_RTTI_GUARD_const_void_Mul_9800437855833908128
+#define _REFLECT_RTTI_GUARD_const_void_Mul_9800437855833908128 1
+
+namespace zeno
+{
+namespace reflect
+{
+    template <>
+    REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<const void *>() {
+        static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {
+            "const void *",
+            9800437855833908128ULL,
+            static_cast<size_t>(
+                TF_IsPointer | TF_None ),
+            &type_info<void>()
+        };
+        return s;
+    }
+}
+}
+#endif // _REFLECT_RTTI_GUARD_const_void_Mul_9800437855833908128
+/// End RTTI of "const void *"
+///////////////////////////
+
+///////////////////////////
+/// Begin RTTI of "void *"
+#ifndef _REFLECT_RTTI_GUARD_void_Mul_14182246238469061381
+#define _REFLECT_RTTI_GUARD_void_Mul_14182246238469061381 1
+
+namespace zeno
+{
+namespace reflect
+{
+    template <>
+    REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<void *>() {
+        static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {
+            "void *",
+            14182246238469061381ULL,
+            static_cast<size_t>(
+                TF_IsPointer | TF_None ),
+            &type_info<void>()
+        };
+        return s;
+    }
+}
+}
+#endif // _REFLECT_RTTI_GUARD_void_Mul_14182246238469061381
+/// End RTTI of "void *"
+///////////////////////////
+
+///////////////////////////
+/// Begin RTTI of "const char *"
+#ifndef _REFLECT_RTTI_GUARD_const_char_Mul_1226968636088196134
+#define _REFLECT_RTTI_GUARD_const_char_Mul_1226968636088196134 1
+
+namespace zeno
+{
+namespace reflect
+{
+    template <>
+    REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<const char *>() {
+        static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {
+            "const char *",
+            1226968636088196134ULL,
+            static_cast<size_t>(
+                TF_IsPointer | TF_None )
+        };
+        return s;
+    }
+}
+}
+#endif // _REFLECT_RTTI_GUARD_const_char_Mul_1226968636088196134
+/// End RTTI of "const char *"
 ///////////////////////////

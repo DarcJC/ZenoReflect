@@ -9,6 +9,7 @@ if (REFLECT_BUILD_EXAMPLE)
     make_absolute_paths(REFLECTION_HEADERS 
         include/data.h
         include/test.h
+        include/print.h
     ) 
 
     function(add_single_file_test_target name)
@@ -27,5 +28,6 @@ if (REFLECT_BUILD_EXAMPLE)
 
     add_single_file_test_target(example)
     add_single_file_test_target(field_visit)
+    add_single_file_test_target(any_with_ptr)
 
 endif()

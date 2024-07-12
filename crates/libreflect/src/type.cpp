@@ -140,13 +140,13 @@ bool zeno::reflect::IHasParameter::is_suitable_with_params(const ArrayList<RTTIT
 
 bool zeno::reflect::IHasParameter::is_suitable_to_invoke(const ArrayList<Any> &params) const
 {
-    const ArrayList<RTTITypeInfo>& signature_erased = get_params_dacayed();
-    if (params.size() < signature_erased.size()) {
+    const ArrayList<RTTITypeInfo>& signature = get_params();
+    if (params.size() < signature.size()) {
         return false;
     }
 
-    for (int i = 0; i < signature_erased.size(); ++i) {
-        if (params[i].type() != signature_erased[i]) {
+    for (int i = 0; i < signature.size(); ++i) {
+        if (params[i].is_convertible_to(signature[i]) == AnyConversionMethod::Impossible) {
             return false;
         }
     }

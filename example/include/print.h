@@ -2,6 +2,7 @@
 
 #include "reflect/type"
 #include <iostream>
+#include <string>
 
 namespace zeno
 {
@@ -36,3 +37,6 @@ namespace reflect
     }
 }
 }
+
+REFLECT_REGISTER_RTTI_TYPE_MANUAL(std::string)
+REFLECT_REGISTER_RTTI_TYPE_MANUAL(char)

@@ -1,5 +1,7 @@
 #include "data.h"
 #include "reflect/core.hpp"
+#include <cstddef>
+#include <iostream>
 #include "reflect/reflection.generated.hpp"
 
 namespace zeno {
@@ -12,3 +14,9 @@ namespace zeno {
 }
 
 using ZABC = zeno::ABC;
+
+struct ZRECORD() Soo {
+    void wow(int* qwq) {
+        std::cout << (size_t)qwq << std::endl;
+    }
+};

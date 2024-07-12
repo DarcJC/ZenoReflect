@@ -10,17 +10,32 @@ namespace reflect
 {
     template <>
     REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<{{cppType}}>() {
-        static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {
-            "{{ name }}",
-            {{ hash }}ULL,
-            static_cast<size_t>(
-                {% if isPointer -%}TF_IsPointer | {%- endif -%} 
-                {% if isConst -%}TF_IsConst | {%- endif -%} 
-                {% if isRValueRef -%}TF_IsRValueRef | {%- endif -%} 
-                {% if isLValueRef -%}TF_IsLValueRef | {%- endif -%} 
-                TF_None )
-        };
-        return s;
+        if REFLECT_FORCE_CONSTEPXR (std::is_same<typename std::decay<std::remove_pointer<{{cppType}}>::type>::type,{{cppType}}>::value) {
+            static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {
+                "{{ name }}",
+                {{ hash }}ULL,
+                static_cast<size_t>(
+                    {% if isPointer -%}TF_IsPointer | {%- endif -%} 
+                    {% if isConst -%}TF_IsConst | {%- endif -%} 
+                    {% if isRValueRef -%}TF_IsRValueRef | {%- endif -%} 
+                    {% if isLValueRef -%}TF_IsLValueRef | {%- endif -%} 
+                    TF_None )
+            };
+            return s;
+        } else {
+            static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {
+                "{{ name }}",
+                {{ hash }}ULL,
+                static_cast<size_t>(
+                    {% if isPointer -%}TF_IsPointer | {%- endif -%} 
+                    {% if isConst -%}TF_IsConst | {%- endif -%} 
+                    {% if isRValueRef -%}TF_IsRValueRef | {%- endif -%} 
+                    {% if isLValueRef -%}TF_IsLValueRef | {%- endif -%} 
+                    TF_None ),
+                &type_info<typename std::decay<std::remove_pointer<{{cppType}}>::type>::type>()
+            };
+            return s;
+        }
     }
 }
 }

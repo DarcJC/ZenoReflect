@@ -11,6 +11,15 @@ namespace reflect
 {
     class Any;
 
+    enum class AnyConversionMethod {
+        Impossible,
+        TakeAddress,
+        Deref,
+        Move,
+        Forward,
+        AsIs,
+    };
+
 namespace any
 {
     class IContainer {
@@ -19,6 +28,8 @@ namespace any
         virtual const RTTITypeInfo& type() const = 0;
         virtual bool is_type(const RTTITypeInfo& other_type) const = 0;
         virtual IContainer* clone() const = 0;
+        virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const = 0;
+        virtual void* get_data_ptr_unsafe() const = 0;
     };
 
 
@@ -76,7 +87,7 @@ namespace any
 
         template <typename T, typename... Args>
         Any(TInPlaceType<T*>, Args&&... args) {
-            emplace<std::decay_t<T>>(zeno::reflect::forward<Args>(args)...);
+            emplace<std::decay_t<T>*>(zeno::reflect::forward<Args>(args)...);
         }
 
         Any& operator=(const Any& other) {
@@ -104,7 +115,7 @@ namespace any
             using DecayType = std::decay_t<T>;
             reset();
             if REFLECT_FORCE_CONSTEPXR (VTIsPointer<T>) {
-                m_value_container = new any::ValueContainer<DecayType>(zeno::reflect::forward<Args>(args)...);
+                m_value_container = new any::ValueContainer<std::remove_cv_t<T>>(zeno::reflect::forward<Args>(args)...);
             } else if REFLECT_FORCE_CONSTEPXR (VTIsSame<Any, T>) {
                 m_value_container = new any::ValueContainer<DecayType>(zeno::reflect::forward<Args>(args)...);
             } else {
@@ -150,6 +161,10 @@ namespace any
 
         REFLECT_STATIC_CONSTEXPR static Any make_null() {
             return Any();
+        }
+
+        AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const {
+            return m_value_container->is_convertible_to(other_type);
         }
 
     private:
@@ -204,15 +219,30 @@ namespace any
      */
     template <typename T>
     T any_cast(Any& operand) {
-        using NonRef = std::decay_t<T>;
+        using NonRef = typename std::remove_cv<T>::type;
+
+        AnyConversionMethod convert = operand.m_value_container->is_convertible_to(type_info<T>());
 
         ZENO_CHECK_MSG(operand.has_value(), "Can't cast using <nullany>");
-        ZENO_CHECK_MSG(operand.m_value_container->is_type(type_info<NonRef>()), "Type cast to no matched");
+        ZENO_CHECK_MSG(AnyConversionMethod::Impossible != convert, "Type cast to no matched");
 
         if REFLECT_FORCE_CONSTEPXR (std::is_rvalue_reference_v<T>) {
             return zeno::reflect::move(static_cast<any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value);
         } else {
-            return static_cast<any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value;
+            switch (convert)
+            {
+            case AnyConversionMethod::TakeAddress:
+                if REFLECT_FORCE_CONSTEPXR (VTIsPointer<T>) {
+                    return static_cast<T>(static_cast<any::ValueContainer<NonRef>&>(*operand.m_value_container).get_data_ptr_unsafe());
+                }
+            case AnyConversionMethod::Move:
+                if REFLECT_FORCE_CONSTEPXR (std::is_rvalue_reference_v<T>) {
+                    return zeno::reflect::move<T>(static_cast<any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value);
+                }
+            case AnyConversionMethod::AsIs:
+            default:
+                return static_cast<any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value;
+            }
         }
 
     }
@@ -226,29 +256,52 @@ namespace any
      */
     template <typename T>
     T any_cast(const Any& operand) {
-        using NonRef = std::decay_t<T>;
+        using NonRef = typename std::remove_cv<T>::type;
+
+        AnyConversionMethod convert = operand.m_value_container->is_convertible_to(type_info<NonRef>());
 
         ZENO_CHECK_MSG(operand.has_value(), "Can't cast using <nullany>");
-        ZENO_CHECK_MSG(operand.m_value_container->is_type(type_info<NonRef>()), "Type cast to no matched");
+        ZENO_CHECK_MSG(AnyConversionMethod::Impossible != convert, "Type cast to no matched");
 
-        return static_cast<const any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value;
+        switch (convert)
+        {
+        case AnyConversionMethod::TakeAddress:
+            if REFLECT_FORCE_CONSTEPXR (VTIsPointer<T>) {
+                    return static_cast<T>(static_cast<const any::ValueContainer<NonRef>&>(*operand.m_value_container).get_data_ptr_unsafe());
+            }
+        case AnyConversionMethod::Move:
+            if REFLECT_FORCE_CONSTEPXR (std::is_rvalue_reference_v<T>) {
+                return zeno::reflect::move<T>(static_cast<any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value);
+            }
+        case AnyConversionMethod::AsIs:
+        default:
+            return static_cast<const any::ValueContainer<NonRef>&>(*operand.m_value_container).m_value;
+        }
     }
 
     template<typename T>
     T* any_cast(Any* operand) noexcept {
-        using NonRef = std::decay_t<T>;
-        if (operand && operand->has_value() && operand->m_value_container->is_type(type_info<NonRef>())) {
-            return &static_cast<any::ValueContainer<NonRef>*>(operand->m_value_container)->m_value;
+        using NonRef = typename std::remove_cv<T>::type;
+
+        if (operand && operand->has_value()) {
+            if (AnyConversionMethod convert = operand->m_value_container->is_convertible_to(type_info<NonRef>()); AnyConversionMethod::Impossible != convert) {
+                return &static_cast<any::ValueContainer<NonRef>*>(operand->m_value_container)->m_value;
+            }
         }
+
         return nullptr;
     }
 
     template<typename T>
     const T* any_cast(const Any* operand) noexcept {
         using NonRef = std::decay_t<T>;
-        if (operand && operand->has_value() && operand->m_value_container->is_type(type_info<NonRef>())) {
-            return &static_cast<const any::ValueContainer<NonRef>*>(operand->m_value_container)->m_value;
+
+        if (operand && operand->has_value()) {
+            if (AnyConversionMethod convert = operand->m_value_container->is_convertible_to(type_info<NonRef>()); AnyConversionMethod::Impossible != convert) {
+                return &static_cast<const any::ValueContainer<NonRef>*>(operand->m_value_container)->m_value;
+            }
         }
+
         return nullptr;
     }
 
@@ -293,12 +346,48 @@ namespace any
 #endif
         }
 
+        virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const override {
+            if (
+                other_type.get_decayed_type() == nullptr && type().get_decayed_type() == nullptr
+                && other_type == type()
+            ) {
+                return AnyConversionMethod::AsIs;
+            }
+            else if (
+                other_type.get_decayed_type() == nullptr 
+                && type().get_decayed_type() && other_type == *type().get_decayed_type()
+            ) {
+                if (type().has_flags(TypeFlag::TF_IsPointer)) {
+                    return AnyConversionMethod::Deref;
+                }
+                return AnyConversionMethod::AsIs;
+            }
+            else if (
+                type().get_decayed_type() == nullptr && other_type.get_decayed_type() && *other_type.get_decayed_type() == type()
+            ) {
+                if (other_type.has_flags(TypeFlag::TF_IsPointer)) {
+                    return AnyConversionMethod::TakeAddress;
+                } else if (other_type.has_flags(TypeFlag::TF_IsLValueRef)) {
+                    return AnyConversionMethod::AsIs;
+                } else if (other_type.has_flags(TypeFlag::TF_IsRValueRef)) {
+                    return AnyConversionMethod::Move;
+                }
+                return AnyConversionMethod::AsIs;
+            }
+
+            return AnyConversionMethod::Impossible;
+        }
+
         virtual IContainer* clone() const override {
             if REFLECT_CONSTEXPR (VTIsCopyConstructible<T>) {
                 return new ValueContainer<ValueType>(m_value);
             } else {
                 ZENO_CHECK(VTIsCopyConstructible<T>);
             }
+        }
+
+        virtual void* get_data_ptr_unsafe() const override {
+            return const_cast<void*>(reinterpret_cast<const void*>(&m_value));
         }
     };
 
@@ -319,8 +408,16 @@ namespace any
 #endif
         }
 
+        virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const override {
+            return AnyConversionMethod::Impossible;
+        }
+
         virtual IContainer* clone() const override {
             return new ValueContainer<void>();
+        }
+
+        virtual void* get_data_ptr_unsafe() const override {
+            return nullptr;
         }
     };
 
@@ -344,12 +441,48 @@ namespace any
 #endif
         }
 
+        virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const override {
+            if (
+                other_type.get_decayed_type() == nullptr && type().get_decayed_type() == nullptr
+                && other_type == type()
+            ) {
+                return AnyConversionMethod::AsIs;
+            }
+            else if (
+                other_type.get_decayed_type() == nullptr 
+                && type().get_decayed_type() && other_type == *type().get_decayed_type()
+            ) {
+                if (type().has_flags(TypeFlag::TF_IsPointer)) {
+                    return AnyConversionMethod::Deref;
+                }
+                return AnyConversionMethod::AsIs;
+            }
+            else if (
+                type().get_decayed_type() == nullptr && other_type.get_decayed_type() && *other_type.get_decayed_type() == type()
+            ) {
+                if (other_type.has_flags(TypeFlag::TF_IsPointer)) {
+                    return AnyConversionMethod::TakeAddress;
+                } else if (other_type.has_flags(TypeFlag::TF_IsLValueRef)) {
+                    return AnyConversionMethod::AsIs;
+                } else if (other_type.has_flags(TypeFlag::TF_IsRValueRef)) {
+                    return AnyConversionMethod::Move;
+                }
+                return AnyConversionMethod::AsIs;
+            }
+
+            return AnyConversionMethod::Impossible;
+        }
+
         virtual IContainer* clone() const override {
             if REFLECT_CONSTEXPR (VTIsCopyConstructible<T*>) {
                 return new ValueContainer<ValueType>(m_value);
             } else {
                 ZENO_CHECK(VTIsCopyConstructible<T*>);
             }
+        }
+
+        virtual void* get_data_ptr_unsafe() const override {
+            return const_cast<void*>(reinterpret_cast<const void*>(m_value));
         }
     };
 
@@ -373,8 +506,16 @@ namespace any
 #endif
         }
 
+        virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const override {
+            return AnyConversionMethod::Impossible;
+        }
+
         virtual IContainer* clone() const override {
             return new ValueContainer<void*>(m_value);
+        }
+
+        virtual void* get_data_ptr_unsafe() const override {
+            return m_value;
         }
     };
 
@@ -396,9 +537,17 @@ namespace any
             return other_type == this->type();
         }
 
+        virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const override {
+            return AnyConversionMethod::Impossible;
+        }
+
         virtual IContainer* clone() const override {
             // 使用复制构造函数来处理Any的克隆，避免递归
             return new ValueContainer<Any>(m_value);
+        }
+
+        virtual void* get_data_ptr_unsafe() const override {
+            return const_cast<void*>(reinterpret_cast<const void*>(&m_value));
         }
     };
 
