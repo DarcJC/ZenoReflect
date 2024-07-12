@@ -347,23 +347,24 @@ namespace any
         }
 
         virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const override {
+            auto self_type = type();
             if (
-                other_type.get_decayed_type() == nullptr && type().get_decayed_type() == nullptr
-                && other_type == type()
+                other_type.get_decayed_hash() == 0 && self_type.get_decayed_hash() == 0
+                && other_type == self_type
             ) {
                 return AnyConversionMethod::AsIs;
             }
             else if (
-                other_type.get_decayed_type() == nullptr 
-                && type().get_decayed_type() && other_type == *type().get_decayed_type()
+                other_type.get_decayed_hash() == 0 
+                && self_type.get_decayed_hash() && other_type.hash_code() == self_type.get_decayed_hash()
             ) {
-                if (type().has_flags(TypeFlag::TF_IsPointer)) {
+                if (self_type.has_flags(TypeFlag::TF_IsPointer)) {
                     return AnyConversionMethod::Deref;
                 }
                 return AnyConversionMethod::AsIs;
             }
             else if (
-                type().get_decayed_type() == nullptr && other_type.get_decayed_type() && *other_type.get_decayed_type() == type()
+                self_type.get_decayed_hash() == 0 && other_type.get_decayed_hash() && other_type.get_decayed_hash() == self_type.hash_code()
             ) {
                 if (other_type.has_flags(TypeFlag::TF_IsPointer)) {
                     return AnyConversionMethod::TakeAddress;
@@ -442,23 +443,24 @@ namespace any
         }
 
         virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const override {
+            auto self_type = type();
             if (
-                other_type.get_decayed_type() == nullptr && type().get_decayed_type() == nullptr
-                && other_type == type()
+                other_type.get_decayed_hash() == 0 && self_type.get_decayed_hash() == 0
+                && other_type == self_type
             ) {
                 return AnyConversionMethod::AsIs;
             }
             else if (
-                other_type.get_decayed_type() == nullptr 
-                && type().get_decayed_type() && other_type == *type().get_decayed_type()
+                other_type.get_decayed_hash() == 0 
+                && self_type.get_decayed_hash() && other_type.hash_code() == self_type.get_decayed_hash()
             ) {
-                if (type().has_flags(TypeFlag::TF_IsPointer)) {
+                if (self_type.has_flags(TypeFlag::TF_IsPointer)) {
                     return AnyConversionMethod::Deref;
                 }
                 return AnyConversionMethod::AsIs;
             }
             else if (
-                type().get_decayed_type() == nullptr && other_type.get_decayed_type() && *other_type.get_decayed_type() == type()
+                self_type.get_decayed_hash() == 0 && other_type.get_decayed_hash() && other_type.get_decayed_hash() == self_type.hash_code()
             ) {
                 if (other_type.has_flags(TypeFlag::TF_IsPointer)) {
                     return AnyConversionMethod::TakeAddress;

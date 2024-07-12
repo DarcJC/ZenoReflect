@@ -9,7 +9,7 @@ namespace zeno
 namespace reflect
 {
     template <>
-    REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<{{cppType}}>() {
+    inline REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<{{cppType}}>() {
         if REFLECT_FORCE_CONSTEPXR (std::is_same<typename std::decay<std::remove_pointer<{{cppType}}>::type>::type,{{cppType}}>::value) {
             static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {
                 "{{ name }}",
@@ -19,15 +19,11 @@ namespace reflect
                     {% if isConst -%}TF_IsConst | {%- endif -%} 
                     {% if isRValueRef -%}TF_IsRValueRef | {%- endif -%} 
                     {% if isLValueRef -%}TF_IsLValueRef | {%- endif -%} 
-                    TF_None )
+                    TF_None ),
+                0
             };
             return s;
         } else {
-            static RTTITypeInfo decayed = {
-                type_info<typename std::decay<std::remove_pointer<{{cppType}}>::type>::type>().name(),
-                type_info<typename std::decay<std::remove_pointer<{{cppType}}>::type>::type>().hash_code(),
-                TF_None
-            };
             static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {
                 "{{ name }}",
                 {{ hash }}ULL,
@@ -37,7 +33,7 @@ namespace reflect
                     {% if isRValueRef -%}TF_IsRValueRef | {%- endif -%} 
                     {% if isLValueRef -%}TF_IsLValueRef | {%- endif -%} 
                     TF_None ),
-                &decayed
+                type_info<typename std::decay<std::remove_pointer<{{cppType}}>::type>::type>().hash_code()
             };
             return s;
         }

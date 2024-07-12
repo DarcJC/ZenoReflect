@@ -52,9 +52,9 @@ bool zeno::reflect::RTTITypeInfo::has_flags(size_t in_flags) const
     return m_flags & in_flags;
 }
 
-const zeno::reflect::RTTITypeInfo *zeno::reflect::RTTITypeInfo::get_decayed_type() const
+const size_t zeno::reflect::RTTITypeInfo::get_decayed_hash() const
 {
-    return m_decayed;
+    return m_decayed_hash;
 }
 
 REFLECT_STATIC_CONSTEXPR bool zeno::reflect::RTTITypeInfo::equal_fast(const RTTITypeInfo &other) const
