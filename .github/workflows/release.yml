@@ -1,10 +1,17 @@
 name: Build and Release
 
-on:
+on: 
+  workflow_dispatch:
+    inputs:
+      versionTag:
+        description: 'Version tag in release name'
+        required: false
+        default: string
+        default: 'v0.0.'
   # push:
   #   tags:
   #     - 'release-v*'  # 触发此工作流程的tag，格式为release-v*
-  workflow_dispatch:  # 允许手动触发此工作流程
+  # workflow_dispatch:  # 允许手动触发此工作流程
 
 jobs:
   build:
