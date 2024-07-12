@@ -6,13 +6,8 @@ on:
       versionTag:
         description: 'Version tag in release name'
         required: false
-        default: string
+        type: string
         default: 'v0.0.'
-  # push:
-  #   tags:
-  #     - 'release-v*'  # 触发此工作流程的tag，格式为release-v*
-  # workflow_dispatch:  # 允许手动触发此工作流程
-
 jobs:
   build:
     name: Build on ${{ matrix.os }}
@@ -67,7 +62,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        release_name: Release ${{ inputs.versionTag }}
         draft: false
         prerelease: false
 
