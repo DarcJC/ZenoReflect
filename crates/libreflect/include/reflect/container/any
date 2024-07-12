@@ -173,6 +173,8 @@ namespace any
         template<typename T>
         friend const T* any_cast(const Any* operand) noexcept;
 
+        template<typename T>
+        friend const T* any_cast_unsafe(const Any* operand) noexcept;
         // ==== Friend Functions ====
     };
 
@@ -245,6 +247,11 @@ namespace any
             return &static_cast<const any::ValueContainer<NonRef>*>(operand->m_value_container)->m_value;
         }
         return nullptr;
+    }
+
+    template <typename T>
+    const T* any_cast_unsafe(const Any* operand) noexcept {
+        return &static_cast<const any::ValueContainer<T>*>(operand->m_value_container)->m_value;
     }
 
 namespace any
