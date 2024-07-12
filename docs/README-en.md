@@ -5,7 +5,8 @@
 ## ToC
 
 [Any / Type Erasing](reference/any-en.md)
-[Type Interface](reference/type_api-end.md)
+
+[Type Interface](reference/type_api-en.md)
 
 ## Mechanism
 
