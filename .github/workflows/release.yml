@@ -14,10 +14,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        #os: [windows-latest, ubuntu-latest]
+        os: [ubuntu-latest]
         include:
-          - os: windows-latest
-            suffix: win64
+          # - os: windows-latest
+          #   suffix: win64
           - os: ubuntu-latest
             suffix: linux64
 
@@ -46,7 +47,7 @@ jobs:
 
     - name: Configure CMake (Windows)
       if: runner.os == 'Windows'
-      run: cmake -B build -G Ninja -DREFLECT_BUILD_EXAMPLE=OFF -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+      run: cmake -B build -DREFLECT_BUILD_EXAMPLE=OFF -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
       
     - name: Configure CMake (Linux)
       if: runner.os != 'Windows'
