@@ -54,7 +54,7 @@ namespace reflect
         const char* m_name;
         size_t m_hashcode;
         size_t m_flags;
-        const size_t m_decayed_hash = 0;
+        size_t m_decayed_hash = 0;
     };
 
     // SFINAE
