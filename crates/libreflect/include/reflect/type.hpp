@@ -137,8 +137,8 @@ namespace reflect
         virtual bool is_suitable_with_params(const ArrayList<RTTITypeInfo>& types = {}) const;
         virtual bool is_suitable_to_invoke(const ArrayList<Any>& params = {}) const;
 
-        virtual const ArrayList<RTTITypeInfo>& get_params() const = 0;
-        virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const = 0;
+        virtual ArrayList<RTTITypeInfo> get_params() const = 0;
+        virtual ArrayList<RTTITypeInfo> get_params_dacayed() const = 0;
 
         virtual Any get_param_default_value(size_t index) = 0;
     };

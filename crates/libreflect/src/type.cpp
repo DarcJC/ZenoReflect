@@ -123,8 +123,8 @@ zeno::reflect::IHasParameter::~IHasParameter() = default;
 
 bool zeno::reflect::IHasParameter::is_suitable_with_params(const ArrayList<RTTITypeInfo>& types) const
 {
-    const ArrayList<RTTITypeInfo>& signature_erased = get_params_dacayed();
-    const ArrayList<RTTITypeInfo>& signature = get_params();
+    const ArrayList<RTTITypeInfo> signature_erased = get_params_dacayed();
+    const ArrayList<RTTITypeInfo> signature = get_params();
     if (types.size() < signature_erased.size()) {
         return false;
     }
@@ -140,7 +140,7 @@ bool zeno::reflect::IHasParameter::is_suitable_with_params(const ArrayList<RTTIT
 
 bool zeno::reflect::IHasParameter::is_suitable_to_invoke(const ArrayList<Any> &params) const
 {
-    const ArrayList<RTTITypeInfo>& signature = get_params();
+    const ArrayList<RTTITypeInfo> signature = get_params();
     if (params.size() < signature.size()) {
         return false;
     }
