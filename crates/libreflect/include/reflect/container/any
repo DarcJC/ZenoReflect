@@ -349,8 +349,7 @@ namespace any
         virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const override {
             auto self_type = type();
             if (
-                other_type.get_decayed_hash() == 0 && self_type.get_decayed_hash() == 0
-                && other_type == self_type
+                other_type == self_type
             ) {
                 return AnyConversionMethod::AsIs;
             }
@@ -445,8 +444,7 @@ namespace any
         virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const override {
             auto self_type = type();
             if (
-                other_type.get_decayed_hash() == 0 && self_type.get_decayed_hash() == 0
-                && other_type == self_type
+                other_type == self_type
             ) {
                 return AnyConversionMethod::AsIs;
             }
