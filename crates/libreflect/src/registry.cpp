@@ -41,7 +41,7 @@ zeno::reflect::ReflectTypeMap::~ReflectTypeMap()
 bool zeno::reflect::ReflectTypeMap::add(ValueType val)
 {
     auto* ptr = RTM_TO_TYPED_MAPS(m_opaque_data);
-    if (ptr->contains(val->type_hash())) {
+    if (ptr->find(val->type_hash()) != ptr->end()) {
         return false;
     }
     ptr->insert_or_assign(val->type_hash(), val);
