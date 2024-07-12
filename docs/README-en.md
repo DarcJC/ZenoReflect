@@ -14,7 +14,9 @@ First and foremost, it is important to note that this is a runtime reflection sy
 
 Additionally, the type erasure system is not yet complete and may have issues.
 
-Currently, manual type registration is not supported. All registration code is automatically generated at compile-time based on **reflection markers**.
+<del>Currently, manual type registration is not supported.</del> All registration code is automatically generated at compile-time based on **reflection markers**.
+
+You can now use `REFLECT_REGISTER_RTTI_TYPE_MANUAL` macro to register type into RTTI system in any scanned header.
 
 Calling `zeno_declare_reflection_support` will automatically create a target for reflection generation, and your target will depend on this new target. This means that reflection information is guaranteed to be generated before your target is compiled. Do not assume static reflection information exists in any other targets where reflection is not enabled. Of course, it is safe to use the runtime API anywhere (except during static initialization, as it is good practice not to assume the order of static initialization).
 

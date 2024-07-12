@@ -29,7 +29,9 @@ zeno_declare_reflection_support(ReflectExample "${REFLECTION_HEADERS}")
 
 还有，目前类型擦除系统还未完善，可能会出现问题。
 
-目前暂不支持类型的手动注册，所有的注册代码都是在编译时根据**反射标记**自动生成的。
+<del>目前暂不支持类型的手动注册</del>，所有的注册代码都是在编译时根据**反射标记**自动生成的。
+
+现在可以在被注册扫描的头文件中使用`REFLECT_REGISTER_RTTI_TYPE_MANUAL`宏来把任意类型注册进RTTI系统中。
 
 调用`zeno_declare_reflection_support`会自动产生一个进行反射生成的target，并且你的target会依赖这个新的target。
 这意味着反射信息只会保证在你的target编译前被生成，不要在其它任何未启用反射的target中假设静态反射信息已经存在。当然在任何地方使用运行时的API是安全的（除了静态初始化阶段，不去假设静态初始化顺序是一个好习惯）。
