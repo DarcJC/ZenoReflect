@@ -10,8 +10,6 @@ R"INJA(
 #include "reflect/metadata.hpp"
 #include "reflect/reflection.generated.hpp"
 
-#include <iostream>
-
 using namespace zeno::reflect;
 
 ## for type_info in types
@@ -24,22 +22,22 @@ namespace {
     public:
         ConstructorWrapperFor{{- type_info.normal_name -}}_{{- loop.index -}}() : ITypeConstructor(get_type<{{ type_info.canonical_typename }}>()) {}
 
-        virtual ArrayList<RTTITypeInfo> get_params() const override {
-            return {
+        virtual const ArrayList<RTTITypeInfo>& get_params() const override {
+            static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in ctor.params
                     zeno::reflect::type_info<{{ param.type }}>(),
 ## endfor
             };
-
+            return STATIC_LIST;
         }
 
-        virtual ArrayList<RTTITypeInfo> get_params_dacayed() const override {
-            return {
+        virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const override {
+            static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in ctor.params
                     zeno::reflect::type_info<TTDecay<{{ param.type }}>>(),
 ## endfor
             };
-
+            return STATIC_LIST;
         }
 
         virtual Any get_param_default_value(size_t index) override {
@@ -100,21 +98,22 @@ namespace {
     public:
         Func_{{- type_info.normal_name -}}_{{- loop.index -}}_{{- func.name -}}() : IMemberFunction(get_type<{{ type_info.canonical_typename }}>()) {}
 
-        virtual ArrayList<RTTITypeInfo> get_params() const override {
-            return {
+        virtual const ArrayList<RTTITypeInfo>& get_params() const override {
+            static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in func.params
                     zeno::reflect::type_info<{{ param.type }}>(),
 ## endfor
             };
+            return STATIC_LIST;
         }
 
-        virtual ArrayList<RTTITypeInfo> get_params_dacayed() const override {
-            return {
+        virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const override {
+            static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in func.params
                     zeno::reflect::type_info<TTDecay<{{ param.type }}>>(),
 ## endfor
             };
-
+            return STATIC_LIST;
         }
 
         virtual TypeHandle get_return_type() const override {
