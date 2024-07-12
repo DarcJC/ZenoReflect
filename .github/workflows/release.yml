@@ -1,0 +1,75 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'release-v*'  # 触发此工作流程的tag，格式为release-v*
+  workflow_dispatch:  # 允许手动触发此工作流程
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            suffix: win64
+          - os: ubuntu-latest
+            suffix: linux64
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install CMake
+      uses: lukka/get-cmake@latest
+
+    - name: Install LLVM/Clang
+      uses: KyleMayes/install-llvm-action@v2
+      with:
+        version: '18.1.8'
+      
+    - name: Symlink libclang.so (Linux)
+      if: contains(matrix.os, 'ubuntu')
+      run: sudo ln -s libclang-11.so.1 /lib/x86_64-linux-gnu/libclang.so
+      working-directory: ${{ env.LLVM_PATH }}/lib
+
+    - name: Configure CMake
+      run: cmake -B build -DREFLECT_BUILD_EXAMPLE=OFF
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Archive and upload artifacts
+      run: |
+        mkdir artifacts
+        find build/bin -type f -exec cp {} artifacts/{}_$(echo ${{ matrix.suffix }}) \;
+      shell: bash
+      
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./artifacts/
+        asset_name: ${{ matrix.os }}-artifacts.zip
+        asset_content_type: application/zip
