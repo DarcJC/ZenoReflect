@@ -23,6 +23,11 @@ namespace reflect
             };
             return s;
         } else {
+            static RTTITypeInfo decayed = {
+                type_info<typename std::decay<std::remove_pointer<{{cppType}}>::type>::type>().name(),
+                type_info<typename std::decay<std::remove_pointer<{{cppType}}>::type>::type>().hash_code(),
+                TF_None
+            };
             static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {
                 "{{ name }}",
                 {{ hash }}ULL,
@@ -32,7 +37,7 @@ namespace reflect
                     {% if isRValueRef -%}TF_IsRValueRef | {%- endif -%} 
                     {% if isLValueRef -%}TF_IsLValueRef | {%- endif -%} 
                     TF_None ),
-                &type_info<typename std::decay<std::remove_pointer<{{cppType}}>::type>::type>()
+                &decayed
             };
             return s;
         }
