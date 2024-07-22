@@ -3,6 +3,7 @@
 #include <cstddef>
 #include "reflect/macro.hpp"
 #include "reflect/polyfill.hpp"
+#include "reflect/traits/constant_eval.hpp"
 #include "reflect/utils/assert"
 #include "reflect/traits/type_traits"
 
@@ -19,6 +20,9 @@ namespace reflect
         TF_IsLValueRef = 1 << 2,
         TF_IsConst = 1 << 3,
     };
+
+    template <typename T>
+    struct AlwaysFalse : TFalseType {};
 
     class LIBREFLECT_API RTTITypeInfo {
     public:
@@ -66,11 +70,7 @@ namespace reflect
 #else
 
         // IDK why some old MSVC will instantiate this template in libreflect
-#if defined(_MSC_VER) && _MSC_VER < 1940
-        ZENO_CHECK_MSG(false, "\r\n==== Reflection Error ====\r\nThe type_info of current type not implemented. Have you marked it out ?\r\nTry '#include \"reflect/reflection.generated.hpp\"' in the traslation unit where you used zeno::reflect::type_info. \r\n==== Reflection Error End ====");
-#else
-        static_assert(false, "\r\n==== Reflection Error ====\r\nThe type_info of current type not implemented. Have you marked it out ?\r\nTry '#include \"reflect/reflection.generated.hpp\"' in the traslation unit where you used zeno::reflect::type_info. \r\n==== Reflection Error End ====");
-#endif
+        static_assert(AlwaysFalse<T>::Value, "\r\n==== Reflection Error ====\r\nThe type_info of current type not implemented. Have you marked it out ?\r\nTry '#include \"reflect/reflection.generated.hpp\"' in the traslation unit where you used zeno::reflect::type_info. \r\n==== Reflection Error End ====");
         return Default;
 #endif
     }
