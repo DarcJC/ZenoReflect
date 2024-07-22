@@ -122,6 +122,14 @@ std::vector<std::string_view> split(std::string_view str, std::string_view delim
     return parts;
 }
 
+void replace_all(std::string& out_str, const std::string& from, const std::string& to) {
+    size_t start_pos = 0;
+    while ((start_pos = out_str.find(from, start_pos)) != std::string::npos) {
+        out_str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+}
+
 std::string get_file_path_in_header_output(std::string_view filename)
 {
     return (std::filesystem::path(GLOBAL_CONTROL_FLAGS->output_dir) / std::filesystem::path(filename)).string();

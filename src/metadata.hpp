@@ -8,6 +8,7 @@
 #include <map>
 #include <cctype>
 #include <stdexcept>
+#include <sstream>
 
 enum class MetadataType : uint8_t {
     None = 0,

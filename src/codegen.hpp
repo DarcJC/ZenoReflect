@@ -57,8 +57,12 @@ namespace zeno::reflect
 
         std::string compile(CodeCompilerState& state) {
             const size_t hash_value = HashImpl{}(m_qual_type.getCanonicalType().getAsString());
-            const std::string cppType = m_qual_type.getAsString();
-            const std::string name = m_qual_type.getCanonicalType().getAsString();
+            std::string cppType = m_qual_type.getAsString();
+            std::string name = m_qual_type.getCanonicalType().getAsString();
+            if (cppType.find("_Bool") != std::string::npos) {
+                replace_all(cppType, "_Bool", "bool");
+                replace_all(name, "_Bool", "bool");
+            }
             if (is_blacklisted_keyword(cppType)) {
                 if (GLOBAL_CONTROL_FLAGS->verbose) {
                     llvm::outs() << "[debug] Skipping compiler internal type \"" << cppType << "\"\n";
