@@ -1,7 +1,7 @@
 #pragma once
 
-#include "reflect/traits/move.hpp"
-#include "reflect/traits/enable_if.hpp"
+#include <type_traits>
+#include <utility>
 
 namespace zeno
 {
@@ -9,12 +9,12 @@ namespace reflect
 {
     template<typename T>
     class UniquePtr {
-    private:
-        T* ptr;
-
     public:
+        UniquePtr() : ptr(nullptr) {}
+        UniquePtr(std::nullptr_t) : ptr(nullptr) {}
+
         template <typename U = T>
-        explicit UniquePtr(U* p = nullptr) : ptr(p) {}
+        explicit UniquePtr(U* p) : ptr(p) {}
 
         UniquePtr(const UniquePtr&) = delete;
         UniquePtr& operator=(const UniquePtr&) = delete;
@@ -23,8 +23,15 @@ namespace reflect
             moving.ptr = nullptr;
         }
 
-        UniquePtr& operator=(UniquePtr&& moving) noexcept {
-            if (this != &moving) {
+        template <typename U>
+        UniquePtr(UniquePtr<U>&& other) noexcept {
+            ptr = other.ptr;
+            other.ptr = nullptr;
+        }
+
+        template <typename U>
+        UniquePtr<T>& operator=(UniquePtr<U>&& moving) noexcept {
+            if ((void*)this != (void*)&moving) {
                 delete ptr;
                 ptr = moving.ptr;
                 moving.ptr = nullptr;
@@ -55,20 +62,23 @@ namespace reflect
 
         bool is_null() const { return ptr == nullptr; }
 
-        operator bool() {
-            return is_null();
+        operator bool() const {
+            return !is_null();
         }
 
-        template <typename U, typename = TTEnableIf<VTIsAssignable<U, T>>>
-        operator UniquePtr<U>() {
+        template <typename U>
+        operator UniquePtr<typename std::enable_if<std::is_assignable<U, T>::value, U>::type>() {
             return UniquePtr<U>(release());
         }
+
+        T* ptr;
     };
 
     template <typename T, typename... Args>
     UniquePtr<T> make_unique(Args&&... args) {
-        return UniquePtr<T>(new T(zeno::reflect::forward<Args>(args)...));
+        return UniquePtr<T>(new T(std::forward<Args>(args)...));
     }
+
 
 }
 }
