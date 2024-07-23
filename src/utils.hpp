@@ -7,7 +7,6 @@
 #include <iostream>
 #include <optional>
 #include <vector>
-#include <format>
 #include <string_view>
 #include "metadata.hpp"
 #include "inja/inja.hpp"
