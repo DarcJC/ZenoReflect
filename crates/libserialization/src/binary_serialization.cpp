@@ -4,6 +4,7 @@
 #include "reflect/serialization.hpp"
 
 #include "reflect/reflection.generated.hpp"
+#include "reflect/utils/assert"
 
 namespace zeno
 {
@@ -110,11 +111,12 @@ namespace reflect
         }
 
         void serialize_string(UniquePtr<IWritableStream>& out_stream, const Any& input) {
-            std::string value = any_cast<std::string>(input);
+            const std::string* value = any_cast<const std::string*>(input);
+            ZENO_CHECK_MSG(value, "Invalid string");
             out_stream->write_byte(static_cast<uint8_t>(TypeIdentifier::String));
-            uint32_t length = static_cast<uint32_t>(value.size());
+            uint32_t length = static_cast<uint32_t>(value->size());
             out_stream->write(reinterpret_cast<const uint8_t*>(&length), sizeof(length));
-            out_stream->write(reinterpret_cast<const uint8_t*>(value.data()), length);
+            out_stream->write(reinterpret_cast<const uint8_t*>(value->data()), length);
         }
 
         void deserialize_string(const UniquePtr<IReadableStream>& data_stream, Any& output) {
