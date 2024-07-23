@@ -4,6 +4,7 @@
 #include <vector>
 #include <cctype>
 #include <cstdio>
+#include <format>
 #include <stdexcept>
 #include "metadata.hpp"
 #include "args.hpp"
@@ -238,9 +239,7 @@ void Parser::next_token()
 std::string Parser::expect(TokenType token_expected)
 {
     if (current_token.type != token_expected) {
-        std::stringstream text;
-        text << "Unexcepted token when expecting " << token_type_to_string(token_expected) << ", found " << token_type_to_string(current_token.type) << ". Origin metadata: \n{}" << tokenizer.origin_string();
-        throw std::runtime_error(text.str());
+        throw std::runtime_error(std::format("Unexcepted token when expecting {}, found {}. Origin metadata: \n{}", token_type_to_string(token_expected), token_type_to_string(current_token.type), tokenizer.origin_string()));
     }
     std::string value = current_token.value;
     next_token();
@@ -261,10 +260,8 @@ std::string Parser::parse_value()
     } else if (current_token.type == TokenType::LIST_START) {
         return parse_list();
     }
-
-    std::stringstream text;
-    text << "Unexpected value type " << token_type_to_string(current_token.type) << ": '" << current_token.value << "'. Origin metadata: \n" << tokenizer.origin_string();
-    throw std::runtime_error(text.str());
+    
+    throw std::runtime_error(std::format("Unexpected value type {}: '{}'. Origin metadata: \n{}", token_type_to_string(current_token.type), current_token.value, tokenizer.origin_string()));
 }
 
 std::string Parser::parse_list()
