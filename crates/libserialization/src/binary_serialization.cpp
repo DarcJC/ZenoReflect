@@ -110,7 +110,7 @@ namespace reflect
         }
 
         void serialize_string(UniquePtr<IWritableStream>& out_stream, const Any& input) {
-            std::string value = any_cast<std::string>(input);
+            const std::string& value = any_cast<const std::string&>(input);
             out_stream->write_byte(static_cast<uint8_t>(TypeIdentifier::String));
             uint32_t length = static_cast<uint32_t>(value.size());
             out_stream->write(reinterpret_cast<const uint8_t*>(&length), sizeof(length));
