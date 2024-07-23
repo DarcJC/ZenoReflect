@@ -41,7 +41,7 @@ std::vector<std::string> get_parser_command_args(const std::string &cpp_version,
     result.push_back("-Wno-pragma-once-outside-header");
 
     // Set standrad version
-    result.push_back(std::string("-std=c++") + cpp_version);
+    result.push_back(std::format("-std=c++{}", cpp_version));
     // Set definitions
     // ZENO_REFLECT_PROCESSING will only set when parsing by this generator
     result.push_back("-DZENO_REFLECT_PROCESSING=1");
@@ -49,7 +49,7 @@ std::vector<std::string> get_parser_command_args(const std::string &cpp_version,
     // Add include directories
     for (const std::string& dir : include_dirs) {
         result.push_back(
-            std::string("-I") + dir
+            std::format("-I{}", dir)
         );
     }
     // Add pre include headers
