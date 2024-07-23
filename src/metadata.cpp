@@ -213,15 +213,15 @@ Parser::Parser(const std::string &input)
     next_token();
 }
 
-std::map<std::string, std::string> Parser::parse()
+std::map<std::string, MetaValue> Parser::parse()
 {
-    std::map<std::string, std::string> ast;
+    std::map<std::string, MetaValue> ast;
 
     while (current_token.type != TokenType::END)
     {
         std::string key = expect(TokenType::KEY);
         expect(TokenType::EQUAL);
-        std::string value = parse_value();
+        auto value = parse_value();
         ast[key] = value;
         if (current_token.type == TokenType::COMMA) {
             next_token();
@@ -246,7 +246,7 @@ std::string Parser::expect(TokenType token_expected)
     return value;
 }
 
-std::string Parser::parse_value()
+MetaValue Parser::parse_value()
 {
     if (current_token.type == TokenType::STRING) {
         std::string result = expect(TokenType::STRING);
@@ -256,7 +256,11 @@ std::string Parser::parse_value()
         }
         return result;
     } else if (current_token.type == TokenType::NUMBER) {
-        return expect(TokenType::NUMBER);
+        std::string result = expect(TokenType::NUMBER);
+        if (result.find('.') != std::string::npos)
+            return std::stof(result);
+        else
+            return std::stoi(result);
     } else if (current_token.type == TokenType::LIST_START) {
         return parse_list();
     }
@@ -264,17 +268,29 @@ std::string Parser::parse_value()
     throw std::runtime_error(std::format("Unexpected value type {}: '{}'. Origin metadata: \n{}", token_type_to_string(current_token.type), current_token.value, tokenizer.origin_string()));
 }
 
-std::string Parser::parse_list()
+MetaValue Parser::parse_list()
 {
-    std::string list;
+    std::vector<std::string> lstStr;
+    std::vector<float> lstFloat;
     next_token(); // Skip '('
     while (current_token.type != TokenType::LIST_END) {
-        list += parse_value();
+        auto val = parse_value();
+        if (std::holds_alternative<std::string>(val)) {
+            lstStr.push_back(std::get<std::string>(val));
+        }
+        else if (std::holds_alternative<float>(val)) {
+            lstFloat.push_back(std::get<float>(val));
+        }
+        else if (std::holds_alternative<int>(val)) {
+            lstFloat.push_back(std::get<int>(val));
+        }
         if (current_token.type == TokenType::COMMA) {
-            list += ", ";
             next_token();
         }
     }
     next_token(); // Skip ')'
-    return list;
+    if (!lstStr.empty())
+        return lstStr;
+    else
+        return lstFloat;
 }

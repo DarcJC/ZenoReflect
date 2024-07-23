@@ -87,5 +87,33 @@ int main(int argc, char* argv[]) {
     auto xx = ann2.has_value() ? zeno::reflect::any_cast<int>(ann2) : 0;
 
 
+    Any instance = make_any<zeno::Hhhh>();
+    zeno::Hhhh* typed_instance_ptr = any_cast<zeno::Hhhh>(&instance);
+    // 我们使用基类指针
+    IReflectedObject* obj = typed_instance_ptr;
+    TypeHandle type_info = obj->type_info();
+    for (auto field : type_info->get_member_fields()) {
+        // 找到我们要的
+        std::string fieldname(field->get_name().c_str());
+        if (fieldname == "test")
+        {
+            int j;
+            j = 0;
+            if (const zeno::reflect::IRawMetadata* metadata = field->get_metadata()) {
+                if (const zeno::reflect::IMetadataValue* value = metadata->get_value("IntValue")) {
+                    int j = value->as_int();
+                    j = 0;
+                }
+                if (const zeno::reflect::IMetadataValue* value = metadata->get_value("ComboBoxItems")) {
+                    std::string item(value->list_get_item(0)->as_string());
+                }
+                if (const zeno::reflect::IMetadataValue* value = metadata->get_value("minmax")) {
+                    value->list_get_item(0)->as_float();
+                }
+            }
+        }
+    }
+
+
     return 0;
 }

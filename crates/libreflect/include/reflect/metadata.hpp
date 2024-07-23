@@ -13,11 +13,17 @@ namespace reflect
     public:
         static UniquePtr<IMetadataValue> create_string(const char* str);
         static UniquePtr<IMetadataValue> create_list();
+        static UniquePtr<IMetadataValue> create_int(int value);
+        static UniquePtr<IMetadataValue> create_float(float value);
 
         virtual ~IMetadataValue();
 
         virtual bool is_string() const;
         virtual const char* as_string() const;
+        virtual bool is_int() const;
+        virtual int as_int() const;
+        virtual bool is_float() const;
+        virtual float as_float() const;
 
         virtual bool is_list() const;
         virtual size_t list_length() const;
