@@ -270,27 +270,27 @@ MetaValue Parser::parse_value()
 
 MetaValue Parser::parse_list()
 {
-    std::vector<std::string> lstStr;
-    std::vector<float> lstFloat;
+    std::vector<std::string> string_list;
+    std::vector<float> numeric_list;
     next_token(); // Skip '('
     while (current_token.type != TokenType::LIST_END) {
         auto val = parse_value();
         if (std::holds_alternative<std::string>(val)) {
-            lstStr.push_back(std::get<std::string>(val));
+            string_list.push_back(std::get<std::string>(val));
         }
         else if (std::holds_alternative<float>(val)) {
-            lstFloat.push_back(std::get<float>(val));
+            numeric_list.push_back(std::get<float>(val));
         }
         else if (std::holds_alternative<int>(val)) {
-            lstFloat.push_back(std::get<int>(val));
+            numeric_list.push_back(static_cast<float>(std::get<int>(val)));
         }
         if (current_token.type == TokenType::COMMA) {
             next_token();
         }
     }
     next_token(); // Skip ')'
-    if (!lstStr.empty())
-        return lstStr;
+    if (!string_list.empty())
+        return string_list;
     else
-        return lstFloat;
+        return numeric_list;
 }
