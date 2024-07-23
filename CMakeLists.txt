@@ -16,7 +16,6 @@ include(cmake/ReflectionUtils.cmake)
 include(cmake/FixWindows.cmake)
 
 set(RELCTION_GENERATOR_TARGET ReflectGenerator)
-llvm_map_components_to_libnames(LLVM_LINK_COMPONENTS support)
 set(LLVM_ENABLE_RTTI ON)
 set(LLVM_ENABLE_EH ON)
 add_executable(${RELCTION_GENERATOR_TARGET} 
