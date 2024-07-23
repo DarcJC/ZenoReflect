@@ -13,17 +13,24 @@ using namespace clang::tooling;
 using namespace clang::ast_matchers;
 
 template <class T>
-inline void add_type_to_generator(T* m_context, clang::QualType type) {
-    m_context->template_header_generator->add_rtti_type(type);
-    auto ut1 = type.getNonReferenceType();
-    ut1.removeLocalConst();
-    auto ut = ut1->getCanonicalTypeUnqualified();
-    m_context->template_header_generator->add_rtti_type(m_context->scoped_context->getConstType(ut));
-    m_context->template_header_generator->add_rtti_type(m_context->scoped_context->getLValueReferenceType(ut));
-    m_context->template_header_generator->add_rtti_type(m_context->scoped_context->getRValueReferenceType(ut));
-    m_context->template_header_generator->add_rtti_type(m_context->scoped_context->getLValueReferenceType(m_context->scoped_context->getConstType(ut)));
-    m_context->template_header_generator->add_rtti_type(m_context->scoped_context->getPointerType(m_context->scoped_context->getConstType(ut)));
-    m_context->template_header_generator->add_rtti_type(m_context->scoped_context->getPointerType(ut));
+inline void add_type_to_generator(T* context, clang::QualType type) {
+    auto& gen = context->template_header_generator;
+    auto& scoped_ctx = context->scoped_context;
+
+    auto add_rtti_type = [&](clang::QualType qt) { gen->add_rtti_type(qt); };
+
+    add_rtti_type(type);
+
+    auto non_ref_type = type.getNonReferenceType();
+    non_ref_type.removeLocalConst();
+    auto canonical_type = non_ref_type->getCanonicalTypeUnqualified();
+
+    add_rtti_type(scoped_ctx->getConstType(canonical_type));
+    add_rtti_type(scoped_ctx->getLValueReferenceType(canonical_type));
+    add_rtti_type(scoped_ctx->getRValueReferenceType(canonical_type));
+    add_rtti_type(scoped_ctx->getLValueReferenceType(scoped_ctx->getConstType(canonical_type)));
+    add_rtti_type(scoped_ctx->getPointerType(scoped_ctx->getConstType(canonical_type)));
+    add_rtti_type(scoped_ctx->getPointerType(canonical_type));
 }
 
 class ReflectionGeneratorAction : public ASTFrontendAction {
@@ -65,10 +72,11 @@ ParserErrorCode post_generate_reflection_model(const ReflectionModel &model, con
 {
     const std::string generated_header_dir = zeno::reflect::get_file_path_in_header_output("reflect");
     const std::string generated_header_path = zeno::reflect::get_file_path_in_header_output("reflect/reflection.generated.hpp");
+
     std::ofstream ghp_stream(generated_header_path, std::ios::out | std::ios::trunc);
-    ghp_stream << "#pragma once" << "\r\n";
-    auto header_list = zeno::reflect::find_files_with_extension(generated_header_dir, ".hpp");
-    for (const std::string& s : header_list) {
+    ghp_stream << "#pragma once\r\n";
+
+    for (const std::string& s : zeno::reflect::find_files_with_extension(generated_header_dir, ".hpp")) {
         const auto relative_path = zeno::reflect::relative_path_to_header_output(s);
         if (zeno::reflect::relative_path_to_header_output(generated_header_path) != relative_path) {
             ghp_stream << std::format("#include \"{}\"", relative_path) << "\r\n";
@@ -123,141 +131,135 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
         const clang::Type* record_type = record_decl->getTypeForDecl();
         QualType record_qual_type(record_type, 0);
         add_type_to_generator(m_context, record_qual_type);
-        if (GLOBAL_CONTROL_FLAGS->verbose) {
-            m_context->scoped_context->DumpRecordLayout(record_decl, llvm::outs());
+
+        
+        const std::string normalized_name = zeno::reflect::convert_to_valid_cpp_var_name(record_qual_type.getCanonicalType().getAsString());
+        bool found = false;
+        for (auto type_info : m_context->m_compiler_state.types_register_data["types"]) {
+            if (type_info["normal_name"] == normalized_name) {
+                found = true;
+                break;
+            }
         }
 
-        {
-            const std::string normalized_name = zeno::reflect::convert_to_valid_cpp_var_name(record_qual_type.getCanonicalType().getAsString());
-            bool found = false;
-            for (auto type_info : m_context->m_compiler_state.types_register_data["types"]) {
-                if (type_info["normal_name"] == normalized_name) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                inja::json type_data;
-                type_data["normal_name"] = normalized_name;
-                type_data["qualified_name"] = zeno::reflect::clang_type_name_no_tag(record_qual_type);
-                type_data["canonical_typename"] = record_qual_type.getCanonicalType().getAsString();
-                type_data["ctors"] = inja::json::array();
-                type_data["funcs"] = inja::json::array();
-                type_data["fields"] = inja::json::array();
-                type_data["base_classes"] = inja::json::array();
+        if (!found) {
+            inja::json type_data;
+            type_data["normal_name"] = normalized_name;
+            type_data["qualified_name"] = zeno::reflect::clang_type_name_no_tag(record_qual_type);
+            type_data["canonical_typename"] = record_qual_type.getCanonicalType().getAsString();
+            type_data["ctors"] = inja::json::array();
+            type_data["funcs"] = inja::json::array();
+            type_data["fields"] = inja::json::array();
+            type_data["base_classes"] = inja::json::array();
 
-                // Metadata
-                {
-                    std::string metadata_interface = inja::render(zeno::reflect::text::REFLECTED_METADATA, metadata);
-                    type_data["metadata"] = metadata_interface;
-                }
+            type_data["metadata"] = inja::render(zeno::reflect::text::REFLECTED_METADATA, metadata);
 
-                // Processing methods
-                {
-                    for (auto it = record_decl->method_begin(); it != record_decl->method_end(); ++it) {
-                        // Register all param types used
-                        if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it)) {
-                            for (unsigned int i = 0; i < method_decl->getNumParams(); ++i) {
-                                const ParmVarDecl* param_decl = method_decl->getParamDecl(i);
-                                if (param_decl) {
-                                    QualType type = param_decl->getType();
-                                    add_type_to_generator(m_context, type);
-                                }
+            // Processing methods
+            {
+                for (auto it = record_decl->method_begin(); it != record_decl->method_end(); ++it) {
+                    // Register all param types used
+                    if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it)) {
+                        for (unsigned int i = 0; i < method_decl->getNumParams(); ++i) {
+                            const ParmVarDecl* param_decl = method_decl->getParamDecl(i);
+                            if (param_decl) {
+                                QualType type = param_decl->getType();
+                                add_type_to_generator(m_context, type);
                             }
-                            QualType type = method_decl->getReturnType().getCanonicalType();
-                            add_type_to_generator(m_context, type);
                         }
+                        QualType type = method_decl->getReturnType().getCanonicalType();
+                        add_type_to_generator(m_context, type);
+                    }
 
-                        // If is aggregate type then add list initialization as a constructor
-                        // NOTE: Empty base class optimization might lead to, a class with empty base class is a aggregate class
-                        // But if you try list initialization on it, it will be a compiler error there.
-                        if (record_decl->isAggregate() && record_decl->getNumBases() == 0) {
+                    // If is aggregate type then add list initialization as a constructor
+                    // NOTE: Empty base class optimization might lead to, a class with empty base class is a aggregate class
+                    // But if you try list initialization on it, it will be a compiler error there.
+                    if (record_decl->isAggregate() && record_decl->getNumBases() == 0) {
+                        inja::json ctor_data;
+                        ctor_data["is_aggregate_initialize"] = true;
+                        ctor_data["params"] = inja::json::array();
+                        for (const FieldDecl* field : record_decl->fields())  {
+                            QualType type = field->getType();
+                            ctor_data["params"].push_back(zeno::reflect::parse_param_data(field));
+                        }
+                        type_data["ctors"].push_back(ctor_data);
+                    }
+
+                    if (const CXXConstructorDecl* constructor_decl = dyn_cast<CXXConstructorDecl>(*it); constructor_decl && constructor_decl->getAccess() == clang::AS_public) {
+                        if (!constructor_decl->isDeleted()) {
                             inja::json ctor_data;
-                            ctor_data["is_aggregate_initialize"] = true;
                             ctor_data["params"] = inja::json::array();
-                            for (const FieldDecl* field : record_decl->fields())  {
-                                QualType type = field->getType();
-                                ctor_data["params"].push_back(zeno::reflect::parse_param_data(field));
+                            for (unsigned int i = 0; i < constructor_decl->getNumParams(); ++i) {
+                                const ParmVarDecl* param_decl = constructor_decl->getParamDecl(i);
+                                inja::json param_data = zeno::reflect::parse_param_data(param_decl);
+                                ctor_data["params"].push_back(param_data);
                             }
                             type_data["ctors"].push_back(ctor_data);
                         }
+                    } else if (const CXXDestructorDecl* destructor_decl = dyn_cast<CXXDestructorDecl>(*it)) {
+                    } else if (const CXXConversionDecl* conversion_decl = dyn_cast<CXXConversionDecl>(*it)) {
+                    } else if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it); method_decl && method_decl->getAccess() == clang::AS_public && !method_decl->isOverloadedOperator()) {
 
-                        if (const CXXConstructorDecl* constructor_decl = dyn_cast<CXXConstructorDecl>(*it); constructor_decl && constructor_decl->getAccess() == clang::AS_public) {
-                            if (!constructor_decl->isDeleted()) {
-                                inja::json ctor_data;
-                                ctor_data["params"] = inja::json::array();
-                                for (unsigned int i = 0; i < constructor_decl->getNumParams(); ++i) {
-                                    const ParmVarDecl* param_decl = constructor_decl->getParamDecl(i);
-                                    inja::json param_data = zeno::reflect::parse_param_data(param_decl);
-                                    ctor_data["params"].push_back(param_data);
-                                }
-                                type_data["ctors"].push_back(ctor_data);
-                            }
-                        } else if (const CXXDestructorDecl* destructor_decl = dyn_cast<CXXDestructorDecl>(*it)) {
-                        } else if (const CXXConversionDecl* conversion_decl = dyn_cast<CXXConversionDecl>(*it)) {
-                        } else if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it); method_decl && method_decl->getAccess() == clang::AS_public && !method_decl->isOverloadedOperator()) {
-
-                            inja::json func_data;
-                            func_data["name"] = zeno::reflect::convert_to_valid_cpp_var_name(method_decl->getNameAsString());
-                            func_data["ret"] = method_decl->getReturnType().getCanonicalType().getAsString();
-                            func_data["params"] = inja::json::array();
-                            for (unsigned int i = 0; i < method_decl->getNumParams(); ++i) {
-                                const ParmVarDecl* param_decl = method_decl->getParamDecl(i);
-                                inja::json param_data = zeno::reflect::parse_param_data(param_decl);
-                                func_data["params"].push_back(param_data);
-                            }
-                            func_data["static"] = method_decl->isStatic();
-                            func_data["const"] = method_decl->isConst();
-                            func_data["noexcept"] = method_decl->getExceptionSpecType() == clang::EST_BasicNoexcept || method_decl->getExceptionSpecType() == clang::EST_NoexceptTrue;
-
-                            std::string method_metadata;
-                            if (zeno::reflect::parse_metadata(method_metadata, method_decl)) {
-                                func_data["metadata"] = method_metadata;
-                            }
-
-                            type_data["funcs"].push_back(func_data);
+                        inja::json func_data;
+                        func_data["name"] = zeno::reflect::convert_to_valid_cpp_var_name(method_decl->getNameAsString());
+                        func_data["ret"] = method_decl->getReturnType().getCanonicalType().getAsString();
+                        func_data["params"] = inja::json::array();
+                        for (unsigned int i = 0; i < method_decl->getNumParams(); ++i) {
+                            const ParmVarDecl* param_decl = method_decl->getParamDecl(i);
+                            inja::json param_data = zeno::reflect::parse_param_data(param_decl);
+                            func_data["params"].push_back(param_data);
                         }
+                        func_data["static"] = method_decl->isStatic();
+                        func_data["const"] = method_decl->isConst();
+                        func_data["noexcept"] = method_decl->getExceptionSpecType() == clang::EST_BasicNoexcept || method_decl->getExceptionSpecType() == clang::EST_NoexceptTrue;
+
+                        std::string method_metadata;
+                        if (zeno::reflect::parse_metadata(method_metadata, method_decl)) {
+                            func_data["metadata"] = method_metadata;
+                        }
+
+                        type_data["funcs"].push_back(func_data);
                     }
                 }
-
-                {
-                    for (auto it = record_decl->field_begin(); it != record_decl->field_end(); ++it) {
-                        if (const FieldDecl* field_decl = dyn_cast<FieldDecl>(*it); field_decl && field_decl->getAccess() == clang::AS_public) {
-                            QualType type = field_decl->getType();
-                            m_context->template_header_generator->add_rtti_type(type);
-                            m_context->template_header_generator->add_rtti_type(type.getUnqualifiedType());
-
-                            inja::json field_data;
-                            field_data["name"] = field_decl->getNameAsString();
-                            field_data["type"] = type.getCanonicalType().getAsString();
-                            field_data["normal_type"] = zeno::reflect::convert_to_valid_cpp_var_name(type.getCanonicalType().getAsString());
-
-                            std::string field_metadata;
-                            if (zeno::reflect::parse_metadata(field_metadata, field_decl)) {
-                                field_data["metadata"] = field_metadata;
-                            }
-
-                            type_data["fields"].push_back(field_data);
-                        }
-                    }
-                }
-
-                {
-                    for (auto it = record_decl->bases_begin(); it != record_decl->bases_end(); ++it) {
-                        if (const CXXBaseSpecifier* base_decl = it) {
-                            inja::json base_data;
-                            QualType type = base_decl->getType().getCanonicalType();
-                            base_data["type"] = zeno::reflect::clang_type_name_no_tag(type);
-
-                            add_type_to_generator(m_context, type);
-
-                            type_data["base_classes"].push_back(base_data);
-                        }
-                    }
-                }
-
-                m_context->m_compiler_state.types_register_data["types"].push_back(type_data);
             }
+
+            {
+                for (auto it = record_decl->field_begin(); it != record_decl->field_end(); ++it) {
+                    if (const FieldDecl* field_decl = dyn_cast<FieldDecl>(*it); field_decl && field_decl->getAccess() == clang::AS_public) {
+                        QualType type = field_decl->getType();
+                        m_context->template_header_generator->add_rtti_type(type);
+                        m_context->template_header_generator->add_rtti_type(type.getUnqualifiedType());
+
+                        inja::json field_data;
+                        field_data["name"] = field_decl->getNameAsString();
+                        field_data["type"] = type.getCanonicalType().getAsString();
+                        field_data["normal_type"] = zeno::reflect::convert_to_valid_cpp_var_name(type.getCanonicalType().getAsString());
+
+                        std::string field_metadata;
+                        if (zeno::reflect::parse_metadata(field_metadata, field_decl)) {
+                            field_data["metadata"] = field_metadata;
+                        }
+
+                        type_data["fields"].push_back(field_data);
+                    }
+                }
+            }
+
+            {
+                for (auto it = record_decl->bases_begin(); it != record_decl->bases_end(); ++it) {
+                    if (const CXXBaseSpecifier* base_decl = it) {
+                        inja::json base_data;
+                        QualType type = base_decl->getType().getCanonicalType();
+                        base_data["type"] = zeno::reflect::clang_type_name_no_tag(type);
+
+                        add_type_to_generator(m_context, type);
+
+                        type_data["base_classes"].push_back(base_data);
+                    }
+                }
+            }
+
+            m_context->m_compiler_state.types_register_data["types"].push_back(type_data);
+        
         }
 
         if (record_decl->getNumBases() > 0) {
