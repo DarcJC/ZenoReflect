@@ -216,6 +216,7 @@ namespace reflect
         virtual ~IMemberField();
         virtual void* get_field_ptr(const Any& clazz_object) const = 0;
         virtual void* get_field_ptr_directly(void* this_object) const = 0;
+        virtual Any get_field_value(void* this_object) const = 0;
         virtual TypeHandle get_field_type() const = 0;
 
     protected:

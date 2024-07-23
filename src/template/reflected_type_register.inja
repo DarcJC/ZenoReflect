@@ -233,6 +233,12 @@ namespace {
             return &pThis->{{ field.name }};
         }
 
+        virtual Any get_field_value(void* this_object) const override {
+            if (!this_object) return Any();
+            auto pThis = static_cast<{{- type_info.qualified_name -}}*>(this_object);
+            return pThis->{{ field.name }};
+        }
+
         virtual TypeHandle get_field_type() const override {
             return get_type<{{ field.type }}>();
         }
