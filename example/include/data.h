@@ -51,9 +51,11 @@ namespace zeno
         const char* 字段1 = "Hello World";
     };
 
-    class ZRECORD(Test="true") Hhhh : public reflect::TEnableVirtualRefectionInfo<Hhhh> {
+    class ZRECORD(Test="true", StrList=("Group 1", "Group 2", "Group 3")) Hhhh : public reflect::TEnableVirtualRefectionInfo<Hhhh> {
     public:
         int a1;
+
+        ZPROPERTY(Role = "input", IntValue = 233, FloatVal = 0, ComboBoxItems = ("Option A", "Option B", "Option C"), minmax=(2,4))
         std::string test;
 
         zeno::reflect::Any a2;

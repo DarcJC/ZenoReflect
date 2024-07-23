@@ -25,11 +25,11 @@ MetadataType string_to_metadata_type(const std::string& str);
 
 std::string metadata_type_to_string(MetadataType type);
 
-struct MetadataContainer {
-    using Value = std::variant<std::string, std::vector<std::string>>;
+using MetaValue = std::variant<std::string, int, float, std::vector<std::string>, std::vector<float>>;
 
+struct MetadataContainer {
     MetadataType type = MetadataType::None;
-    std::unordered_map<std::string, Value> properties;
+    std::unordered_map<std::string, MetaValue> properties;
 };
 
 MetadataContainer parse_metadata_dsl(const std::string& in_dsl);
@@ -74,12 +74,12 @@ private:
 public:
     Parser(const std::string& input);
 
-    std::map<std::string, std::string> parse();
+    std::map<std::string, MetaValue> parse();
 
 private:
     void next_token();
 
     std::string expect(TokenType token_expected);
-    std::string parse_value();
-    std::string parse_list();
+    MetaValue parse_value();
+    MetaValue parse_list();
 };

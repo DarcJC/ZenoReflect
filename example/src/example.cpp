@@ -86,6 +86,33 @@ int main(int argc, char* argv[]) {
     zeno::reflect::Any ann2 = ann;
     auto xx = ann2.has_value() ? zeno::reflect::any_cast<int>(ann2) : 0;
 
+    // 测试元数据获取
+    Any instance = make_any<zeno::Hhhh>();
+    zeno::Hhhh* typed_instance_ptr = any_cast<zeno::Hhhh>(&instance);
+    // 可以使用基类指针
+    IReflectedObject* obj = typed_instance_ptr;
+    TypeHandle type_info = obj->type_info();
+    for (auto field : type_info->get_member_fields()) {
+        // 找到对应的字段名
+        std::string fieldname(field->get_name().c_str());
+        if (fieldname == "test")
+        {
+            if (const zeno::reflect::IRawMetadata* metadata = field->get_metadata()) {
+                if (const zeno::reflect::IMetadataValue* value = metadata->get_value("IntValue")) {
+                    std::cout << "IntValue的值：" << value->as_int() << std::endl;
+                }
+                if (const zeno::reflect::IMetadataValue* value = metadata->get_value("ComboBoxItems")) {
+                    for (int i = 0; i < value->list_length(); ++i) {
+                        std::cout << "ComboBoxItems[" << i << "]的值：" << value->list_get_item(i)->as_string() << std::endl;
+                    }
+                }
+                if (const zeno::reflect::IMetadataValue* value = metadata->get_value("minmax")) {
+                    std::cout << "Min: " << value->list_get_item(0)->as_float() << "\tMax: " << value->list_get_item(1)->as_float() << std::endl;
+                }
+            }
+        }
+    }
+
 
     return 0;
 }

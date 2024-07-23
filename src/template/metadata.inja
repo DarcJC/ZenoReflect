@@ -8,11 +8,22 @@ R"INJA(
                 {
                     {% if default(prop.is_string, false) %}
                     data->set_value("{{- key -}}", IMetadataValue::create_string("{{- prop.value -}}"));
+                    {%- else if default(prop.is_int, false) %}
+                    data->set_value("{{- key -}}", IMetadataValue::create_int({{- prop.value -}}));
+                    {%- else if default(prop.is_float, false) %}
+                    data->set_value("{{- key -}}", IMetadataValue::create_int({{- prop.value -}}));
                     {%- else if default(prop.is_array, false) %}
                     UniquePtr<IMetadataValue> val = IMetadataValue::create_list();
 ## for item in prop.value
                     val->list_add_item(zeno::reflect::move(IMetadataValue::create_string("{{- item -}}")));
 ## endfor
+                    data->set_value("{{- key -}}", std::move(val));
+                    {%- else if default(prop.is_num_array, false) %}
+                    UniquePtr<IMetadataValue> val = IMetadataValue::create_list();
+## for item in prop.value
+                    val->list_add_item(zeno::reflect::move(IMetadataValue::create_float({{- item -}})));
+## endfor
+                    data->set_value("{{- key -}}", std::move(val));
                     {% endif %}
                 }
 ## endfor

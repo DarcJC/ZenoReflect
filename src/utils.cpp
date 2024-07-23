@@ -312,6 +312,14 @@ inja::json parse_metadata(const MetadataContainer &metadata)
                 value_data["value"] = arg;
                 value_data["is_string"] = true;
                 properties_json[key] = value_data;
+            } else if constexpr (std::is_same_v<T, int>) {
+                value_data["value"] = arg;
+                value_data["is_int"] = true;
+                properties_json[key] = value_data;
+            } else if constexpr (std::is_same_v<T, float>) {
+                value_data["value"] = arg;
+                value_data["is_float"] = true;
+                properties_json[key] = value_data;
             } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
                 inja::json value_data;
                 inja::json array;
@@ -320,6 +328,15 @@ inja::json parse_metadata(const MetadataContainer &metadata)
                 }
                 value_data["value"] = array;
                 value_data["is_array"] = true;
+                properties_json[key] = value_data;
+            } else if constexpr (std::is_same_v<T, std::vector<float>>) {
+                inja::json value_data;
+                inja::json array;
+                for (const auto& item : arg) {
+                    array.push_back(item);
+                }
+                value_data["value"] = array;
+                value_data["is_num_array"] = true;
                 properties_json[key] = value_data;
             }
         }, value);
