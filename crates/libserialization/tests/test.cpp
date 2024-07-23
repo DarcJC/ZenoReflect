@@ -25,6 +25,7 @@ int main() {
     }
 
     // Deserialize from a file
+    if (1)
     {
         UniquePtr<IReadableStream> readable_stream = create_file_read_stream("example.dat");
         Any deserialized_any;
