@@ -93,8 +93,15 @@ namespace reflect
             ZENO_CHECK_MSG(has_flags(AF_Out) || IsSerializationPrimaryType<DecayT>::value, "Only serializing is supported of current function.");
 
             if REFLECT_FORCE_CONSTEPXR (IsSerializationPrimaryType<DecayT>::value) {
-                ZENO_CHECK(m_write_stream && m_primary_serializer);
-                m_primary_serializer->serialize(m_write_stream, make_any<T>(serialize_object));
+                if (has_flags(AF_Out)) {
+                    ZENO_CHECK(m_write_stream && m_primary_serializer);
+                    m_primary_serializer->serialize(m_write_stream, serialize_object);
+                } else if (has_flags(AF_In)) {
+                    ZENO_CHECK(m_read_stream && m_primary_serializer);
+                    Any tmp = make_any<T>(serialize_object);
+                    m_primary_serializer->deserialize(m_read_stream, tmp);
+                    serialize_object = any_cast<T>(tmp);
+                }
             } else {
                 archive(make_any<T>(std::forward<T>(serialize_object)));
             }

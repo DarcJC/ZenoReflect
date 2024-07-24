@@ -53,6 +53,8 @@ namespace reflect
             } else if (rtti_info == type_info<uint64_t>()) {
                 serialize_basic_type<uint64_t>(out_stream, input, type_info<uint64_t>().hash_code());
             } else {
+                IdentifierType identifier = rtti_info.hash_code();
+                out_stream->write(reinterpret_cast<const uint8_t*>(&identifier), sizeof(identifier));
                 return false;
             }
 

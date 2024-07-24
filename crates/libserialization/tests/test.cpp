@@ -5,6 +5,7 @@
 #include <iostream>
 #include <utility>
 #include "test.h"
+#include "reflect/ReflectSerializationTest/test.h.generated.hpp"
 
 
 int main() {
@@ -38,12 +39,23 @@ int main() {
     // How are you?
     {
         HowAreYou hru;
-        UniquePtr<IWritableStream> writable_stream = create_file_write_stream("how_are_you.zarchive");
-        Archive archive(create_default_serializer() , nullptr, std::move(writable_stream));
+        hru.a = 1145141919;
+        hru.c = "夏の夜の淫梦";
+        Archive archive(create_default_serializer() , nullptr, create_file_write_stream("how_are_you.zarchive"));
         Any a = hru.to_any();
         archive
             .set_flags(AF_Out)
             .archive_any(a);
+    }
+
+    {
+        HowAreYou hru;
+        Archive archive(create_default_serializer() , create_file_read_stream("how_are_you.zarchive"), nullptr);
+        Any a = hru.to_any();
+        archive
+            .set_flags(AF_In)
+            .archive_any(a);
+        std::cout << hru.a << "\t" << hru.c << std::endl;
     }
 
     return 0;
