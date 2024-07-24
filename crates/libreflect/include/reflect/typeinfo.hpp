@@ -70,18 +70,12 @@ namespace reflect
 #else
 
         // IDK why some old MSVC will instantiate this template in libreflect
-        static_assert(AlwaysFalse<T>::Value, "\r\n==== Reflection Error ====\r\nThe type_info of current type not implemented. Have you marked it out ?\r\nTry '#include \"reflect/reflection.generated.hpp\"' in the traslation unit where you used zeno::reflect::type_info. \r\n==== Reflection Error End ====");
+        static_assert(AlwaysFalse<T>::value, "\r\n==== Reflection Error ====\r\nThe type_info of current type not implemented. Have you marked it out ?\r\nTry '#include \"reflect/reflection.generated.hpp\"' in the traslation unit where you used zeno::reflect::type_info. \r\n==== Reflection Error End ====");
         return Default;
 #endif
     }
 
     // We need to instantiate type_info<void> here for Any
-    template <>
-    inline REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<void>() {
-        static RTTITypeInfo NullPtr = { "void", 1ULL, 0 };
-        return NullPtr;
-    }
-
     template <>
     inline REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<decltype(nullptr)>() {
         static RTTITypeInfo NullPtr = { "nullptr", 3ULL, 0 };
@@ -90,11 +84,39 @@ namespace reflect
 }
 }
 
-#ifndef _REFLECT_RTTI_GUARD_zeno_reflect_Any_15554020952442124146
-#define _REFLECT_RTTI_GUARD_zeno_reflect_Any_15554020952442124146 1
+///////////////////////////
+/// Begin RTTI of "void"
+#ifndef _REFLECT_RTTI_GUARD_void_3563412735833858527
+#define _REFLECT_RTTI_GUARD_void_3563412735833858527 1
+
+namespace zeno
+{
+namespace reflect
+{
+    template <>
+    inline REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<void>() {
+        static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {
+            "void",
+            3563412735833858527ULL,
+            static_cast<size_t>(
+                TF_None ),
+            0
+        };
+        return s;
+    }
+}
+}
+#endif // _REFLECT_RTTI_GUARD_void_3563412735833858527
+/// End RTTI of "void"
+///////////////////////////
+
+///////////////////////////
+/// Begin RTTI of "class zeno::reflect::Any"
+#ifndef _REFLECT_RTTI_GUARD_class_zeno_reflect_Any_15554020952442124146
+#define _REFLECT_RTTI_GUARD_class_zeno_reflect_Any_15554020952442124146 1
 namespace zeno {
 namespace reflect {
-    class Any;
+class Any;
 }
 }
 
@@ -103,19 +125,20 @@ namespace zeno
 namespace reflect
 {
     template <>
-    inline REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<zeno::reflect::Any>() {
+    inline REFLECT_STATIC_CONSTEXPR const RTTITypeInfo& type_info<class zeno::reflect::Any>() {
         static REFLECT_STATIC_CONSTEXPR RTTITypeInfo s = {
             "class zeno::reflect::Any",
             15554020952442124146ULL,
             static_cast<size_t>(
-                TF_None )
+                TF_None ),
+            0
         };
         return s;
     }
 }
 }
-#endif // _REFLECT_RTTI_GUARD_zeno_reflect_Any_15554020952442124146
-/// End RTTI of "zeno::reflect::Any"
+#endif // _REFLECT_RTTI_GUARD_class_zeno_reflect_Any_15554020952442124146
+/// End RTTI of "class zeno::reflect::Any"
 ///////////////////////////
 
 ///////////////////////////
