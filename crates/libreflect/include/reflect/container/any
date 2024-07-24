@@ -37,6 +37,11 @@ namespace any
     template <typename T>
     class ValueContainer;
 
+    /**
+     * Allow wrapping self into a temporary Any.
+     * @warning With this method, object's will not been delete when the wrapper Any is out-of-scoped !
+     * Any(new ChildOfTEnableAnyFromThis) might leading to memory leak if does nothing with the allocated object.
+     */
     template <typename T>
     class TEnableAnyFromThis : public IContainer {
     public:
