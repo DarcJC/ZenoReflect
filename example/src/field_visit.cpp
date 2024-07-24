@@ -50,7 +50,7 @@ int main() {
         Any any = make_any<Soo>();
         Any arg0 = make_any<int>(123456);
         Any result = Any::make_null();
-        std::cout << "调用结果: " << t.invoke(any, result, ArrayList<Any*> { &arg0 }) << std::endl;
+        std::cout << "调用结果: " << t(any, result, ArrayList<Any*> { &arg0 }) << std::endl;
     }
 
     return 0;

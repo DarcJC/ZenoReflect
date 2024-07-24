@@ -39,6 +39,10 @@ namespace reflect
             return false;
         }
 
+        bool operator()(Any& obj, Any& out_result, const ArrayList<Any*>& args = {}) {
+            return invoke(obj, out_result, args);
+        }
+
         const char* function_name;
     private:
         bool invoke_member_function(TypeBase* type, Any& that, const ArrayList<Any*>& args, Any& out_result) {
