@@ -99,15 +99,18 @@ int main(int argc, char* argv[]) {
         {
             if (const zeno::reflect::IRawMetadata* metadata = field->get_metadata()) {
                 if (const zeno::reflect::IMetadataValue* value = metadata->get_value("IntValue")) {
-                    std::cout << "IntValue的值：" << value->as_int() << std::endl;
+                    std::cout << "IntValue的值：" << value->as_int() << "\n";
                 }
                 if (const zeno::reflect::IMetadataValue* value = metadata->get_value("ComboBoxItems")) {
                     for (int i = 0; i < value->list_length(); ++i) {
-                        std::cout << "ComboBoxItems[" << i << "]的值：" << value->list_get_item(i)->as_string() << std::endl;
+                        std::cout << "ComboBoxItems[" << i << "]的值：" << value->list_get_item(i)->as_string() << "\n";
                     }
                 }
                 if (const zeno::reflect::IMetadataValue* value = metadata->get_value("minmax")) {
-                    std::cout << "Min: " << value->list_get_item(0)->as_float() << "\tMax: " << value->list_get_item(1)->as_float() << std::endl;
+                    std::cout << "Min: " << value->list_get_item(0)->as_float() << "\tMax: " << value->list_get_item(1)->as_float() << "\n";
+                }
+                if (const zeno::reflect::IMetadataValue* value = metadata->get_value("Control")) {
+                    std::cout << "Control: " << value->as_int() << " (ControlTypes枚举值)" << std::endl;
                 }
             }
         }

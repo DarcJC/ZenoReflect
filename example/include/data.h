@@ -31,7 +31,7 @@ using Yeppp = test::inner::Oops;
 namespace zeno
 {
     enum class ControlTypes : uint8_t {
-        LineEdit,
+        LineEdit = 3,
         MaxNum,
     };
 
