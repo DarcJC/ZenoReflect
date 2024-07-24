@@ -53,7 +53,9 @@ namespace zeno::reflect
     public:
         RTTITypeGenerator(
             clang::QualType qual_type
-        ) : m_qual_type(qual_type) {}
+        ) : m_qual_type(qual_type) {
+            m_qual_type = m_qual_type->getCanonicalTypeUnqualified();
+        }
 
         std::string compile(CodeCompilerState& state) {
             const size_t hash_value = HashImpl{}(m_qual_type.getCanonicalType().getAsString());

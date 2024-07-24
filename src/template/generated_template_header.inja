@@ -4,6 +4,7 @@ R"INJA(
 
 #include "reflect/type"
 #include "reflect/polyfill.hpp"
+#include "reflect/reflection_traits.hpp"
 #include <type_traits>
 
 ////////////////////////////////////////////////
