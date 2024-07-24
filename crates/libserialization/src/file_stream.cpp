@@ -32,6 +32,10 @@ public:
         return static_cast<uint8_t>(byte);
     }
 
+    bool is_valid() override {
+        return input_stream.good() && input_stream.is_open();
+    }
+
 private:
     mutable std::ifstream input_stream;
 };
@@ -56,6 +60,10 @@ public:
         if (!output_stream) {
             throw std::runtime_error("Failed to write data to file");
         }
+    }
+
+    bool is_valid() override {
+        return output_stream.good() && output_stream.is_open();
     }
 
 private:
