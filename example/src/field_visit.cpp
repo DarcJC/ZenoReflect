@@ -46,7 +46,7 @@ int main() {
 
     // 鸭子类型测试
     {
-        zeno::reflect::TraitType<void, int*> t("wow");
+        zeno::reflect::HighOrderCallableType<void, int*> t("wow");
         Any any = make_any<Soo>();
         Any arg0 = make_any<int>(123456);
         Any result = Any::make_null();

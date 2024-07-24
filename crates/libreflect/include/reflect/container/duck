@@ -23,8 +23,8 @@ namespace reflect
     }
 
     template <typename Ret, typename... Args>
-    struct TraitType {
-        explicit TraitType(const char* function_name) : function_name(function_name) {}
+    struct HighOrderCallableType {
+        explicit HighOrderCallableType(const char* function_name) : function_name(function_name) {}
 
         bool invoke(Any& obj, Any& out_result, const ArrayList<Any*>& args = {}) {
             TypeHandle handle = obj.type();
