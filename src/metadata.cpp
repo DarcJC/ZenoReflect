@@ -264,6 +264,12 @@ MetaValue Parser::parse_value()
     } else if (current_token.type == TokenType::LIST_START) {
         return parse_list();
     }
+    else if (current_token.type == TokenType::KEY) {
+        std::string result = "[ENUM_MARK]" + current_token.value;
+        current_token.type = TokenType::ENUM;
+        next_token();
+        return result;
+    }
     
     throw std::runtime_error(std::format("Unexpected value type {}: '{}'. Origin metadata: \n{}", token_type_to_string(current_token.type), current_token.value, tokenizer.origin_string()));
 }

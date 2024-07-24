@@ -12,6 +12,8 @@ R"INJA(
                     data->set_value("{{- key -}}", IMetadataValue::create_int({{- prop.value -}}));
                     {%- else if default(prop.is_float, false) %}
                     data->set_value("{{- key -}}", IMetadataValue::create_int({{- prop.value -}}));
+                    {%- else if default(prop.is_enum, false) %}
+                    data->set_value("{{- key -}}", IMetadataValue::create_int({{- prop.value -}}));
                     {%- else if default(prop.is_array, false) %}
                     UniquePtr<IMetadataValue> val = IMetadataValue::create_list();
 ## for item in prop.value
