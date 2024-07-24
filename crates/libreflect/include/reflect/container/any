@@ -2,7 +2,6 @@
 
 #include "reflect/polyfill.hpp"
 #include "reflect/typeinfo.hpp"
-#include "reflect/traits/type_traits"
 #include "reflect/utils/assert"
 #include <type_traits>
 
@@ -158,7 +157,7 @@ namespace any
         }
 
         template <typename T>
-        Any(any::TEnableAnyFromThis<T>* that) : m_value_container(that), m_is_make_from_this(true) {}
+        Any(any::TEnableAnyFromThis<T>* that) : m_value_container(that) {}
 
         Any& operator=(const Any& other) {
             Any(other).swap(*this);
@@ -211,11 +210,8 @@ namespace any
 
         void swap(Any& other) noexcept {
             any::IContainer* other_container = other.m_value_container;
-            bool other_is_make_from_this = other.m_is_make_from_this;
             other.m_value_container = m_value_container;
-            other.m_is_make_from_this = m_is_make_from_this;
             m_value_container = other_container;
-            m_is_make_from_this = other_is_make_from_this;
         }
 
         bool has_value() const {
@@ -223,7 +219,7 @@ namespace any
         }
 
         REFLECT_STATIC_CONSTEXPR void reset() {
-            if (!m_is_make_from_this) {
+            if (m_value_container && !m_value_container->is_enable_from_this()) {
                 delete m_value_container;
             }
             m_value_container = nullptr;
@@ -246,8 +242,6 @@ namespace any
         Any(any::IContainer* container) : m_value_container(container) {};
 
         any::IContainer* m_value_container = nullptr;
-
-        bool m_is_make_from_this = false;
 
         // ==== Friend Functions ====
         template <typename T, typename... Args>
