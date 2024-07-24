@@ -6,6 +6,7 @@
 #include <utility>
 #include "test.h"
 #include "reflect/ReflectSerializationTest/test.h.generated.hpp"
+#include "reflect/traits/has_function.hpp"
 
 
 int main() {
@@ -45,7 +46,7 @@ int main() {
         Any a = hru.to_any();
         archive
             .set_flags(AF_Out)
-            .archive_any(a);
+            .archive(a);
     }
 
     {
@@ -54,7 +55,7 @@ int main() {
         Any a = hru.to_any();
         archive
             .set_flags(AF_In)
-            .archive_any(a);
+            .archive(a);
         std::cout << hru.a << "\t" << hru.c << std::endl;
     }
 

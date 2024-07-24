@@ -46,7 +46,6 @@ namespace any
     class TEnableAnyFromThis : public IContainer {
     public:
         using ValueType = T;
-        inline constexpr static bool IsEnableAnyFromThis = true;
 
         virtual const RTTITypeInfo& type() const override {
             return type_info<ValueType>();
@@ -412,7 +411,6 @@ namespace any
     class ValueContainer : public IContainer {
     public:
         using ValueType = T;
-        inline constexpr static bool IsEnableAnyFromThis = false;
 
         ValueType m_value;
 
@@ -490,7 +488,6 @@ namespace any
     class ValueContainer<void> : public IContainer {
     public:
         using ValueType = void;
-        inline constexpr static bool IsEnableAnyFromThis = false;
 
         virtual const RTTITypeInfo& type() const override {
             return type_info<ValueType>();
@@ -525,7 +522,7 @@ namespace any
     class ValueContainer<T*> : public IContainer {
     public:
         using ValueType = T*;
-        inline constexpr static bool IsEnableAnyFromThis = false;
+
         ValueType m_value;
 
         ValueContainer(ValueType value = nullptr) : m_value(value) {}
@@ -595,7 +592,7 @@ namespace any
     class ValueContainer<void*> : public IContainer {
     public:
         using ValueType = void*;
-        inline constexpr static bool IsEnableAnyFromThis = false;
+
         ValueType m_value;
 
         ValueContainer(ValueType value = nullptr) : m_value(value) {}
@@ -633,7 +630,7 @@ namespace any
     class ValueContainer<Any> : public IContainer {
     public:
         using ValueType = Any;
-        inline constexpr static bool IsEnableAnyFromThis = false;
+
         ValueType m_value;
 
         ValueContainer(const ValueType& value) : m_value(value) {}

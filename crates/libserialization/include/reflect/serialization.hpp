@@ -10,6 +10,7 @@
 #include "reflect/polyfill.hpp"
 #include "reflect/registry.hpp"
 #include "reflect/serial_primary_type.hpp"
+#include "reflect/traits/has_function.hpp"
 #include "reflect/typeinfo.hpp"
 #include "reflect/utils/assert"
 
@@ -69,6 +70,8 @@ namespace reflect
 
         virtual bool serialize(UniquePtr<IWritableStream>& out_stream, const Any& input) = 0;
         virtual bool deserialize(const UniquePtr<IReadableStream>& data_stream, Any& output) = 0;
+        virtual bool serialize(UniquePtr<IWritableStream>& out_stream, const TypeHandle reflect_type, const void* input) = 0;
+        virtual bool deserialize(UniquePtr<IReadableStream>& data_stream, const TypeHandle reflect_type, void* output) = 0;
     };
 
     class REFLECT_SERIALIZATION_API Archive : public any::TEnableAnyFromThis<Archive> {
@@ -83,35 +86,45 @@ namespace reflect
 
         template <typename T>
         Archive& archive(T&& serialize_object) {
-            if REFLECT_FORCE_CONSTEPXR (std::is_same_v<T, Any>) {
-                return *this;
-            }
-
-            using DecayT = std::decay_t<T>;
-
-            // TODO Support any from this
-            ZENO_CHECK_MSG(has_flags(AF_Out) || IsSerializationPrimaryType<DecayT>::value, "Only serializing is supported of current function.");
-
-            if REFLECT_FORCE_CONSTEPXR (IsSerializationPrimaryType<DecayT>::value) {
-                if (has_flags(AF_Out)) {
-                    ZENO_CHECK(m_write_stream && m_primary_serializer);
-                    m_primary_serializer->serialize(m_write_stream, serialize_object);
-                } else if (has_flags(AF_In)) {
-                    ZENO_CHECK(m_read_stream && m_primary_serializer);
-                    Any tmp = make_any<T>(serialize_object);
-                    m_primary_serializer->deserialize(m_read_stream, tmp);
-                    serialize_object = any_cast<T>(tmp);
-                }
+            if REFLECT_FORCE_CONSTEPXR (std::is_same_v<typename std::decay<T>::type, Any>) {
+                return archive_any(serialize_object);
             } else {
-                archive(make_any<T>(std::forward<T>(serialize_object)));
+
+                using DecayT = std::decay_t<T>;
+
+                constexpr bool support_any_from_this = THasFunction<typename std::decay<T>::type, Any(), FunctionName_to_any>::value;
+                ZENO_CHECK_MSG(IsSerializationPrimaryType<DecayT>::value || support_any_from_this || has_flags(AF_Out), "Only serializing is supported of current function.");
+
+                if REFLECT_FORCE_CONSTEPXR (IsSerializationPrimaryType<DecayT>::value) {
+                    if (has_flags(AF_Out)) {
+                        ZENO_CHECK(m_write_stream && m_primary_serializer);
+                        m_primary_serializer->serialize(m_write_stream, serialize_object);
+                    } else if (has_flags(AF_In)) {
+                        ZENO_CHECK(m_read_stream && m_primary_serializer);
+                        Any tmp = make_any<T>(serialize_object);
+                        m_primary_serializer->deserialize(m_read_stream, tmp);
+                        serialize_object = any_cast<T>(tmp);
+                    }
+                } else {
+                    if REFLECT_FORCE_CONSTEPXR (support_any_from_this) {
+                        Any tmp = serialize_object.to_any();
+                        archive_any(tmp);
+                    } else {
+                        archive_any(make_any<T>(std::forward<T>(serialize_object)));
+                    }
+                }
+
             }
 
             return *this;
         }
 
-        Archive& archive_any(Any& serialize_object);
+        Archive& archive_fields(TypeBase* reflect_type, void* object);
 
     protected:
+        Archive& archive_fields(TypeBase* reflect_type, Any& object);
+        Archive& archive_ptr(TypeHandle reflect_type, void* value);
+        Archive& archive_any(Any& serialize_object);
         bool try_recursive_archive(Any& serialize_object);
 
         UniquePtr<ISerializer> m_primary_serializer = nullptr;

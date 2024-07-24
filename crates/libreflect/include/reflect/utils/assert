@@ -53,6 +53,23 @@
         }\
     } while (false);
 
+#define ZENO_ENSURE(EXPR) \
+    do {\
+        if (!(EXPR)) {\
+            fprintf(stderr, "[Assert] ENSURE failed: %s @ %s:%d\n", #EXPR, __FILE__, __LINE__);\
+            fflush(stderr); \
+            TRIGGER_BREAKPOINT(); \
+        }\
+    } while (false);
+
+#define ZENO_ENSURE_MSG(EXPR, MSG) \
+    do {\
+        if (!(EXPR)) {\
+            fprintf(stderr, "[Assert] ENSURE failed: %s @ %s:%d\nMsg: %s\n", #EXPR, __FILE__, __LINE__, MSG);\
+            fflush(stderr); \
+            TRIGGER_BREAKPOINT(); \
+        }\
+    } while (false);
 
 namespace zeno
 {
