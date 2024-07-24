@@ -3,6 +3,13 @@ R"INJA(
 #include "{{ header_path }}"
 ## endfor
 
+#include <string>
+#include <vector>
+#include <map>
+#include <unordered_map>
+#include <tuple>
+#include <functional>
+
 #include "reflect/type"
 #include "reflect/traits/type_traits"
 #include "reflect/container/any"
@@ -12,6 +19,8 @@ R"INJA(
 #include "reflect/reflection.generated.hpp"
 
 using namespace zeno::reflect;
+
+#define _Bool bool
 
 ## for type_info in types
 /// ==== Begin {{ type_info.qualified_name }} Register ====
@@ -180,7 +189,7 @@ namespace {
                     clazz.{{- func.name -}}
                     (
 ## for param in func.params
-                        *any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+                        any_cast<{{ param.type }}>(*any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
 ## endfor
                     );
                     return Any::make_null();
@@ -188,7 +197,7 @@ namespace {
                     return clazz.{{- func.name -}}
                     (
 ## for param in func.params
-                        *any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+                        any_cast<{{ param.type }}>(*any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
 ## endfor
                     );
 {% endif %}
@@ -236,7 +245,7 @@ namespace {
                 {{- type_info.canonical_typename -}}::{{- func.name -}}
                 (
 ## for param in func.params
-                    *any_cast<{{ param }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+                    any_cast<{{ param }}>(*any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
 ## endfor
                 );
                 return Any::make_null();
@@ -244,7 +253,7 @@ namespace {
                 return {{- type_info.canonical_typename -}}::{{- func.name -}}
                 (
 ## for param in func.params
-                    *any_cast<{{ param }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+                    any_cast<{{ param }}>(*any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
 ## endfor
                 );
 {% endif %}

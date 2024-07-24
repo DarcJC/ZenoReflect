@@ -3,8 +3,13 @@
 #include <cstdint>
 #include <stdint.h>
 #include <string_view>
+#include <type_traits>
 #include "reflect/container/any"
+#include "reflect/container/duck"
 #include "reflect/container/unique_ptr"
+#include "reflect/polyfill.hpp"
+#include "reflect/registry.hpp"
+#include "reflect/serial_primary_type.hpp"
 #include "reflect/typeinfo.hpp"
 #include "reflect/utils/assert"
 
@@ -62,11 +67,11 @@ namespace reflect
     public:
         virtual ~ISerializer() = default;
 
-        virtual ISerializer& serialize(UniquePtr<IWritableStream>& out_stream, const Any& input) = 0;
-        virtual ISerializer& deserialize(const UniquePtr<IReadableStream>& data_stream, Any& output) = 0;
+        virtual bool serialize(UniquePtr<IWritableStream>& out_stream, const Any& input) = 0;
+        virtual bool deserialize(const UniquePtr<IReadableStream>& data_stream, Any& output) = 0;
     };
 
-    class REFLECT_SERIALIZATION_API Archive {
+    class REFLECT_SERIALIZATION_API Archive : public any::TEnableAnyFromThis<Archive> {
     public:
         virtual ~Archive() = default;
 
@@ -78,27 +83,31 @@ namespace reflect
 
         template <typename T>
         Archive& archive(T&& serialize_object) {
-            archive(make_any<T>(zeno::reflect::forward(serialize_object)));
+            if REFLECT_FORCE_CONSTEPXR (std::is_same_v<T, Any>) {
+                return *this;
+            }
 
-            return *this;
-        }
+            using DecayT = std::decay_t<T>;
 
-        Archive& archive(Any& serialize_object) {
-            ZENO_CHECK_MSG(m_serializer, "Serializer shouldn't be empty");
+            // TODO Support any from this
+            ZENO_CHECK_MSG(has_flags(AF_Out) || IsSerializationPrimaryType<DecayT>::value, "Only serializing is supported of current function.");
 
-            if (has_flags(AF_In)) {
-                ZENO_CHECK_MSG(m_read_stream && m_read_stream->is_valid(), "Read stream doesn't valid")
-                m_serializer->deserialize(m_read_stream, serialize_object);
-            } else if (has_flags(AF_Out)) {
-                ZENO_CHECK_MSG(m_write_stream && m_write_stream->is_valid(), "Write stream doesn't valid")
-                m_serializer->serialize(m_write_stream, serialize_object);
+            if REFLECT_FORCE_CONSTEPXR (IsSerializationPrimaryType<DecayT>::value) {
+                ZENO_CHECK(m_write_stream && m_primary_serializer);
+                m_primary_serializer->serialize(m_write_stream, make_any<T>(serialize_object));
+            } else {
+                archive(make_any<T>(std::forward<T>(serialize_object)));
             }
 
             return *this;
         }
-        
+
+        Archive& archive_any(Any& serialize_object);
+
     protected:
-        UniquePtr<ISerializer> m_serializer = nullptr;
+        bool try_recursive_archive(Any& serialize_object);
+
+        UniquePtr<ISerializer> m_primary_serializer = nullptr;
         UniquePtr<IReadableStream> m_read_stream = nullptr;
         UniquePtr<IWritableStream> m_write_stream = nullptr;
         
@@ -111,5 +120,9 @@ namespace reflect
 
     REFLECT_SERIALIZATION_API extern UniquePtr<IWritableStream> create_file_write_stream(std::string_view path);
 
+    inline REFLECT_FORCE_CONSTEPXR HighOrderCallableType<bool, Archive&> SerializeFunctionDelegate("serialize");
+
 }
 }
+
+REFLECT_REGISTER_RTTI_TYPE_MANUAL(zeno::reflect::Archive);

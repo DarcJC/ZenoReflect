@@ -27,7 +27,7 @@ namespace reflect
     struct HighOrderCallableType {
         explicit REFLECT_FORCE_CONSTEPXR HighOrderCallableType(const char* function_name) : function_name(function_name) {}
 
-        bool invoke(Any& obj, Any& out_result, const ArrayList<Any*>& args = {}) {
+        bool invoke(Any& obj, Any& out_result, const ArrayList<Any*>& args = {}) const {
             TypeHandle handle = obj.type();
 
             ZENO_CHECK_MSG(args.size() == get_args_length<Args...>(), "Arguments input must at the same size with declared.");
@@ -40,13 +40,13 @@ namespace reflect
             return false;
         }
 
-        bool operator()(Any& obj, Any& out_result, const ArrayList<Any*>& args = {}) {
+        bool operator()(Any& obj, Any& out_result, const ArrayList<Any*>& args = {}) const {
             return invoke(obj, out_result, args);
         }
 
         const char* function_name;
     private:
-        bool invoke_member_function(TypeBase* type, Any& that, const ArrayList<Any*>& args, Any& out_result) {
+        bool invoke_member_function(TypeBase* type, Any& that, const ArrayList<Any*>& args, Any& out_result) const {
             ZENO_CHECK(nullptr != type);
 
             const ArrayList<IMemberFunction*>& member_functions = type->get_member_functions();
