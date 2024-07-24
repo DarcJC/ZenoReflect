@@ -14,14 +14,14 @@ int main() {
     TypeHandle handle = get_type<Soo>();
 
     // param1 with type int will automaticly convert to int*
-    handle->get_member_functions()[0]->invoke(soo, { param1 });
+    handle->get_member_functions()[0]->invoke(soo, ArrayList<Any> { param1 });
 
     // Create an Any holding a pointer on stack.
     int a = 666;
     param1 = make_any<int*>(&a);
 
     // Call it with int*
-    handle->get_member_functions()[0]->invoke(soo, { param1 });
+    handle->get_member_functions()[0]->invoke(soo, ArrayList<Any> { param1 });
 
     return 0;
 }
