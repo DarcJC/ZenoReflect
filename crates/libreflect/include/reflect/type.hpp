@@ -136,6 +136,7 @@ namespace reflect
 
         virtual bool is_suitable_with_params(const ArrayList<RTTITypeInfo>& types = {}) const;
         virtual bool is_suitable_to_invoke(const ArrayList<Any>& params = {}) const;
+        virtual bool is_suitable_to_invoke(const ArrayList<Any*>& params = {}) const;
 
         virtual const ArrayList<RTTITypeInfo>& get_params() const = 0;
         virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const = 0;
@@ -197,7 +198,9 @@ namespace reflect
         virtual ~IMemberFunction();
         virtual TypeHandle get_return_type() const = 0;
         virtual Any invoke(const Any& clazz_object, const ArrayList<Any>& params = {}) const = 0;
+        virtual Any invoke(const Any& clazz_object, const ArrayList<Any*>& params = {}) const = 0;
         virtual Any invoke_static(const ArrayList<Any>& params = {}) const = 0;
+        virtual Any invoke_static(const ArrayList<Any*>& params = {}) const = 0;
 
     protected:
         explicit IMemberFunction(TypeHandle in_type);

@@ -154,6 +154,22 @@ bool zeno::reflect::IHasParameter::is_suitable_to_invoke(const ArrayList<Any> &p
     return true;
 }
 
+bool zeno::reflect::IHasParameter::is_suitable_to_invoke(const ArrayList<Any*> &params) const
+{
+    const ArrayList<RTTITypeInfo>& signature = get_params();
+    if (params.size() < signature.size()) {
+        return false;
+    }
+
+    for (int i = 0; i < signature.size(); ++i) {
+        if (nullptr == params[i] || params[i]->is_convertible_to(signature[i]) == AnyConversionMethod::Impossible) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 TypeHandle zeno::reflect::IBelongToParentType::get_parent_type() const
 {
     return m_type;

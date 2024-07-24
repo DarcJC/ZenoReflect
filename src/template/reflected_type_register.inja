@@ -8,6 +8,7 @@ R"INJA(
 #include "reflect/container/any"
 #include "reflect/container/unique_ptr"
 #include "reflect/metadata.hpp"
+#include "reflect/reflection_traits.hpp"
 #include "reflect/reflection.generated.hpp"
 
 using namespace zeno::reflect;
@@ -164,6 +165,39 @@ namespace {
 {% endif %}
         }
 
+        virtual Any invoke(const Any& clazz_object, const ArrayList<Any*>& params) const override {
+{% if func.static %}
+            return invoke_static(params);
+{% else %}
+            if (clazz_object.type() == zeno::reflect::type_info<{{- type_info.canonical_typename -}}>()) {
+                if (is_suitable_to_invoke(params)) {
+                    Any& clazz_object_ = const_cast<Any&>(clazz_object);
+                    auto& clazz = any_cast<{{- type_info.qualified_name -}}&>(clazz_object_);
+## for param in func.params
+                    Any* any{{- loop.index }} = const_cast<Any*>(params[{{ loop.index }}]);
+## endfor
+{% if func.ret == "void" %}
+                    clazz.{{- func.name -}}
+                    (
+## for param in func.params
+                        *any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+## endfor
+                    );
+                    return Any::make_null();
+{% else %}
+                    return clazz.{{- func.name -}}
+                    (
+## for param in func.params
+                        *any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+## endfor
+                    );
+{% endif %}
+                }
+            }
+            return Any::make_null();
+{% endif %}
+        }
+
         virtual Any invoke_static(const ArrayList<Any>& params) const override {
 {% if func.static %}
             if (is_suitable_to_invoke(params)) {
@@ -183,6 +217,34 @@ namespace {
                 (
 ## for param in func.params
                     any_cast<{{ param }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+## endfor
+                );
+{% endif %}
+            }
+{% else %}
+            return Any::make_null();
+{% endif %}
+        }
+
+        virtual Any invoke_static(const ArrayList<Any*>& params) const override {
+{% if func.static %}
+            if (is_suitable_to_invoke(params)) {
+## for param in func.params
+                Any* any{{- loop.index }} = const_cast<Any*>(params[{{ loop.index }}]);
+## endfor
+{% if func.ret == "void" %}
+                {{- type_info.canonical_typename -}}::{{- func.name -}}
+                (
+## for param in func.params
+                    *any_cast<{{ param }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+## endfor
+                );
+                return Any::make_null();
+{% else %}
+                return {{- type_info.canonical_typename -}}::{{- func.name -}}
+                (
+## for param in func.params
+                    *any_cast<{{ param }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
 ## endfor
                 );
 {% endif %}
