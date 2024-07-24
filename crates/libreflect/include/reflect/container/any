@@ -3,6 +3,7 @@
 #include "reflect/polyfill.hpp"
 #include "reflect/typeinfo.hpp"
 #include "reflect/traits/type_traits"
+#include "reflect/utils/assert"
 #include <type_traits>
 
 namespace zeno
@@ -35,6 +36,66 @@ namespace any
 
     template <typename T>
     class ValueContainer;
+
+    template <typename T>
+    class TEnableAnyFromThis : public IContainer {
+    public:
+        using ValueType = T;
+
+        virtual const RTTITypeInfo& type() const override {
+            return type_info<ValueType>();
+        }
+
+        virtual bool is_type(const RTTITypeInfo& other_type) const override {
+            return other_type == this->type();
+        }
+
+        virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const override {
+            auto self_type = type();
+            if (
+                other_type == self_type
+            ) {
+                return AnyConversionMethod::AsIs;
+            }
+            else if (
+                other_type.get_decayed_hash() == 0 
+                && self_type.get_decayed_hash() && other_type.hash_code() == self_type.get_decayed_hash()
+            ) {
+                if (self_type.has_flags(TypeFlag::TF_IsPointer)) {
+                    return AnyConversionMethod::Deref;
+                }
+                return AnyConversionMethod::AsIs;
+            }
+            else if (
+                self_type.get_decayed_hash() == 0 && other_type.get_decayed_hash() && other_type.get_decayed_hash() == self_type.hash_code()
+            ) {
+                if (other_type.has_flags(TypeFlag::TF_IsPointer)) {
+                    return AnyConversionMethod::TakeAddress;
+                } else if (other_type.has_flags(TypeFlag::TF_IsLValueRef)) {
+                    return AnyConversionMethod::AsIs;
+                } else if (other_type.has_flags(TypeFlag::TF_IsRValueRef)) {
+                    return AnyConversionMethod::Move;
+                }
+                return AnyConversionMethod::AsIs;
+            }
+
+            return AnyConversionMethod::Impossible;
+        }
+
+        virtual IContainer* clone() const override {
+            if REFLECT_CONSTEXPR (VTIsCopyConstructible<T>) {
+                return new T(*static_cast<const T*>(this));
+            } else {
+                ZENO_CHECK(VTIsCopyConstructible<T>);
+            }
+        }
+
+        virtual void* get_data_ptr_unsafe() const override {
+            return const_cast<void*>(reinterpret_cast<const void*>(this));
+        }
+
+        Any to_any();
+    };
 }
 
     template <typename T, typename... Args>
@@ -90,6 +151,9 @@ namespace any
             emplace<std::decay_t<T>*>(zeno::reflect::forward<Args>(args)...);
         }
 
+        template <typename T>
+        Any(any::TEnableAnyFromThis<T>* that) : m_value_container(that), m_is_make_from_this(true) {}
+
         Any& operator=(const Any& other) {
             Any(other).swap(*this);
             return *this;
@@ -141,8 +205,11 @@ namespace any
 
         void swap(Any& other) noexcept {
             any::IContainer* other_container = other.m_value_container;
+            bool other_is_make_from_this = other.m_is_make_from_this;
             other.m_value_container = m_value_container;
+            other.m_is_make_from_this = m_is_make_from_this;
             m_value_container = other_container;
+            m_is_make_from_this = other_is_make_from_this;
         }
 
         bool has_value() const {
@@ -150,7 +217,9 @@ namespace any
         }
 
         REFLECT_STATIC_CONSTEXPR void reset() {
-            delete m_value_container;
+            if (!m_is_make_from_this) {
+                delete m_value_container;
+            }
             m_value_container = nullptr;
         }
 
@@ -171,6 +240,8 @@ namespace any
         Any(any::IContainer* container) : m_value_container(container) {};
 
         any::IContainer* m_value_container = nullptr;
+
+        bool m_is_make_from_this = false;
 
         // ==== Friend Functions ====
         template <typename T, typename... Args>
@@ -208,6 +279,11 @@ namespace any
         
         // Forward parameters directly into Any constructors
         return Any(TInPlaceType<T>(), zeno::reflect::forward<Args>(args)...);
+    }
+
+    template <typename T>
+    Any make_any(any::TEnableAnyFromThis<T>* that) {
+        return Any(that);
     }
 
     /**
@@ -541,6 +617,11 @@ namespace any
             return const_cast<void*>(reinterpret_cast<const void*>(&m_value));
         }
     };
+
+    template <typename T>
+    Any TEnableAnyFromThis<T>::to_any() {
+        return make_any<T>(this);
+    }
 
 };
 }

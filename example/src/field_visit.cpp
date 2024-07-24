@@ -45,9 +45,10 @@ int main() {
     std::cout << instance << std::endl;
 
     // 鸭子类型测试
+    Soo so;
     {
         zeno::reflect::HighOrderCallableType<void, int*> t("wow");
-        Any any = make_any<Soo>();
+        Any any = so.to_any();
         Any arg0 = make_any<int>(123456);
         Any result = Any::make_null();
         std::cout << "调用结果: " << t(any, result, ArrayList<Any*> { &arg0 }) << std::endl;

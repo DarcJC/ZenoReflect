@@ -1,4 +1,5 @@
 #include "data.h"
+#include "reflect/container/any"
 #include "reflect/core.hpp"
 #include <cstddef>
 #include <iostream>
@@ -15,7 +16,7 @@ namespace zeno {
 
 using ZABC = zeno::ABC;
 
-struct ZRECORD() Soo {
+struct ZRECORD() Soo : public zeno::reflect::any::TEnableAnyFromThis<Soo> {
 
     ZMETHOD(DisplayName = "123")
     void wow(int* qwq) {
