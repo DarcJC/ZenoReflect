@@ -30,32 +30,37 @@ using Yeppp = test::inner::Oops;
 
 namespace zeno
 {
-    struct ZRECORD(²âÊÔ1="Õæ", ×é²âÊÔ=("×é1", "Group 2", "Group 3"), a123="true", DisplayName="ÎÒÊÇÒ»¸öPrim") IAmPrimitve {
+    enum class ControlTypes : uint8_t {
+        LineEdit,
+        MaxNum,
+    };
+
+    struct ZRECORD(æµ‹è¯•1="çœŸ", ç»„æµ‹è¯•=("ç»„1", "Group 2", "Group 3"), a123="true", DisplayName="æˆ‘æ˜¯ä¸€ä¸ªPrim") IAmPrimitve {
         IAmPrimitve(const IAmPrimitve&) = default;
 
         signed int i32 = 10086;
 
-        std::string s = "²âÊÔÄÚÈİ";
+        std::string s = "æµ‹è¯•å†…å®¹";
 
-        ZMETHOD(Name="×öĞ©ÊÂ") 
+        ZMETHOD(Name="åšäº›äº‹")
         void DoSomething(int value) const {
             std::cout << "Doing something " << value << "x ..." << std::endl;
         }
     };
 
-    struct ZRECORD(DisplayName="ÄãºÃ") »ùÀà²âÊÔ : public AliasType2 {
-        
-        »ùÀà²âÊÔ() = default;
+    struct ZRECORD(DisplayName="ä½ å¥½") åŸºç±»æµ‹è¯• : public AliasType2 {
+
+        åŸºç±»æµ‹è¯•() = default;
 
         ZPROPERTY(DisplayName = "Field 1")
-        const char* ×Ö¶Î1 = "Hello World";
+        const char* å­—æ®µ1 = "Hello World";
     };
 
     class ZRECORD(Test="true", StrList=("Group 1", "Group 2", "Group 3")) Hhhh : public reflect::TEnableVirtualRefectionInfo<Hhhh> {
     public:
         int a1;
 
-        ZPROPERTY(Role = "input", Control = zeno::LineEdit, IntValue = 233, FloatVal = 0, ComboBoxItems = ("Option A", "Option B", "Option C"), minmax=(2,4))
+        ZPROPERTY(Role = "input", Control = zeno::ControlTypes::LineEdit, IntValue = 233, FloatVal = 0, ComboBoxItems = ("Option A", "Option B", "Option C"), minmax=(2,4))
         std::string test;
 
         zeno::reflect::Any a2;
