@@ -16,8 +16,11 @@ target_include_directories(ReflectSerialization PUBLIC
 
 target_compile_definitions(ReflectSerialization PRIVATE REFLECT_SERIALIZATION_EXPORTS=1)
 
-make_absolute_paths(reflect_serialization_headers include/reflect/serial_type_decl.hpp)
-zeno_declare_reflection_support(ReflectSerialization ${reflect_serialization_headers})
+make_absolute_paths(REFLECT_SERIALIZATION_HEADERS 
+    include/reflect/serialization.hpp
+    include/reflect/serial_type_decl.hpp
+)
+zeno_declare_reflection_support(ReflectSerialization ${REFLECT_SERIALIZATION_HEADERS})
 
 if (REFLECT_ENABLE_SERIALIZATION_TEST_TARGET)
     add_subdirectory(tests)

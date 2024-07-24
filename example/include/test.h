@@ -3,6 +3,7 @@
 #include "reflect/core.hpp"
 #include <cstddef>
 #include <iostream>
+#include <string>
 #include "reflect/reflection.generated.hpp"
 
 namespace zeno {

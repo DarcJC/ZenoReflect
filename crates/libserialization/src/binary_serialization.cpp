@@ -21,7 +21,7 @@ namespace reflect
 
     class DefaultBinarySerializer : public ISerializer {
     public:
-        ISerializer& serialize(UniquePtr<IWritableStream>& out_stream, const Any& input) override {
+        bool serialize(UniquePtr<IWritableStream>& out_stream, const Any& input) override {
             if (!input.has_value()) {
                 throw std::runtime_error("Cannot serialize a null Any object.");
             }
@@ -53,13 +53,13 @@ namespace reflect
             } else if (rtti_info == type_info<uint64_t>()) {
                 serialize_basic_type<uint64_t>(out_stream, input, type_info<uint64_t>().hash_code());
             } else {
-                throw std::runtime_error("Unsupported type for serialization.");
+                return false;
             }
 
-            return *this;
+            return true;
         }
 
-        ISerializer& deserialize(const UniquePtr<IReadableStream>& data_stream, Any& output) override {
+        bool deserialize(const UniquePtr<IReadableStream>& data_stream, Any& output) override {
             if (!data_stream) {
                 throw std::runtime_error("Invalid data stream for deserialization.");
             }
@@ -93,10 +93,10 @@ namespace reflect
             } else if (type_identifier == type_info<uint64_t>().hash_code()) {
                 deserialize_basic_type<uint64_t>(data_stream, output);
             } else {
-                throw std::runtime_error("Unsupported type for deserialization.");
+                return false;
             }
 
-            return *this;
+            return true;
         }
 
     private:
