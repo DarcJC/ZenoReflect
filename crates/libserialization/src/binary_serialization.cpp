@@ -1,9 +1,13 @@
+#include "reflect/serial_type_decl.hpp"
+#include "reflect/reflection.generated.hpp"
+
+#include <cstdint>
+#include <string>
 #include <stdexcept>
 #include "reflect/container/unique_ptr"
 #include "reflect/typeinfo.hpp"
 #include "reflect/serialization.hpp"
 
-#include "reflect/reflection.generated.hpp"
 #include "reflect/utils/assert"
 
 namespace zeno
@@ -11,7 +15,11 @@ namespace zeno
 namespace reflect
 {
 
-    enum class TypeIdentifier : uint8_t {
+    // Assume always use little-endian
+
+    using IdentifierType = size_t;
+
+    enum class TypeIdentifier : IdentifierType {
         Int32 = 1,
         Float = 2,
         Double = 3,
@@ -25,7 +33,8 @@ namespace reflect
         Uint32 = 11,
         Uint64 = 12,
         Float32 = 13,
-        Float64 = 14
+        Float64 = 14,
+        MaxNum,
     };
 
     class DefaultBinarySerializer : public ISerializer {
@@ -74,7 +83,9 @@ namespace reflect
             }
 
             // Read the type identifier
-            TypeIdentifier type_identifier = static_cast<TypeIdentifier>(data_stream->next_byte());
+            IdentifierType identifier = 0;
+            data_stream->read(reinterpret_cast<uint8_t*>(&identifier), sizeof(IdentifierType));
+            TypeIdentifier type_identifier = static_cast<TypeIdentifier>(identifier);
 
             switch (type_identifier) {
                 case TypeIdentifier::Int32: deserialize_basic_type<int>(data_stream, output); break;
@@ -99,7 +110,8 @@ namespace reflect
         template <typename T>
         void serialize_basic_type(UniquePtr<IWritableStream>& out_stream, const Any& input, TypeIdentifier type_identifier) {
             T value = any_cast<T>(input);
-            out_stream->write_byte(static_cast<uint8_t>(type_identifier));
+            IdentifierType identifier = IdentifierType(type_identifier);
+            out_stream->write(reinterpret_cast<const uint8_t*>(&identifier), sizeof(IdentifierType));
             out_stream->write(reinterpret_cast<const uint8_t*>(&value), sizeof(T));
         }
 
@@ -111,12 +123,12 @@ namespace reflect
         }
 
         void serialize_string(UniquePtr<IWritableStream>& out_stream, const Any& input) {
-            const std::string* value = any_cast<const std::string*>(input);
-            ZENO_CHECK_MSG(value, "Invalid string");
-            out_stream->write_byte(static_cast<uint8_t>(TypeIdentifier::String));
-            uint32_t length = static_cast<uint32_t>(value->size());
+            std::string& value = any_cast<std::string&>(input);
+            IdentifierType identifier = static_cast<IdentifierType>(TypeIdentifier::String);
+            out_stream->write(reinterpret_cast<const uint8_t*>(&identifier), sizeof(IdentifierType));
+            uint32_t length = static_cast<uint32_t>(value.size());
             out_stream->write(reinterpret_cast<const uint8_t*>(&length), sizeof(length));
-            out_stream->write(reinterpret_cast<const uint8_t*>(value->data()), length);
+            out_stream->write(reinterpret_cast<const uint8_t*>(value.data()), length);
         }
 
         void deserialize_string(const UniquePtr<IReadableStream>& data_stream, Any& output) {

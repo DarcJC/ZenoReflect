@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 #include "reflect/registry.hpp"
 
 
@@ -17,3 +18,4 @@ REFLECT_REGISTER_RTTI_TYPE_MANUAL(float);
 REFLECT_REGISTER_RTTI_TYPE_MANUAL(double);
 REFLECT_REGISTER_RTTI_TYPE_MANUAL(char);
 REFLECT_REGISTER_RTTI_TYPE_MANUAL(std::string);
+REFLECT_REGISTER_RTTI_TYPE_MANUAL(std::vector<std::string>);

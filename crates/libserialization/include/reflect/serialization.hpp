@@ -47,6 +47,11 @@ namespace reflect
         virtual ISerializer& deserialize(const UniquePtr<IReadableStream>& data_stream, Any& output) = 0;
     };
 
+    class REFLECT_SERIALIZATION_API IArchive {
+    public:
+        virtual ~IArchive() = default;
+    };
+
     REFLECT_SERIALIZATION_API extern UniquePtr<ISerializer> create_default_serializer();
 
     REFLECT_SERIALIZATION_API extern UniquePtr<IReadableStream> create_file_read_stream(std::string_view path);
