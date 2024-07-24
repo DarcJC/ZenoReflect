@@ -263,8 +263,7 @@ MetaValue Parser::parse_value()
             return std::stoi(result);
     } else if (current_token.type == TokenType::LIST_START) {
         return parse_list();
-    }
-    else if (current_token.type == TokenType::KEY) {
+    } else if (current_token.type == TokenType::KEY) {
         std::string result = "[ENUM_MARK]" + current_token.value;
         current_token.type = TokenType::ENUM;
         next_token();
