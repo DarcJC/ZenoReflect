@@ -3,6 +3,7 @@
 #include "reflect/serialization.hpp"
 #include <string>
 #include <iostream>
+#include <vector> // Fix when building with examples
 
 #include "reflect/reflection.generated.hpp"
 
