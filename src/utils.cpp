@@ -309,8 +309,15 @@ inja::json parse_metadata(const MetadataContainer &metadata)
             using T = std::decay_t<decltype(arg)>;
             inja::json value_data;
             if constexpr (std::is_same_v<T, std::string>) {
-                value_data["value"] = arg;
-                value_data["is_string"] = true;
+                static std::string mark = "[ENUM_MARK]";
+                if (arg.find(mark) == 0) {
+                    value_data["value"] = arg.substr(mark.length());
+                    value_data["is_enum"] = true;
+                }
+                else {
+                    value_data["value"] = arg;
+                    value_data["is_string"] = true;
+                }
                 properties_json[key] = value_data;
             } else if constexpr (std::is_same_v<T, int>) {
                 value_data["value"] = arg;

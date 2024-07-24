@@ -30,6 +30,11 @@ using Yeppp = test::inner::Oops;
 
 namespace zeno
 {
+    enum class ControlTypes : uint8_t {
+        LineEdit = 3,
+        MaxNum,
+    };
+
     struct ZRECORD(测试1="真", 组测试=("组1", "Group 2", "Group 3"), a123="true", DisplayName="我是一个Prim") IAmPrimitve {
         IAmPrimitve(const IAmPrimitve&) = default;
 
@@ -37,14 +42,14 @@ namespace zeno
 
         std::string s = "测试内容";
 
-        ZMETHOD(Name="做些事") 
+        ZMETHOD(Name="做些事")
         void DoSomething(int value) const {
             std::cout << "Doing something " << value << "x ..." << std::endl;
         }
     };
 
     struct ZRECORD(DisplayName="你好") 基类测试 : public AliasType2 {
-        
+
         基类测试() = default;
 
         ZPROPERTY(DisplayName = "Field 1")
@@ -55,7 +60,7 @@ namespace zeno
     public:
         int a1;
 
-        ZPROPERTY(Role = "input", IntValue = 233, FloatVal = 0, ComboBoxItems = ("Option A", "Option B", "Option C"), minmax=(2,4))
+        ZPROPERTY(Role = "input", Control = zeno::ControlTypes::LineEdit, IntValue = 233, FloatVal = 0, ComboBoxItems = ("Option A", "Option B", "Option C"), minmax=(2,4))
         std::string test;
 
         zeno::reflect::Any a2;

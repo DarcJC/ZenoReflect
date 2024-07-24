@@ -35,7 +35,7 @@ struct MetadataContainer {
 MetadataContainer parse_metadata_dsl(const std::string& in_dsl);
 
 enum class TokenType {
-    KEY, STRING, NUMBER, LIST_START, LIST_END, EQUAL, COMMA, END
+    KEY, STRING, NUMBER, LIST_START, LIST_END, EQUAL, COMMA, ENUM, END
 };
 
 std::string token_type_to_string(TokenType type);
