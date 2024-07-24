@@ -1,5 +1,7 @@
 #include "test.h"
 
+#include "reflect/container/duck"
+
 using namespace zeno::reflect;
 
 int main() {
@@ -41,6 +43,15 @@ int main() {
 
     // 输出一下修改后的instance
     std::cout << instance << std::endl;
+
+    // 鸭子类型测试
+    {
+        zeno::reflect::TraitType<void, int*> t("wow");
+        Any any = make_any<Soo>();
+        Any arg0 = make_any<int>(123456);
+        Any result = Any::make_null();
+        std::cout << "调用结果: " << t.invoke(any, result, ArrayList<Any*> { &arg0 }) << std::endl;
+    }
 
     return 0;
 }

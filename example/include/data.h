@@ -58,7 +58,7 @@ namespace zeno
 
     class ZRECORD(Test="true", StrList=("Group 1", "Group 2", "Group 3")) Hhhh : public reflect::TEnableVirtualRefectionInfo<Hhhh> {
     public:
-        int a1;
+        int a1 = 114514;
 
         ZPROPERTY(Role = "input", Control = zeno::ControlTypes::LineEdit, IntValue = 233, FloatVal = 0, ComboBoxItems = ("Option A", "Option B", "Option C"), minmax=(2,4))
         std::string test;

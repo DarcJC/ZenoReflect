@@ -16,6 +16,8 @@ namespace zeno {
 using ZABC = zeno::ABC;
 
 struct ZRECORD() Soo {
+
+    ZMETHOD(DisplayName = "123")
     void wow(int* qwq) {
         std::cout << (size_t)qwq << std::endl;
     }
