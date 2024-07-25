@@ -102,30 +102,47 @@ function(zeno_declare_reflection_support target reflection_headers)
     list(JOIN CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES "," SYSTEM_IMPLICIT_INCLUDE_DIRS)
 
     set(REFLECTION_GENERATION_TARGET _internal_${target}_reflect_generation)
+    set(TIMESTAMP_FILE "${CMAKE_BINARY_DIR}/timestamp/${target}_timestamp")
+    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/timestamp")
 
     if (REFLECTION_USE_PREBUILT_BINARY AND WIN32)
-        add_custom_target(${REFLECTION_GENERATION_TARGET}
-            WORKING_DIRECTORY
-                ${CMAKE_CURRENT_BINARY_DIR}
-            COMMAND
-                ${generator_path} --include_dirs=\"$<JOIN:${INCLUDE_DIRS},${splitor}>,${SYSTEM_IMPLICIT_INCLUDE_DIRS}\" --pre_include_header="${LIBREFLECT_PCH_PATH}" --input_source=\"${source_paths_string}\" --header_output="${ZENO_REFLECTION_GENERATED_HEADERS_DIR}" --stdc++=${CMAKE_CXX_STANDARD} $<IF:$<CONFIG:Debug>,-v,> --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}" --target_name="${target}"
-            SOURCES
-                ${reflection_headers}
-            COMMENT
-                "Generating reflection information for ${target}..."
+        add_custom_command(
+            OUTPUT ${TIMESTAMP_FILE}
+            COMMAND ${CMAKE_COMMAND} -E touch ${TIMESTAMP_FILE}
+            COMMAND ${generator_path}
+                --include_dirs=\"$<JOIN:${INCLUDE_DIRS},${splitor}>,${SYSTEM_IMPLICIT_INCLUDE_DIRS}\"
+                --pre_include_header="${LIBREFLECT_PCH_PATH}"
+                --input_source=\"${source_paths_string}\"
+                --header_output="${ZENO_REFLECTION_GENERATED_HEADERS_DIR}"
+                --stdc++=${CMAKE_CXX_STANDARD}
+                $<IF:$<CONFIG:Debug>,-v,>
+                --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}"
+                --target_name="${target}"
+            DEPENDS ${reflection_headers}
+            COMMENT "Generating reflection information for ${target}..."
         )
     else ()
-        add_custom_target(${REFLECTION_GENERATION_TARGET}
-            WORKING_DIRECTORY
-                ${CMAKE_CURRENT_BINARY_DIR}
-            COMMAND
-                $<TARGET_FILE:ZenoReflect::generator> --include_dirs=\"$<JOIN:${INCLUDE_DIRS},${splitor}>,${SYSTEM_IMPLICIT_INCLUDE_DIRS}\" --pre_include_header="${LIBREFLECT_PCH_PATH}" --input_source=\"${source_paths_string}\" --header_output="${ZENO_REFLECTION_GENERATED_HEADERS_DIR}" --stdc++=${CMAKE_CXX_STANDARD} $<IF:$<CONFIG:Debug>,-v,> --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}" --target_name="${target}"
-            SOURCES
-                ${reflection_headers}
-            COMMENT
-                "Generating reflection information for ${target}..."
+        add_custom_command(
+            OUTPUT ${TIMESTAMP_FILE}
+            COMMAND ${CMAKE_COMMAND} -E touch ${TIMESTAMP_FILE}
+            COMMAND $<TARGET_FILE:ZenoReflect::generator>
+                --include_dirs=\"$<JOIN:${INCLUDE_DIRS},${splitor}>,${SYSTEM_IMPLICIT_INCLUDE_DIRS}\"
+                --pre_include_header="${LIBREFLECT_PCH_PATH}"
+                --input_source=\"${source_paths_string}\"
+                --header_output="${ZENO_REFLECTION_GENERATED_HEADERS_DIR}"
+                --stdc++=${CMAKE_CXX_STANDARD}
+                $<IF:$<CONFIG:Debug>,-v,>
+                --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}"
+                --target_name="${target}"
+            DEPENDS ${reflection_headers}
+            COMMENT "Generating reflection information for ${target}..."
         )
     endif ()
+
+    add_custom_target(${REFLECTION_GENERATION_TARGET}
+        DEPENDS ${TIMESTAMP_FILE}
+    )
+
     add_dependencies(${RELFECTION_GENERATION_ROOT_TARGET} ${REFLECTION_GENERATION_TARGET})
     add_dependencies(${target} ${RELFECTION_GENERATION_ROOT_TARGET})
 
