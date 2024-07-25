@@ -6,12 +6,14 @@ zeno::reflect::RTTITypeInfo::RTTITypeInfo(const RTTITypeInfo & other) {
     m_name = other.m_name;
     m_hashcode = other.m_hashcode;
     m_decayed_hash = other.m_decayed_hash;
+    m_flags = other.m_flags;
 }
 
 zeno::reflect::RTTITypeInfo::RTTITypeInfo(RTTITypeInfo && other)
     : m_name(other.m_name)
     , m_hashcode(other.m_hashcode)
     , m_decayed_hash(other.m_decayed_hash)
+    , m_flags(other.m_flags)
 {
     // As the name is stored as constant var, we will not release it
     other.m_name = nullptr;
@@ -24,6 +26,7 @@ zeno::reflect::RTTITypeInfo &zeno::reflect::RTTITypeInfo::operator=(const zeno::
     m_name = other.m_name;
     m_hashcode = other.m_hashcode;
     m_decayed_hash = other.m_decayed_hash;
+    m_flags = other.m_flags;
     return *this;
 }
 
@@ -33,9 +36,11 @@ zeno::reflect::RTTITypeInfo &zeno::reflect::RTTITypeInfo::operator=(zeno::reflec
         m_name = other.m_name;
         m_hashcode = other.m_hashcode;
         m_decayed_hash = other.m_decayed_hash;
+        m_flags = other.m_flags;
         other.m_name = nullptr;
         other.m_hashcode = 0;
         other.m_decayed_hash = 0;
+        other.m_flags = TF_None;
     }
     return *this;
 }
