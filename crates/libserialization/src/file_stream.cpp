@@ -2,6 +2,9 @@
 #include "reflect/serialization.hpp"
 #include <fstream>
 #include <cstdint>
+#include <vector>
+#include "reflect/reflection.generated.hpp"
+
 
 namespace zeno
 {
@@ -71,11 +74,11 @@ private:
 };
 
 UniquePtr<IReadableStream> create_file_read_stream(std::string_view path) {
-    return make_unique<FileReadableStream>(path);
+    return zeno::reflect::make_unique<FileReadableStream>(path);
 }
 
 UniquePtr<IWritableStream> create_file_write_stream(std::string_view path) {
-    return make_unique<FileWritableStream>(path);
+    return zeno::reflect::make_unique<FileWritableStream>(path);
 }
 
 } // namespace reflect

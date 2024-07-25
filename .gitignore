@@ -5,3 +5,4 @@ build/
 cmake-build-*/
 /crates/libgenerated/include/reflect
 .cache/
+/crates/libgenerated/include/reflect/reflection.generated.hpp

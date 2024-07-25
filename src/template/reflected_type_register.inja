@@ -50,6 +50,15 @@ namespace {
             return STATIC_LIST;
         }
 
+        virtual const ArrayList<StringView>& get_params_name() const override {
+            static ArrayList<StringView> STATIC_LIST {
+## for param in ctor.params
+                "{{ param.name }}",
+## endfor
+            };
+            return STATIC_LIST;
+        }
+
         virtual Any get_param_default_value(size_t index) override {
 ## for param in ctor.params
 {% if param.has_default_arg %}
@@ -121,6 +130,15 @@ namespace {
             static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in func.params
                     zeno::reflect::type_info<TTDecay<{{ param.type }}>>(),
+## endfor
+            };
+            return STATIC_LIST;
+        }
+
+        virtual const ArrayList<StringView>& get_params_name() const override {
+            static ArrayList<StringView> STATIC_LIST {
+## for param in func.params
+                "{{ param.name }}",
 ## endfor
             };
             return STATIC_LIST;

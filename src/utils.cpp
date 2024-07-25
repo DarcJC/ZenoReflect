@@ -271,6 +271,7 @@ inja::json parse_param_data(const clang::ParmVarDecl * param_decl)
 
     inja::json param_data;
     clang::QualType type = param_decl->getType();
+    param_data["name"] = param_decl->getName();
     param_data["type"] = type.getCanonicalType().getAsString();
     param_data["has_default_arg"] = param_decl->hasDefaultArg();
     if (param_decl->hasDefaultArg()) {
@@ -285,6 +286,7 @@ inja::json parse_param_data(const clang::FieldDecl *param_decl)
 {
     inja::json param_data;
     clang::QualType type = param_decl->getType();
+    param_data["name"] = param_decl->getName();
     param_data["type"] = type.getCanonicalType().getAsString();
     param_data["has_default_arg"] = param_decl->hasInClassInitializer();
     if (param_decl->hasInClassInitializer()) {
