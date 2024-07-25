@@ -3,7 +3,9 @@
 #include <cstdint>
 #include <cstring>
 #include <cassert>
+#include <string_view>
 #include "reflect/polyfill.hpp"
+#include "reflect/typeinfo.hpp"
 
 namespace zeno
 {
@@ -48,149 +50,65 @@ namespace reflect
         }
     };
 
-    template <typename CharType = char>
-    class StringViewBase {
+    // Small String Optimization on stack(also can be data segment and so on) memory size
+    // Notice it memory usage will be SSO_BUFFER_SIZE + 1 because we need space to store '\0'
+    constexpr size_t SSO_BUFFER_SIZE = 15;
+
+    class LIBREFLECT_API simple_string {
     public:
-        using ValueType = CharType;
-        using Util = CStringUtil<ValueType>;
-        using Self = StringViewBase;
+        simple_string();
+        simple_string(const char* s);
+        simple_string(std::string_view s);
+
+        simple_string(const simple_string& other);
+        simple_string(simple_string&& other);
+
+        simple_string& operator=(const simple_string& other) noexcept;
+        simple_string& operator=(simple_string&& other) noexcept;
+
+        bool operator==(const simple_string& other) const noexcept;
+        bool operator!=(const simple_string& other) const noexcept;
+        
+        bool operator==(const char* other) const noexcept;
+        bool operator!=(const char* other) const noexcept;
+
+        virtual ~simple_string();
+
+        bool is_empty() const noexcept;
+        void swap(simple_string& other);
+
+        operator std::string_view() noexcept;
+        operator const char*() const noexcept;
+        operator char*() noexcept;
+
+        char* data();
+        const char* data() const;
+        const char* c_str() const;
+
+        size_t length();
+        void ensure_capacity(size_t new_length);
+
+        simple_string& append(const char* s);
+        simple_string& append(std::string_view s);
+
+        simple_string& operator+=(const char* s);
+        simple_string& operator+=(std::string_view s);
+        simple_string& operator+=(const simple_string& other);
 
     private:
-        ValueType* m_data;
-        size_t m_length;
+        union {
+            char m_ss_buffer[SSO_BUFFER_SIZE + 1]; // internal buffer
+            char* m_heap_data; // allocated by memory allocator
+        };
+        size_t m_length = 0;
+        size_t m_capacity = SSO_BUFFER_SIZE;
+        bool m_is_heap = false;
 
-    public:
-        REFLECT_CONSTEXPR StringViewBase(const ValueType* s = nullptr) {
-            if (s) {
-                m_length = Util::strlen(s);
-                m_data = nullptr;
-                if (m_length > 0) {
-                    m_data = Util::strcopy(s);
-                }
-            } else {
-                m_data = nullptr;
-                m_length = 0;
-            }
-        }
+        void set_data(const char* s, size_t len);
 
-        REFLECT_CONSTEXPR StringViewBase(const StringViewBase& other) {
-            if (other.m_data != nullptr) {
-                m_data = Util::strcopy(other.data());
-                m_length = other.m_length;
-            } else {
-                m_data = nullptr;
-                m_length = 0;
-            }
-        }
-
-        REFLECT_CONSTEXPR StringViewBase(StringViewBase&& other) {
-            m_data = other.m_data;
-            m_length = other.m_length;
-
-            other.m_data = nullptr;
-            other.m_length = 0;
-        }
-
-        virtual ~StringViewBase() {
-            reset();
-        }
-
-        LIBREFLECT_INLINE size_t length() const {
-            return m_length;
-        }
-
-        LIBREFLECT_INLINE bool is_valid_index(size_t index) const {
-            return index < m_length;
-        }
-
-        LIBREFLECT_INLINE const ValueType& at(size_t index) const {
-            assert(is_valid_index(index));
-            return m_data[index];
-        }
-
-        LIBREFLECT_INLINE ValueType& at(size_t index) {
-            assert(is_valid_index(index));
-            return m_data[index];
-        }
-
-        LIBREFLECT_INLINE ValueType* data() {
-            return m_data;
-        }
-
-        LIBREFLECT_INLINE const ValueType* data() const {
-            return m_data;
-        }
-
-        LIBREFLECT_INLINE ValueType* c_str() {
-            return data();
-        }
-
-        LIBREFLECT_INLINE const ValueType* c_str() const {
-            return data();
-        }
-
-        LIBREFLECT_INLINE const ValueType& operator[](size_t index) const {
-            return at(index);
-        }
-
-        LIBREFLECT_INLINE ValueType& operator[](size_t index) {
-            return at(index);
-        }
-
-        ValueType& operator=(ValueType&& other) {
-            delete m_data;
-
-            m_data = other.m_data;
-            m_length = other.m_length;
-
-            other.m_data = nullptr;
-            other.m_length = 0;
-
-            return *this;
-        }
-
-        void reset() {
-            delete m_data;
-            m_data = nullptr;
-            m_length = 0;
-        }
-
-        void emplace(const ValueType* s = nullptr) {
-            reset();
-            if (s) {
-                m_length = Util::strlen(s);
-                m_data = nullptr;
-                if (m_length > 0) {
-                    m_data = Util::strcopy(s);
-                }
-            } else {
-                m_data = nullptr;
-                m_length = 0;
-            }
-        }
-
-        StringViewBase& operator=(const char* s) {
-            emplace(s);
-            return *this;
-        }
-
-        StringViewBase& operator=(const StringViewBase& rhs) {
-            reset();
-            m_length = rhs.m_length;
-            m_data = Util::strcopy(rhs.m_data);
-            return *this;
-        }
-
-        bool operator==(const StringViewBase& other) const {
-            return Util::strcmp(m_data, other.m_data) == 0;
-        }
-
-        bool operator!=(const StringViewBase& other) const {
-            return !(*this == other);
-        }
     };
 
-    using StringView = StringViewBase<char>;
+    using StringView = simple_string;
 }
 }
 

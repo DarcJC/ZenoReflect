@@ -8,6 +8,7 @@ add_library(libreflect SHARED
     src/impl/memory.cpp
     src/impl/exit.cpp
     src/impl/metadata.cpp
+    src/impl/string.cpp
 )
 add_library(ZenoReflect::libreflect ALIAS libreflect)
 target_include_directories(libreflect PUBLIC include)
