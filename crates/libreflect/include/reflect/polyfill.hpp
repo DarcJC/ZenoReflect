@@ -1,5 +1,10 @@
 #pragma once
 
+// Introduce feature testing header in C++20 and above
+#if __cplusplus >= 202002L
+#   include <version>
+#endif
+
 #define LIBREFLECT_INLINE inline
 
 #define REFLECT_FORCE_CONSTEPXR constexpr
@@ -25,3 +30,13 @@
 #else
 #define REFLECT_SUPPORT_CONCEPTS 0
 #endif
+
+#if defined (__cpp_lib_execution)
+#   if __cpp_lib_execution >= 201902L
+#       define REFLECT_EXECUTION_CAN_VECTORIZATION std::execution::unseq
+#   else
+#       define REFLECT_EXECUTION_CAN_VECTORIZATION std::execution::seq
+#   endif // __cpp_lib_execution >= 201902L
+#else // !defined (__cpp_lib_execution)
+#   define REFLECT_EXECUTION_CAN_VECTORIZATION 
+#endif // defined (__cpp_lib_execution)
