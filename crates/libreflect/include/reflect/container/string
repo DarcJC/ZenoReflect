@@ -174,6 +174,12 @@ namespace reflect
             return *this;
         }
 
+        StringViewBase& operator=(const StringViewBase& rhs) {
+            m_length = rhs.m_length;
+            m_data = Util::strcopy(rhs.m_data);
+            return *this;
+        }
+
         bool operator==(const StringViewBase& other) const {
             return Util::strcmp(m_data, other.m_data) == 0;
         }
