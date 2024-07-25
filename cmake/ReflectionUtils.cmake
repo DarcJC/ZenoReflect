@@ -71,7 +71,7 @@ function(get_prebuilt_generator generator_path)
 endfunction()
 
 function(zeno_declare_reflection_support target reflection_headers)
-    set(generator_path)
+    set(generator_path "${CMAKE_BINARY_DIR}/ReflectGenerator-Prebuilt.exe")
     if (REFLECTION_USE_PREBUILT_BINARY AND WIN32)
         get_prebuilt_generator(generator_path)
     endif()
