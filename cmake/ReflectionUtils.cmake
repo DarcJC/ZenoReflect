@@ -105,6 +105,12 @@ function(zeno_declare_reflection_support target reflection_headers)
     set(TIMESTAMP_FILE "${CMAKE_BINARY_DIR}/timestamp/${target}_timestamp")
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/timestamp")
 
+    if (${GENERATE_ON_BUILD_DIR})
+        set(REFLECTION_GENERATED_DIR ${CMAKE_BINARY_DIR}/intermediate/${target})
+    else()
+        set(REFLECTION_GENERATED_DIR ${ZENO_REFLECTION_GENERATED_HEADERS_DIR})
+    endif()
+
     if (REFLECTION_USE_PREBUILT_BINARY AND WIN32)
         add_custom_command(
             OUTPUT ${TIMESTAMP_FILE}
@@ -113,7 +119,7 @@ function(zeno_declare_reflection_support target reflection_headers)
                 --include_dirs=\"$<JOIN:${INCLUDE_DIRS},${splitor}>,${SYSTEM_IMPLICIT_INCLUDE_DIRS}\"
                 --pre_include_header="${LIBREFLECT_PCH_PATH}"
                 --input_source=\"${source_paths_string}\"
-                --header_output="${ZENO_REFLECTION_GENERATED_HEADERS_DIR}"
+                --header_output="${REFLECTION_GENERATED_DIR}"
                 --stdc++=${CMAKE_CXX_STANDARD}
                 $<IF:$<CONFIG:Debug>,-v,>
                 --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}"
@@ -129,7 +135,7 @@ function(zeno_declare_reflection_support target reflection_headers)
                 --include_dirs=\"$<JOIN:${INCLUDE_DIRS},${splitor}>,${SYSTEM_IMPLICIT_INCLUDE_DIRS}\"
                 --pre_include_header="${LIBREFLECT_PCH_PATH}"
                 --input_source=\"${source_paths_string}\"
-                --header_output="${ZENO_REFLECTION_GENERATED_HEADERS_DIR}"
+                --header_output="${REFLECTION_GENERATED_DIR}"
                 --stdc++=${CMAKE_CXX_STANDARD}
                 $<IF:$<CONFIG:Debug>,-v,>
                 --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}"
