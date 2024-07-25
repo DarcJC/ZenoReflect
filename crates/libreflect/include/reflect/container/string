@@ -175,6 +175,7 @@ namespace reflect
         }
 
         StringViewBase& operator=(const StringViewBase& rhs) {
+            reset();
             m_length = rhs.m_length;
             m_data = Util::strcopy(rhs.m_data);
             return *this;
