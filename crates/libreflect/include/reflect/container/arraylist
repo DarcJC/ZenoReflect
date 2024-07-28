@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <new>
+#include <algorithm>
 #include <initializer_list> // Sadly we can't impl initializer_list by ourselves
 #include "reflect/macro.hpp"
 #include "reflect/polyfill.hpp"
@@ -29,7 +30,7 @@ namespace reflect
             }
             T* new_data = static_cast<T*>(malloc(sizeof(T) * new_capacity));
             for (size_t i = 0; i < m_size; ++i) {
-                new_data[i] = zeno::reflect::move(static_cast<T*>(m_data)[i]);
+                new (new_data + i) T(zeno::reflect::move(static_cast<T*>(m_data)[i]));
             }
             free(m_data);
             m_data = new_data;
@@ -47,17 +48,18 @@ namespace reflect
         }
 
         ~ArrayList() {
+            reset();
             free(m_data);
         }
 
         ArrayList(const ArrayList& other) : m_size(other.m_size), m_capacity(other.m_capacity), m_data(malloc(sizeof(T) * other.m_capacity)) {
             for (size_t i = 0; i < other.m_size; ++i) {
-                static_cast<T*>(m_data)[i] = static_cast<T*>(other.m_data)[i];
+                new (static_cast<T*>(m_data) + i) T(static_cast<const T&>(static_cast<T*>(other.m_data)[i]));
             }
         }
         ArrayList(ArrayList&& other) noexcept : m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity) {
-            other.m_data = nullptr;
             other.m_size = 0;
+            other.m_data = nullptr;
             other.m_capacity = 0;
         }
 
@@ -83,17 +85,71 @@ namespace reflect
 
         size_t remove_last() {
             if (m_size > 0) {
-                --m_size;
+                static_cast<T*>(m_data)[--m_size].~T();
             }
             return m_size;
         }
 
         void remove_at(size_t index) {
             if (is_valid_index(index)) {
+                static_cast<T*>(m_data)[index].~T();
                 for (size_t i = index; i < m_size - 1; ++i) {
-                    static_cast<T*>(m_data)[i] = zeno::reflect::move(static_cast<T*>(m_data)[i + 1]);
+                    new (static_cast<T*>(m_data) + i) T(zeno::reflect::move(static_cast<T*>(m_data)[i + 1]));
+                    static_cast<T*>(m_data)[i + 1].~T();
                 }
+                --m_size;
             }
+        }
+
+        void erase(size_t index) {
+            remove_at(index);
+        }
+
+        T pop_back() {
+            ZENO_CHECK(m_size > 0);
+
+            T value = zeno::reflect::move(static_cast<T*>(m_data)[m_size - 1]);
+            remove_last();
+            return value;
+        }
+
+        T pop_front() {
+            ZENO_CHECK(m_size > 0);
+
+            T value = zeno::reflect::move(static_cast<T*>(m_data)[0]);
+            remove_at(0);
+            return value;
+        }
+
+        void insert(size_t index, const T& value) {
+            ZENO_CHECK(index <= m_size);
+            if (m_size == m_capacity) {
+                resize_internal();
+            }
+            for (size_t i = m_size; i > index; --i) {
+                new (static_cast<T*>(m_data) + i) T(zeno::reflect::move(static_cast<T*>(m_data)[i - 1]));
+                static_cast<T*>(m_data)[i - 1].~T();
+            }
+            new (static_cast<T*>(m_data) + index) T(value);
+            ++m_size;
+        }
+
+        void reset() {
+            for (size_t i = 0; i < m_size; ++i) {
+                static_cast<T*>(m_data)[i].~T();
+            }
+            m_size = 0;
+        }
+
+        void resize(size_t new_size) {
+            if (new_size < m_size) {
+                for (size_t i = new_size; i < m_size; ++i) {
+                    static_cast<T*>(m_data)[i].~T();
+                }
+            } else if (new_size > m_capacity) {
+                resize_internal();
+            }
+            m_size = new_size;
         }
 
         LIBREFLECT_INLINE T& operator[](size_t index) {
@@ -123,12 +179,48 @@ namespace reflect
             return m_size++;
         }
 
+        void emplace(size_t index, T&& value) {
+            ZENO_CHECK(index <= m_size);
+            if (m_size == m_capacity) {
+                resize_internal();
+            }
+            for (size_t i = m_size; i > index; --i) {
+                new (static_cast<T*>(m_data) + i) T(zeno::reflect::move(static_cast<T*>(m_data)[i - 1]));
+                static_cast<T*>(m_data)[i - 1].~T();
+            }
+            new (static_cast<T*>(m_data) + index) T(zeno::reflect::forward<T>(value));
+            ++m_size;
+        }
+
         T* begin() const {
             return static_cast<T*>(m_data);
         }
 
         T* end() const {
             return static_cast<T*>(m_data) + m_size;
+        }
+
+        size_t find(const T& value) const {
+            for (size_t i = 0; i < m_size; ++i) {
+                if (static_cast<T*>(m_data)[i] == value) {
+                    return i;
+                }
+            }
+            return m_size;
+        }
+
+        bool contains(const T& value) const {
+            return find(value) != m_size;
+        }
+
+        void reverse() {
+            for (size_t i = 0; i < m_size / 2; ++i) {
+                std::swap(static_cast<T*>(m_data)[i], static_cast<T*>(m_data)[m_size - i - 1]);
+            }
+        }
+
+        void sort() {
+            std::sort(begin(), end());
         }
     };
 }
