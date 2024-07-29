@@ -75,7 +75,7 @@ namespace {
 ## for param in ctor.params
                 Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
 ## endfor
-                return new {{ type_info.canonical_typename }}
+                return new {{ type_info.canonical_typename_no_prefix }}
                 {
 ## for param in ctor.params
                     any_cast<{{ param.type }}>(any{{- loop.index -}}){% if loop.index1 != length(ctor.params) %},{% endif %}
@@ -92,7 +92,7 @@ namespace {
 ## for param in ctor.params
                 Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
 ## endfor
-                val.emplace<{{ type_info.canonical_typename }}>
+                val.emplace<{{ type_info.canonical_typename_no_prefix }}>
                 (
 {% if default(ctor.is_aggregate_initialize, false) %}
                     {{ type_info.qualified_name }} {
