@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include "reflect/traits/type_traits"
 
 namespace zeno
@@ -17,17 +18,17 @@ namespace reflect
         template <typename SelfType, typename... Args>
         auto operator()(SelfType&& self, Args&&... args) const
         -> TTEnableIf<VTIsMemberFunction<TTRemovePointer<T>>, 
-            decltype((zeno::reflect::forward<SelfType>(self).*m_member_ptr)(zeno::reflect::forward<Args>(args)...))>
+            decltype((std::forward<SelfType>(self).*m_member_ptr)(std::forward<Args>(args)...))>
         {
-            return (zeno::reflect::forward<SelfType>(self).*m_member_ptr)(zeno::reflect::forward<Args>(args)...);
+            return (std::forward<SelfType>(self).*m_member_ptr)(std::forward<Args>(args)...);
         }
 
         template <typename SelfType>
         auto operator()(SelfType&& self) const
         -> TTEnableIf<!VTIsMemberFunction<TTRemovePointer<T>>, 
-            decltype(zeno::reflect::forward<SelfType>(self).*m_member_ptr)>
+            decltype(std::forward<SelfType>(self).*m_member_ptr)>
         {
-            return zeno::reflect::forward<SelfType>(self).*m_member_ptr;
+            return std::forward<SelfType>(self).*m_member_ptr;
         }
     };
 

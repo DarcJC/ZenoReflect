@@ -43,12 +43,14 @@ namespace reflect
         Mutable = 1 << 4,
     };
 
-    struct ReflectedTypeInfo {
+    struct ReflectedTypeInfo final {
         // A prefix name. Used to avoid name conflicts between difference modules
         StringView prefix;
         StringView qualified_name;
         StringView canonical_typename;
         bool internal_flags[static_cast<size_t>(TypeFlags::Max)] = { false };
+
+        ~ReflectedTypeInfo();
     };
 
     struct T_NullTypeArg {};
@@ -98,7 +100,7 @@ namespace reflect
         ReflectedTypeInfo m_type_info;
     public:
         TypeBase() = delete;
-        virtual ~TypeBase() = default;
+        virtual ~TypeBase();
 
         virtual bool operator==(const TypeBase& other) const;
         virtual bool operator!=(const TypeBase& other) const;
@@ -157,7 +159,7 @@ namespace reflect
         virtual TypeHandle get_parent_type() const;
         virtual ~IBelongToParentType();
     protected:
-        explicit IBelongToParentType(TypeHandle in_type);
+        explicit IBelongToParentType(const TypeHandle& in_type);
 
         TypeHandle m_type;
     };
@@ -191,7 +193,7 @@ namespace reflect
 
         virtual Any create_instance(const ArrayList<Any>& params = {}) const = 0;
     protected:
-        explicit ITypeConstructor(TypeHandle in_type);
+        explicit ITypeConstructor(const TypeHandle& in_type);
     };
 
     class LIBREFLECT_API IMemberFunction : public IBelongToParentType, public IHasParameter, public IHasName, public IHasQualifier, public ICanHasMetadata {
@@ -204,7 +206,7 @@ namespace reflect
         virtual Any invoke_static(const ArrayList<Any*>& params = {}) const = 0;
 
     protected:
-        explicit IMemberFunction(TypeHandle in_type);
+        explicit IMemberFunction(const TypeHandle& in_type);
     };
 
     class LIBREFLECT_API IMemberField : public IBelongToParentType, public IHasName, public ICanHasMetadata {
@@ -224,7 +226,7 @@ namespace reflect
         virtual TypeHandle get_field_type() const = 0;
 
     protected:
-        explicit IMemberField(TypeHandle in_type);
+        explicit IMemberField(const TypeHandle& in_type);
     };
 
 }

@@ -4,6 +4,7 @@
 #include "reflect/typeinfo.hpp"
 #include "reflect/utils/assert"
 #include <type_traits>
+#include <utility>
 
 namespace zeno
 {
@@ -144,20 +145,20 @@ namespace any
         Any(T&& value) {
             using DecayType = std::decay_t<T>;
             if REFLECT_FORCE_CONSTEPXR (VTIsSame<DecayType, Any>) {
-                emplace(zeno::reflect::forward<T>(value));
+                emplace(std::forward<T>(value));
             } else {
-                emplace<DecayType>(zeno::reflect::forward<T>(value));
+                emplace<DecayType>(std::forward<T>(value));
             }
         }
 
         template <typename T, typename... Args>
         Any(TInPlaceType<T>, Args&&... args) {
-            emplace<std::decay_t<T>>(zeno::reflect::forward<Args>(args)...);
+            emplace<std::decay_t<T>>(std::forward<Args>(args)...);
         }
 
         template <typename T, typename... Args>
         Any(TInPlaceType<T*>, Args&&... args) {
-            emplace<std::decay_t<T>*>(zeno::reflect::forward<Args>(args)...);
+            emplace<std::decay_t<T>*>(std::forward<Args>(args)...);
         }
 
         template <typename T>
@@ -169,13 +170,13 @@ namespace any
         }
 
         Any& operator=(Any&& other) {
-            Any(zeno::reflect::move(other)).swap(*this);
+            Any(std::move(other)).swap(*this);
             return *this;
         }
 
         template <typename ValueType>
         Any& operator=(ValueType&& rhs) {
-            Any(zeno::reflect::forward<ValueType>(rhs)).swap(*this);
+            Any(std::forward<ValueType>(rhs)).swap(*this);
             return *this;
         }
 
@@ -188,11 +189,11 @@ namespace any
             using DecayType = std::decay_t<T>;
             reset();
             if REFLECT_FORCE_CONSTEPXR (VTIsPointer<T>) {
-                m_value_container = new any::ValueContainer<std::remove_cv_t<T>>(zeno::reflect::forward<Args>(args)...);
+                m_value_container = new any::ValueContainer<std::remove_cv_t<T>>(std::forward<Args>(args)...);
             } else if REFLECT_FORCE_CONSTEPXR (VTIsSame<Any, T>) {
-                m_value_container = new any::ValueContainer<DecayType>(zeno::reflect::forward<Args>(args)...);
+                m_value_container = new any::ValueContainer<DecayType>(std::forward<Args>(args)...);
             } else {
-                m_value_container = new any::ValueContainer<DecayType>(TInPlaceType<DecayType>(), zeno::reflect::forward<Args>(args)...);
+                m_value_container = new any::ValueContainer<DecayType>(TInPlaceType<DecayType>(), std::forward<Args>(args)...);
             }
         }
 
@@ -279,10 +280,10 @@ namespace any
     template <typename T, typename... Args>
     Any make_any(Args&&... args) {
         // Old impl depends on compiler RVO
-        // return Any(zeno::reflect::move(DecayType(zeno::reflect::forward<Args>(args)...)));
+        // return Any(std::move(DecayType(std::forward<Args>(args)...)));
         
         // Forward parameters directly into Any constructors
-        return Any(TInPlaceType<T>(), zeno::reflect::forward<Args>(args)...);
+        return Any(TInPlaceType<T>(), std::forward<Args>(args)...);
     }
 
     template <typename T>
@@ -314,7 +315,7 @@ namespace any
         }
 
         if REFLECT_FORCE_CONSTEPXR (std::is_rvalue_reference_v<T>) {
-            return zeno::reflect::move(*value);
+            return std::move(*value);
         } else if REFLECT_FORCE_CONSTEPXR (std::is_lvalue_reference_v<T>) {
             return *value;
         } else if (std::is_pointer_v<T> && convert == AnyConversionMethod::TakeAddress) {
@@ -349,7 +350,7 @@ namespace any
         }
 
         if REFLECT_FORCE_CONSTEPXR (std::is_rvalue_reference_v<T>) {
-            return zeno::reflect::move(*value);
+            return std::move(*value);
         } else if REFLECT_FORCE_CONSTEPXR (std::is_lvalue_reference_v<T>) {
             return *value;
         } else if (std::is_pointer_v<T> && convert == AnyConversionMethod::TakeAddress) {
@@ -418,10 +419,10 @@ namespace any
         ValueContainer(const U& value, TTEnableIf<VTIsCopyConstructible<U>, U>* = nullptr): m_value(value) {}
 
         template <typename U = T>
-        ValueContainer(U&& value): m_value(zeno::reflect::move(value)) {}
+        ValueContainer(U&& value): m_value(std::move(value)) {}
 
         template <typename U, typename... Args>
-        ValueContainer(TInPlaceType<U>, Args&&... args) : m_value(zeno::reflect::forward<Args>(args)...) {}
+        ValueContainer(TInPlaceType<U>, Args&&... args) : m_value(std::forward<Args>(args)...) {}
 
         virtual const RTTITypeInfo& type() const override {
             return type_info<std::decay_t<ValueType>>();
@@ -635,7 +636,7 @@ namespace any
 
         ValueContainer(const ValueType& value) : m_value(value) {}
 
-        ValueContainer(ValueType&& value) noexcept : m_value(zeno::reflect::move(value)) {}
+        ValueContainer(ValueType&& value) noexcept : m_value(std::move(value)) {}
 
         virtual const RTTITypeInfo& type() const override {
             return type_info<ValueType>();
