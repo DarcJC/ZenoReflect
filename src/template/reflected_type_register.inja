@@ -148,6 +148,10 @@ namespace {
             return get_type<{{ func.ret }}>();
         }
 
+        virtual const RTTITypeInfo& get_return_rtti() const override {
+            return zeno::reflect::type_info<{{ func.ret }}>();
+        }
+
         virtual Any get_param_default_value(size_t index) override {
 ## for param in func.params
 {% if param.has_default_arg %}
