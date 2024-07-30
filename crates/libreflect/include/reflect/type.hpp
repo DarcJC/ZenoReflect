@@ -202,6 +202,7 @@ namespace reflect
         virtual TypeHandle get_return_type() const = 0;
         virtual Any invoke(const Any& clazz_object, const ArrayList<Any>& params = {}) const = 0;
         virtual Any invoke(const Any& clazz_object, const ArrayList<Any*>& params = {}) const = 0;
+        virtual Any invoke_unsafe(void* clazz_object, const ArrayList<Any>& params = {}) const = 0;
         virtual Any invoke_static(const ArrayList<Any>& params = {}) const = 0;
         virtual Any invoke_static(const ArrayList<Any*>& params = {}) const = 0;
 
@@ -223,6 +224,7 @@ namespace reflect
         virtual void* get_field_ptr(const Any& clazz_object) const = 0;
         virtual void* get_field_ptr_directly(void* this_object) const = 0;
         virtual Any get_field_value(void* this_object) const = 0;
+        virtual void set_field_value(void* this_object, Any value) const = 0;
         virtual TypeHandle get_field_type() const = 0;
 
     protected:
