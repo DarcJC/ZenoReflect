@@ -191,6 +191,36 @@ namespace {
             return Any::make_null();
 {% endif %}
         }
+		
+		virtual Any invoke_unsafe(void* clazz_object, const ArrayList<Any>& params) const override {
+{% if func.static %}
+            return invoke_static(params);
+{% else %}
+			if (is_suitable_to_invoke(params)) {
+				auto clazz = static_cast<{{- type_info.qualified_name -}}*>(clazz_object);
+## for param in func.params
+				Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
+## endfor
+{% if func.ret == "void" %}
+				clazz->{{- func.name -}}
+				(
+## for param in func.params
+					any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+## endfor
+				);
+				return Any::make_null();
+{% else %}
+				return clazz->{{- func.name -}}
+				(
+## for param in func.params
+					any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+## endfor
+				);
+{% endif %}
+			}
+            return Any::make_null();
+{% endif %}
+        }
 
         virtual Any invoke(const Any& clazz_object, const ArrayList<Any*>& params) const override {
 {% if func.static %}
@@ -320,6 +350,12 @@ namespace {
             if (!this_object) return nullptr;
             auto pThis = static_cast<{{- type_info.qualified_name -}}*>(this_object);
             return &pThis->{{ field.name }};
+        }
+		
+		virtual void set_field_value(void* this_object, Any value) const override {
+            if (!this_object) return;
+            auto pThis = static_cast<{{- type_info.qualified_name -}}*>(this_object);
+            pThis->{{ field.name }} = any_cast<{{ field.type }}>(value);
         }
 
         virtual Any get_field_value(void* this_object) const override {
