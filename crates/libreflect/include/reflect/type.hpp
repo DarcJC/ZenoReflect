@@ -50,7 +50,7 @@ namespace reflect
         StringView canonical_typename;
         bool internal_flags[static_cast<size_t>(TypeFlags::Max)] = { false };
 
-        ~ReflectedTypeInfo();
+        LIBREFLECT_API ~ReflectedTypeInfo();
     };
 
     struct T_NullTypeArg {};
