@@ -120,6 +120,7 @@ function(zeno_declare_reflection_support target reflection_headers)
                 --pre_include_header="${LIBREFLECT_PCH_PATH}"
                 --input_source=\"${source_paths_string}\"
                 --header_output="${REFLECTION_GENERATED_DIR}"
+                --template_include="${REFLECT_TEMPLATE_INCLUDE}"
                 --stdc++=${CMAKE_CXX_STANDARD}
                 $<IF:$<CONFIG:Debug>,-v,>
                 --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}"
@@ -136,6 +137,7 @@ function(zeno_declare_reflection_support target reflection_headers)
                 --pre_include_header="${LIBREFLECT_PCH_PATH}"
                 --input_source=\"${source_paths_string}\"
                 --header_output="${REFLECTION_GENERATED_DIR}"
+                --template_include="${REFLECT_TEMPLATE_INCLUDE}"
                 --stdc++=${CMAKE_CXX_STANDARD}
                 $<IF:$<CONFIG:Debug>,-v,>
                 --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}"
