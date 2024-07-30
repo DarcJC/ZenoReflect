@@ -1,3 +1,4 @@
+#include <utility>
 #include "reflect/type.hpp"
 #include "reflect/registry.hpp"
 #include "reflect/utils/assert"
@@ -5,6 +6,12 @@
 #include "reflection_traits.hpp"
 
 using namespace zeno::reflect;
+
+TypeBase::~TypeBase() {
+}
+
+ReflectedTypeInfo::~ReflectedTypeInfo() {
+}
 
 TypeHandle::TypeHandle(TypeBase *type_info)
     : is_reflected_type(true)
@@ -114,7 +121,7 @@ ITypeConstructor &zeno::reflect::TypeBase::get_constructor_checked(const ArrayLi
 
 zeno::reflect::ITypeConstructor::~ITypeConstructor() = default;
 
-zeno::reflect::ITypeConstructor::ITypeConstructor(TypeHandle in_type)
+zeno::reflect::ITypeConstructor::ITypeConstructor(const TypeHandle& in_type)
     : IBelongToParentType(in_type)
 {
 }
@@ -179,8 +186,8 @@ zeno::reflect::IBelongToParentType::~IBelongToParentType()
 {
 }
 
-zeno::reflect::IBelongToParentType::IBelongToParentType(TypeHandle in_type)
-    : m_type(zeno::reflect::move(in_type))
+zeno::reflect::IBelongToParentType::IBelongToParentType(const TypeHandle& in_type)
+    : m_type(std::move(in_type))
 {
 }
 
@@ -188,7 +195,7 @@ zeno::reflect::IMemberFunction::~IMemberFunction()
 {
 }
 
-zeno::reflect::IMemberFunction::IMemberFunction(TypeHandle in_type)
+zeno::reflect::IMemberFunction::IMemberFunction(const TypeHandle& in_type)
     : IBelongToParentType(in_type)
 {
 }
@@ -201,7 +208,7 @@ zeno::reflect::IMemberField::~IMemberField()
 {
 }
 
-zeno::reflect::IMemberField::IMemberField(TypeHandle in_type)
+zeno::reflect::IMemberField::IMemberField(const TypeHandle& in_type)
     : IBelongToParentType(in_type)
 {
 }

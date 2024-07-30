@@ -36,8 +36,6 @@ namespace zeno
     };
 
     struct ZRECORD(测试1="真", 组测试=("组1", "Group 2", "Group 3"), a123="true", DisplayName="我是一个Prim") IAmPrimitve {
-        IAmPrimitve(const IAmPrimitve&) = default;
-
         signed int i32 = 10086;
 
         std::string s = "测试内容";

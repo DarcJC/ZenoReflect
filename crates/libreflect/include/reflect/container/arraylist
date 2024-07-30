@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <new>
 #include <algorithm>
+#include <utility>
 #include <initializer_list> // Sadly we can't impl initializer_list by ourselves
 #include "reflect/macro.hpp"
 #include "reflect/polyfill.hpp"
@@ -30,7 +31,7 @@ namespace reflect
             }
             T* new_data = static_cast<T*>(malloc(sizeof(T) * new_capacity));
             for (size_t i = 0; i < m_size; ++i) {
-                new (new_data + i) T(zeno::reflect::move(static_cast<T*>(m_data)[i]));
+                new (new_data + i) T(std::move(static_cast<T*>(m_data)[i]));
             }
             free(m_data);
             m_data = new_data;
@@ -43,7 +44,7 @@ namespace reflect
 
         ArrayList(std::initializer_list<T> init) : m_size(0), m_capacity(init.size()), m_data(malloc(sizeof(T) * init.size())) {
             for (const T& item : init) {
-                add_item(zeno::reflect::move( const_cast<T&>(item) ));
+                add_item(std::move( const_cast<T&>(item) ));
             }
         }
 
@@ -79,7 +80,7 @@ namespace reflect
             if (m_size == m_capacity) {
                 resize_internal();
             }
-            new (static_cast<T*>(m_data) + m_size) T(zeno::reflect::forward<T>(value));
+            new (static_cast<T*>(m_data) + m_size) T(std::forward<T>(value));
             return m_size++;
         }
 
@@ -94,7 +95,7 @@ namespace reflect
             if (is_valid_index(index)) {
                 static_cast<T*>(m_data)[index].~T();
                 for (size_t i = index; i < m_size - 1; ++i) {
-                    new (static_cast<T*>(m_data) + i) T(zeno::reflect::move(static_cast<T*>(m_data)[i + 1]));
+                    new (static_cast<T*>(m_data) + i) T(std::move(static_cast<T*>(m_data)[i + 1]));
                     static_cast<T*>(m_data)[i + 1].~T();
                 }
                 --m_size;
@@ -108,7 +109,7 @@ namespace reflect
         T pop_back() {
             ZENO_CHECK(m_size > 0);
 
-            T value = zeno::reflect::move(static_cast<T*>(m_data)[m_size - 1]);
+            T value = std::move(static_cast<T*>(m_data)[m_size - 1]);
             remove_last();
             return value;
         }
@@ -116,7 +117,7 @@ namespace reflect
         T pop_front() {
             ZENO_CHECK(m_size > 0);
 
-            T value = zeno::reflect::move(static_cast<T*>(m_data)[0]);
+            T value = std::move(static_cast<T*>(m_data)[0]);
             remove_at(0);
             return value;
         }
@@ -127,7 +128,7 @@ namespace reflect
                 resize_internal();
             }
             for (size_t i = m_size; i > index; --i) {
-                new (static_cast<T*>(m_data) + i) T(zeno::reflect::move(static_cast<T*>(m_data)[i - 1]));
+                new (static_cast<T*>(m_data) + i) T(std::move(static_cast<T*>(m_data)[i - 1]));
                 static_cast<T*>(m_data)[i - 1].~T();
             }
             new (static_cast<T*>(m_data) + index) T(value);
@@ -175,7 +176,7 @@ namespace reflect
             if (m_size == m_capacity) {
                 resize_internal();
             }
-            new (static_cast<T*>(m_data) + m_size) T(zeno::reflect::forward<Ts>(vals)...);
+            new (static_cast<T*>(m_data) + m_size) T(std::forward<Ts>(vals)...);
             return m_size++;
         }
 
@@ -185,10 +186,10 @@ namespace reflect
                 resize_internal();
             }
             for (size_t i = m_size; i > index; --i) {
-                new (static_cast<T*>(m_data) + i) T(zeno::reflect::move(static_cast<T*>(m_data)[i - 1]));
+                new (static_cast<T*>(m_data) + i) T(std::move(static_cast<T*>(m_data)[i - 1]));
                 static_cast<T*>(m_data)[i - 1].~T();
             }
-            new (static_cast<T*>(m_data) + index) T(zeno::reflect::forward<T>(value));
+            new (static_cast<T*>(m_data) + index) T(std::forward<T>(value));
             ++m_size;
         }
 

@@ -6,12 +6,13 @@
 #include <string_view>
 #include <map>
 #include <string>
+#include <utility>
 
 using namespace zeno::reflect;
 
 class StringMetadataValue : public IMetadataValue {
 public:
-    StringMetadataValue(StringView value) : m_value(zeno::reflect::move(value)) {}
+    StringMetadataValue(StringView value) : m_value(std::move(value)) {}
 
 protected:
     StringView m_value;
@@ -80,7 +81,7 @@ protected:
     }
 
     virtual void list_add_item(UniquePtr<IMetadataValue>&& value) override {
-        m_value_list.add_item(zeno::reflect::forward<UniquePtr<IMetadataValue>>(value));
+        m_value_list.add_item(std::forward<UniquePtr<IMetadataValue>>(value));
     }
 
     friend class RawMetadata;
@@ -91,7 +92,7 @@ public:
     RawMetadata() {}
 
     template <typename T>
-    RawMetadata(std::initializer_list<T> init) : m_root_value(zeno::reflect::move(init)) {}
+    RawMetadata(std::initializer_list<T> init) : m_root_value(std::move(init)) {}
 
 private:
     std::map<std::string, UniquePtr<zeno::reflect::IMetadataValue>> m_root_value;
@@ -105,7 +106,7 @@ protected:
     }
 
     virtual void set_value(const char* key, zeno::reflect::UniquePtr<zeno::reflect::IMetadataValue>&& value) override {
-        m_root_value.insert_or_assign(key, zeno::reflect::forward<zeno::reflect::UniquePtr<zeno::reflect::IMetadataValue>>(value));
+        m_root_value.insert_or_assign(key, std::forward<zeno::reflect::UniquePtr<zeno::reflect::IMetadataValue>>(value));
     }
 };
 

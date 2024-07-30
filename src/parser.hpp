@@ -10,6 +10,7 @@
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
+#include "clang/Frontend/CompilerInstance.h"
 
 namespace zeno
 {
@@ -102,7 +103,7 @@ private:
 
 class ReflectionASTConsumer : public clang::ASTConsumer {
 public:
-    ReflectionASTConsumer(zeno::reflect::CodeCompilerState& state, std::string header_path);
+    ReflectionASTConsumer(zeno::reflect::CodeCompilerState& state, std::string header_path, clang::CompilerInstance &compiler);
 
     void HandleTranslationUnit(clang::ASTContext &context) override;
 
@@ -118,6 +119,7 @@ private:
     std::unordered_map<std::string, clang::QualType> type_name_mapping;
     zeno::reflect::CodeCompilerState& m_compiler_state;
     std::string m_header_path;
+    clang::CompilerInstance& m_compiler_instance;
 
     friend struct RecordTypeMatchCallback;
 };

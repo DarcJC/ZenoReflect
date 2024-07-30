@@ -1,3 +1,4 @@
+#include <clang/AST/DeclCXX.h>
 #include <fstream>
 #include "args.hpp"
 #include "log.hpp"
@@ -6,6 +7,7 @@
 #include "serialize.hpp"
 #include "codegen.hpp"
 #include "template/template_literal"
+#include "clang/Sema/Sema.h"
 
 using namespace llvm;
 using namespace clang;
@@ -38,7 +40,7 @@ public:
     ReflectionGeneratorAction(zeno::reflect::CodeCompilerState& compielr_state, std::string header_path): m_compiler_state(compielr_state), m_header_path(std::move(header_path)) {}
 
     std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &compiler, StringRef code) override {
-        return std::make_unique<ReflectionASTConsumer>(m_compiler_state, m_header_path);
+        return std::make_unique<ReflectionASTConsumer>(m_compiler_state, m_header_path, compiler);
     }
 
 private:
@@ -144,15 +146,23 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
 
         if (!found) {
             inja::json type_data;
+            std::string canonical_typename_no_prefix = record_qual_type.getCanonicalType().getAsString();
+            zeno::reflect::replace_all(canonical_typename_no_prefix, "struct", "");
+            zeno::reflect::replace_all(canonical_typename_no_prefix, "class", "");
+            zeno::reflect::replace_all(canonical_typename_no_prefix, "union", "");
             type_data["normal_name"] = normalized_name;
             type_data["qualified_name"] = zeno::reflect::clang_type_name_no_tag(record_qual_type);
             type_data["canonical_typename"] = record_qual_type.getCanonicalType().getAsString();
+            type_data["canonical_typename_no_prefix"] = canonical_typename_no_prefix;
             type_data["ctors"] = inja::json::array();
             type_data["funcs"] = inja::json::array();
             type_data["fields"] = inja::json::array();
             type_data["base_classes"] = inja::json::array();
 
             type_data["metadata"] = inja::render(zeno::reflect::text::REFLECTED_METADATA, metadata);
+
+            clang::Sema& sema = m_context->m_compiler_instance.getSema();
+            sema.ForceDeclarationOfImplicitMembers(const_cast<clang::CXXRecordDecl*>(record_decl));
 
             // Processing methods
             {
@@ -173,7 +183,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                     // If is aggregate type then add list initialization as a constructor
                     // NOTE: Empty base class optimization might lead to, a class with empty base class is a aggregate class
                     // But if you try list initialization on it, it will be a compiler error there.
-                    if (record_decl->isAggregate() && record_decl->getNumBases() == 0) {
+                    if (record_decl->isAggregate() && record_decl->getNumBases() == 0 && !record_decl->hasUserDeclaredConstructor()) {
                         inja::json ctor_data;
                         ctor_data["is_aggregate_initialize"] = true;
                         ctor_data["params"] = inja::json::array();
@@ -269,10 +279,11 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
     }
 }
 
-ReflectionASTConsumer::ReflectionASTConsumer(zeno::reflect::CodeCompilerState &state, std::string header_path)
+ReflectionASTConsumer::ReflectionASTConsumer(zeno::reflect::CodeCompilerState &state, std::string header_path, CompilerInstance &compiler)
     : m_compiler_state(state)
     , m_header_path(header_path)
     , template_header_generator(std::make_unique<zeno::reflect::TemplateHeaderGenerator>(state))
+    , m_compiler_instance(compiler)
 {
     state.m_consumer = this;
 }
