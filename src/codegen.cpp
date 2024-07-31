@@ -16,6 +16,7 @@ std::string zeno::reflect::TemplateHeaderGenerator::compile(CodeCompilerState &s
 {
     inja::json template_data;
     template_data["rttiBlock"] = m_rtti_block.str();
+    template_data["template_include"] = state.types_register_data["template_include"];
     return inja::render(text::GENERATED_TEMPLATE_HEADER_TEMPLATE, template_data);
 }
 
@@ -83,4 +84,5 @@ zeno::reflect::CodeCompilerState::CodeCompilerState(ReflectionASTConsumer* in_co
     types_register_data["types"] = std::vector<inja::json>{};
     types_register_data["prefix"] = "";
     types_register_data["headers"] = GLOBAL_CONTROL_FLAGS->input_sources;
+    types_register_data["template_include"] = GLOBAL_CONTROL_FLAGS->template_include;
 }
