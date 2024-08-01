@@ -57,7 +57,7 @@ namespace zeno::reflect
             m_qual_type = m_qual_type->getCanonicalTypeUnqualified();
         }
 
-        std::string compile(CodeCompilerState& state) {
+        std::string compile(CodeCompilerState& state, const std::string& dispName = "") {
             const size_t hash_value = HashImpl{}(m_qual_type.getCanonicalType().getAsString());
             std::string cppType = m_qual_type.getAsString();
             std::string name = m_qual_type.getCanonicalType().getAsString();
@@ -83,6 +83,7 @@ namespace zeno::reflect
             data["cppType"] = cppType;
             data["name_normalized"] = zeno::reflect::convert_to_valid_cpp_var_name(cppType);
             data["name"] = name;
+            data["dispName"] = dispName;
             data["hash"] = hash_value;
             data["isPointer"] = m_qual_type->isPointerType();
             data["isRValueRef"] = m_qual_type->isRValueReferenceType();
@@ -117,11 +118,11 @@ namespace zeno::reflect
         }
 
         template <ICodeCompiler T = RTTITypeGenerator<>>
-        void add_rtti_type(clang::QualType type) {
+        void add_rtti_type(clang::QualType type, const std::string& dispName = "") {
             if (type.getAsString() == "void" || type.getAsString() == "void *" || type.getAsString() == "void &" || type.getAsString() == "const void &" || type.getAsString() == "void &&" || type.getAsString() == "std::nullptr_t") {
                 return;
             }
-            m_rtti_block << RTTITypeGenerator(type).compile(m_compiler_state);
+            m_rtti_block << RTTITypeGenerator(type).compile(m_compiler_state, dispName);
         }
     };
 }
