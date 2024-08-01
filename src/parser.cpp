@@ -15,24 +15,24 @@ using namespace clang::tooling;
 using namespace clang::ast_matchers;
 
 template <class T>
-inline void add_type_to_generator(T* context, clang::QualType type) {
+inline void add_type_to_generator(T* context, clang::QualType type, const std::string& dispName = "") {
     auto& gen = context->template_header_generator;
     auto& scoped_ctx = context->scoped_context;
 
-    auto add_rtti_type = [&](clang::QualType qt) { gen->add_rtti_type(qt); };
+    auto add_rtti_type = [&](clang::QualType qt, const std::string& dispName = "") { gen->add_rtti_type(qt, dispName); };
 
-    add_rtti_type(type);
+    add_rtti_type(type, dispName);
 
     auto non_ref_type = type.getNonReferenceType();
     non_ref_type.removeLocalConst();
     auto canonical_type = non_ref_type->getCanonicalTypeUnqualified();
 
-    add_rtti_type(scoped_ctx->getConstType(canonical_type));
-    add_rtti_type(scoped_ctx->getLValueReferenceType(canonical_type));
-    add_rtti_type(scoped_ctx->getRValueReferenceType(canonical_type));
-    add_rtti_type(scoped_ctx->getLValueReferenceType(scoped_ctx->getConstType(canonical_type)));
-    add_rtti_type(scoped_ctx->getPointerType(scoped_ctx->getConstType(canonical_type)));
-    add_rtti_type(scoped_ctx->getPointerType(canonical_type));
+    add_rtti_type(scoped_ctx->getConstType(canonical_type), dispName);
+    add_rtti_type(scoped_ctx->getLValueReferenceType(canonical_type), dispName);
+    add_rtti_type(scoped_ctx->getRValueReferenceType(canonical_type), dispName);
+    add_rtti_type(scoped_ctx->getLValueReferenceType(scoped_ctx->getConstType(canonical_type)), dispName);
+    add_rtti_type(scoped_ctx->getPointerType(scoped_ctx->getConstType(canonical_type)), dispName);
+    add_rtti_type(scoped_ctx->getPointerType(canonical_type), dispName);
 }
 
 class ReflectionGeneratorAction : public ASTFrontendAction {
@@ -105,10 +105,21 @@ TemplateSpecializationMatchCallback::TemplateSpecializationMatchCallback(Reflect
 void TemplateSpecializationMatchCallback::run(const MatchFinder::MatchResult &result)
 {
     if (const ClassTemplateSpecializationDecl* spec_decl = result.Nodes.getNodeAs<ClassTemplateSpecializationDecl>(ASTLabels::TEMPLATE_SPECIALIZATION)) {
-        if (spec_decl->getSpecializedTemplate() && spec_decl->getSpecializedTemplate()->getNameAsString() == "_manual_register_rtti_type_internal") {
-            if (spec_decl->getTemplateArgs().size() == 1 && m_context) {
-                QualType type = spec_decl->getTemplateArgs().get(0).getAsType();
-                add_type_to_generator(m_context, type);
+        const auto& template_name = spec_decl->getSpecializedTemplate()->getNameAsString();
+        if (spec_decl->getSpecializedTemplate() && template_name == "_manual_register_rtti_type_internal") {
+            auto& tArgs = spec_decl->getTemplateArgs();
+            if (tArgs.size() >= 1 && m_context) {
+                QualType type = tArgs.get(0).getAsType();
+
+                auto fb = spec_decl->field_begin();
+                std::string dispName;
+                if (fb != spec_decl->field_end()) {
+                    if (const FieldDecl* field_decl = dyn_cast<FieldDecl>(*fb); field_decl && field_decl->getAccess() == clang::AS_public) {
+                        dispName = field_decl->getNameAsString();
+                    }
+                }
+
+                add_type_to_generator(m_context, type, dispName);
             }
         }
     }

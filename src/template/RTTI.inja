@@ -39,6 +39,16 @@ namespace reflect
         }
     }
 }
+
+{% if dispName == "" %}
+
+{% else if not isPointer and not isConst and not isRValueRef and not isLValueRef %}
+namespace types
+{
+    constexpr size_t gParamType_{{ dispName }} = {{ hash }}ULL;
+}
+{% endif %}
+
 }
 #endif // _REFLECT_RTTI_GUARD_{{- name_normalized -}}_{{- hash }}
 /// End RTTI of "{{ cppType }}"

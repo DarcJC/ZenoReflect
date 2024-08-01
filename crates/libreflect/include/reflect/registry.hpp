@@ -6,6 +6,15 @@
 #include "reflect/container/arraylist"
 #include "reflect/container/string"
 
+#define REFLECT_REGISTER_RTTI_TYPE_WITH_NAME(Ty, DispName) \
+    namespace zeno { \
+    namespace reflect { \
+        template <> \
+        struct _manual_register_rtti_type_internal<Ty> { \
+            int DispName; \
+        }; \
+    }}
+
 #define REFLECT_REGISTER_RTTI_TYPE_MANUAL(Ty) \
     namespace zeno { \
     namespace reflect { \
