@@ -19,7 +19,9 @@ inline void add_type_to_generator(T* context, clang::QualType type, const std::s
     auto& gen = context->template_header_generator;
     auto& scoped_ctx = context->scoped_context;
 
-    auto add_rtti_type = [&](clang::QualType qt, const std::string& dispName = "") { gen->add_rtti_type(qt, dispName); };
+    auto add_rtti_type = [&](clang::QualType qt, const std::string& dispName = "", bool hasConstMark = false) { 
+        gen->add_rtti_type(qt, dispName, hasConstMark);
+    };
 
     add_rtti_type(type, dispName);
 
@@ -30,7 +32,7 @@ inline void add_type_to_generator(T* context, clang::QualType type, const std::s
     add_rtti_type(scoped_ctx->getConstType(canonical_type), dispName);
     add_rtti_type(scoped_ctx->getLValueReferenceType(canonical_type), dispName);
     add_rtti_type(scoped_ctx->getRValueReferenceType(canonical_type), dispName);
-    add_rtti_type(scoped_ctx->getLValueReferenceType(scoped_ctx->getConstType(canonical_type)), dispName);
+    add_rtti_type(scoped_ctx->getLValueReferenceType(scoped_ctx->getConstType(canonical_type)), dispName, true);
     add_rtti_type(scoped_ctx->getPointerType(scoped_ctx->getConstType(canonical_type)), dispName);
     add_rtti_type(scoped_ctx->getPointerType(canonical_type), dispName);
 }
