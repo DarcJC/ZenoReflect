@@ -54,11 +54,10 @@ namespace zeno::reflect
         RTTITypeGenerator(
             clang::QualType qual_type
         ) : m_qual_type(qual_type) {
-            m_qual_type = m_qual_type->getCanonicalTypeUnqualified();
         }
 
-        std::string compile(CodeCompilerState& state, const std::string& dispName = "") {
-            const size_t hash_value = HashImpl{}(m_qual_type.getCanonicalType().getAsString());
+        std::string compile(CodeCompilerState& state, const std::string& dispName = "", bool hasConstMark = false) {
+            const size_t hash_value = HashImpl{}(m_qual_type.getAsString());
             std::string cppType = m_qual_type.getAsString();
             std::string name = m_qual_type.getCanonicalType().getAsString();
             if (cppType.find("_Bool") != std::string::npos) {
@@ -89,7 +88,9 @@ namespace zeno::reflect
             data["isRValueRef"] = m_qual_type->isRValueReferenceType();
             data["isLValueRef"] = m_qual_type->isLValueReferenceType();
             data["isConst"] = m_qual_type.isConstQualified();
-            
+            if (hasConstMark) {
+                data["isConst"] = true;
+            }
             return inja::render(text::RTTI, data);
         }
 
@@ -118,11 +119,12 @@ namespace zeno::reflect
         }
 
         template <ICodeCompiler T = RTTITypeGenerator<>>
-        void add_rtti_type(clang::QualType type, const std::string& dispName = "") {
-            if (type.getAsString() == "void" || type.getAsString() == "void *" || type.getAsString() == "void &" || type.getAsString() == "const void &" || type.getAsString() == "void &&" || type.getAsString() == "std::nullptr_t") {
+        void add_rtti_type(clang::QualType type, const std::string& dispName = "", bool bHasConstMark = false) {
+            const auto& typeStr = type.getAsString();
+            if (typeStr == "void" || typeStr == "void *" || typeStr == "void &" || typeStr == "const void &" || typeStr == "void &&" || typeStr == "std::nullptr_t") {
                 return;
             }
-            m_rtti_block << RTTITypeGenerator(type).compile(m_compiler_state, dispName);
+            m_rtti_block << RTTITypeGenerator(type).compile(m_compiler_state, dispName, bHasConstMark);
         }
     };
 }
