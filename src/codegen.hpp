@@ -54,6 +54,7 @@ namespace zeno::reflect
         RTTITypeGenerator(
             clang::QualType qual_type
         ) : m_qual_type(qual_type) {
+            m_qual_type = m_qual_type->getCanonicalTypeUnqualified();
         }
 
         std::string compile(CodeCompilerState& state, const std::string& dispName = "", bool hasConstMark = false) {
