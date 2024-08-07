@@ -85,4 +85,5 @@ zeno::reflect::CodeCompilerState::CodeCompilerState(ReflectionASTConsumer* in_co
     types_register_data["prefix"] = "";
     types_register_data["headers"] = GLOBAL_CONTROL_FLAGS->input_sources;
     types_register_data["template_include"] = GLOBAL_CONTROL_FLAGS->template_include;
+    inja_dir = GLOBAL_CONTROL_FLAGS->inja_dir;
 }

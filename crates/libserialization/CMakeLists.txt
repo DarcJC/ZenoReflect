@@ -20,6 +20,7 @@ make_absolute_paths(REFLECT_SERIALIZATION_HEADERS
     include/reflect/serialization.hpp
     include/reflect/serial_type_decl.hpp
 )
+set(INJA_TEMPLATE_DIR_PATH  ${CMAKE_BINARY_DIR}/intermediate)
 zeno_declare_reflection_support(ReflectSerialization "${REFLECT_SERIALIZATION_HEADERS}")
 
 if (REFLECT_ENABLE_SERIALIZATION_TEST_TARGET)

@@ -1,4 +1,3 @@
-R"INJA(
 ## for header_path in headers
 #include "{{ header_path }}"
 ## endfor
@@ -67,6 +66,10 @@ namespace {
             }
 {% endif %}
 ## endfor
+            return Any::make_null();
+        }
+
+        virtual Any init_param_default_value(size_t index) override {
             return Any::make_null();
         }
 
@@ -159,6 +162,15 @@ namespace {
                 return { TInPlaceType<{{ param.type }}>{}, {{ param.default_arg }} };
             }
 {% endif %}
+## endfor
+            return Any::make_null();
+        }
+
+        virtual Any init_param_default_value(size_t index) override {
+## for param in func.params
+            if (index == {{ loop.index }}) {
+                return zeno::reflect::make_any<{{ param.type }}>();
+            }
 ## endfor
             return Any::make_null();
         }
@@ -453,4 +465,3 @@ namespace {
 }
 /// ==== End {{ type_info.qualified_name }} Register ====
 ## endfor
-)INJA";

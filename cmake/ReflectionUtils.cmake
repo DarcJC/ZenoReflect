@@ -121,6 +121,7 @@ function(zeno_declare_reflection_support target reflection_headers)
                 --input_source=\"${source_paths_string}\"
                 --header_output="${REFLECTION_GENERATED_DIR}"
                 --template_include="${REFLECT_TEMPLATE_INCLUDE}"
+                --inja_dir="${INJA_TEMPLATE_DIR_PATH}"
                 --stdc++=${CMAKE_CXX_STANDARD}
                 $<IF:$<CONFIG:Debug>,-v,>
                 --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}"
@@ -138,6 +139,7 @@ function(zeno_declare_reflection_support target reflection_headers)
                 --input_source=\"${source_paths_string}\"
                 --header_output="${REFLECTION_GENERATED_DIR}"
                 --template_include="${REFLECT_TEMPLATE_INCLUDE}"
+                --inja_dir="${INJA_TEMPLATE_DIR_PATH}"
                 --stdc++=${CMAKE_CXX_STANDARD}
                 $<IF:$<CONFIG:Debug>,-v,>
                 --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}"

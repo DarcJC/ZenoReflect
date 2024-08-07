@@ -21,6 +21,7 @@ namespace zeno::reflect
     struct CodeCompilerState {
         std::unordered_map<size_t, uint8_t> type_hash_flag;
         inja::json types_register_data;
+        std::string inja_dir;
         ReflectionASTConsumer* m_consumer;
 
         CodeCompilerState(ReflectionASTConsumer* in_consumer);

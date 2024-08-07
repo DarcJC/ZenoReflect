@@ -89,9 +89,18 @@ ParserErrorCode post_generate_reflection_model(const ReflectionModel &model, con
 
     const std::string generated_target_source = GLOBAL_CONTROL_FLAGS->target_type_register_source_path;
     std::ofstream gts_stream(generated_target_source, std::ios::out | std::ios::trunc);
-    gts_stream << inja::render(zeno::reflect::text::REFLECTED_TYPE_REGISTER, state.types_register_data);
+    std::string injaPath = state.inja_dir + "/" + "reflected_type_register.inja";
 
-    return ParserErrorCode::Success;
+    std::ifstream file;
+    file.open(injaPath);
+    if (!file.fail()) {
+        std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        gts_stream << inja::render(text, state.types_register_data);
+        return ParserErrorCode::Success;
+    }
+    else {
+        return ParserErrorCode::TUCreationFailure;
+    }
 }
 
 ParserErrorCode pre_generate_reflection_model()

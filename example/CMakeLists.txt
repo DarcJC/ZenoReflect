@@ -12,6 +12,9 @@ if (REFLECT_BUILD_EXAMPLE)
         include/print.h
     ) 
 
+    set(INJA_TEMPLATE_DIR_PATH  ${CMAKE_BINARY_DIR}/intermediate)
+    file(COPY ${PROJECT_SOURCE_DIR}/src/template/reflected_type_register.inja DESTINATION ${INJA_TEMPLATE_DIR_PATH})
+
     function(add_single_file_test_target name)
         set(target_name Reflect-Tests-${name})
         add_executable(${target_name}
