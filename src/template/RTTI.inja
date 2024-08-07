@@ -38,6 +38,15 @@ namespace reflect
             return s;
         }
     }
+
+    {% if not isPointer and not isConst and not isRValueRef and not isLValueRef %}
+    struct _S{{- name_normalized -}}Registrator {
+        _S{{- name_normalized -}}Registrator() {
+            zeno::reflect::ReflectionRegistry::get().getRttiMap()->add({{ hash }}, zeno::reflect::type_info<{{cppType}}>());
+        }
+    };
+    static _S{{- name_normalized -}}Registrator global_S{{- name_normalized -}}Registrator{};
+    {% endif %}
 }
 
 {% if dispName == "" %}

@@ -25,6 +25,45 @@ ReflectTypeMap* zeno::reflect::ReflectionRegistry::operator->()
     return &m_typed_map;
 }
 
+RttiHashMap* zeno::reflect::ReflectionRegistry::getRttiMap()
+{
+    return &m_rtti_map;
+}
+
+#define RTM_TO_RTTI_MAPS(var) static_cast < std::map < size_t, RTTITypeInfo> *>(var)
+
+zeno::reflect::RttiHashMap::RttiHashMap() {
+    m_opaque_data = new std::map<size_t, RTTITypeInfo>();
+}
+
+zeno::reflect::RttiHashMap::~RttiHashMap() {
+    auto* ptr = RTM_TO_RTTI_MAPS(m_opaque_data);
+    delete ptr;
+}
+
+bool zeno::reflect::RttiHashMap::add(size_t code, const RTTITypeInfo& rtti) {
+    auto* ptr = RTM_TO_RTTI_MAPS(m_opaque_data);
+    if (ptr->find(code) != ptr->end()) {
+        return false;
+    }
+    ptr->insert_or_assign(code, rtti);
+    return true;
+}
+
+size_t zeno::reflect::RttiHashMap::size() const {
+    return RTM_TO_RTTI_MAPS(m_opaque_data)->size();
+}
+
+RTTITypeInfo zeno::reflect::RttiHashMap::get(size_t hash) {
+    auto* ptr = RTM_TO_RTTI_MAPS(m_opaque_data);
+    if (auto it = ptr->find(hash); it != ptr->end()) {
+        return it->second;
+    }
+    static REFLECT_STATIC_CONSTEXPR RTTITypeInfo Default = { "<default_type>", 0, 0 };
+    return Default;
+}
+
+
 #define RTM_TO_TYPED_MAPS(var) static_cast < std::map < KeyType, ValueType> *>(var)
 
 zeno::reflect::ReflectTypeMap::ReflectTypeMap()

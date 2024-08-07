@@ -64,6 +64,10 @@ int main(int argc, char* argv[]) {
     // 输出所有有DisplayName的反射类型
     {
         auto& registry = zeno::reflect::ReflectionRegistry::get();
+
+        size_t code = use_operator_equal.type().hash_code();
+        const RTTITypeInfo& typeInfo = registry.getRttiMap()->get(code);
+
         for (const auto& type : registry->all()) {
             if (const IRawMetadata * metadata = type->get_metadata()) {
                 if (const IMetadataValue* value = metadata->get_value("DisplayName")) {

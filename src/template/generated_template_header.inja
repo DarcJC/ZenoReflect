@@ -5,6 +5,7 @@ R"INJA(
 #include "reflect/type"
 #include "reflect/polyfill.hpp"
 #include "reflect/reflection_traits.hpp"
+#include "reflect/registry.hpp"
 #include <type_traits>
 
 /* include headers from user define */

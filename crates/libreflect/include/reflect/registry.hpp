@@ -54,15 +54,28 @@ namespace reflect
         ValueType find_by_canonical_name(const StringView& in_view);
     };
 
+    class LIBREFLECT_API RttiHashMap {
+    public:
+        RttiHashMap();
+        ~RttiHashMap();
+        bool add(size_t code, const RTTITypeInfo& rtti);
+        size_t size() const;
+        RTTITypeInfo get(size_t hash);
+    private:
+        void* m_opaque_data = nullptr;
+    };
+
     class LIBREFLECT_API ReflectionRegistry final {
     private:
         ReflectionRegistry() = default;
 
         ReflectTypeMap m_typed_map;
+        RttiHashMap m_rtti_map;
     public:
         static ReflectionRegistry& get();
 
         ReflectTypeMap* operator->();
+        RttiHashMap* getRttiMap();
     };
 }
 }
