@@ -146,3 +146,4 @@ namespace reflect
 }
 
 REFLECT_REGISTER_RTTI_TYPE_MANUAL(zeno::reflect::Archive);
+REFLECT_REGISTER_RTTI_TYPE_MANUAL(bool);
