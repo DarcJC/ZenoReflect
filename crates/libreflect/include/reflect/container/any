@@ -29,6 +29,8 @@ namespace any
         virtual const RTTITypeInfo& type() const = 0;
         virtual bool is_type(const RTTITypeInfo& other_type) const = 0;
         virtual IContainer* clone() const = 0;
+        virtual IContainer* deep_clone() const = 0;
+        virtual IContainer* deep_move_clone() const = 0;
         virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const = 0;
         virtual void* get_data_ptr_unsafe() const = 0;
         virtual bool is_enable_from_this() = 0;
@@ -94,6 +96,14 @@ namespace any
             } else {
                 ZENO_CHECK(VTIsCopyConstructible<T>);
             }
+        }
+
+        virtual IContainer* deep_clone() const override {
+            return nullptr;
+        }
+
+        virtual IContainer* deep_move_clone() const override {
+            return nullptr;
         }
 
         virtual void* get_data_ptr_unsafe() const override {
@@ -180,6 +190,18 @@ namespace any
             return *this;
         }
 
+        void deep_clone(const Any& other) {
+            if (other.has_value()) {
+                m_value_container = other.m_value_container->deep_clone();
+            }
+        }
+
+        void deep_move_clone(const Any& other) {
+            if (other.has_value()) {
+                m_value_container = other.m_value_container->deep_move_clone();
+            }
+        }
+
         operator bool() const {
             return has_value();
         }
@@ -252,6 +274,8 @@ namespace any
         template <typename T, typename... Args>
         friend Any make_any(Args&&... args);
 
+        friend Any make_any_by_container(any::IContainer* pContainer);
+
         template <typename T>
         friend T any_cast(Any& operand);
 
@@ -289,6 +313,12 @@ namespace any
     template <typename T>
     Any make_any(any::TEnableAnyFromThis<T>* that) {
         return Any(that);
+    }
+
+    inline Any make_any_by_container(any::IContainer* pContainer) {
+        Any a;
+        a.m_value_container = pContainer;
+        return a;
     }
 
     /**
@@ -476,6 +506,14 @@ namespace any
             }
         }
 
+        virtual IContainer* deep_clone() const override {
+            return nullptr;
+        }
+
+        virtual IContainer* deep_move_clone() const override {
+            return nullptr;
+        }
+
         virtual void* get_data_ptr_unsafe() const override {
             return const_cast<void*>(reinterpret_cast<const void*>(&m_value));
         }
@@ -508,6 +546,14 @@ namespace any
 
         virtual IContainer* clone() const override {
             return new ValueContainer<void>();
+        }
+
+        virtual IContainer* deep_clone() const override {
+            return nullptr;
+        }
+
+        virtual IContainer* deep_move_clone() const override {
+            return nullptr;
         }
 
         virtual void* get_data_ptr_unsafe() const override {
@@ -580,6 +626,14 @@ namespace any
             }
         }
 
+        virtual IContainer* deep_clone() const override {
+            return nullptr;
+        }
+
+        virtual IContainer* deep_move_clone() const override {
+            return nullptr;
+        }
+
         virtual void* get_data_ptr_unsafe() const override {
             return const_cast<void*>(reinterpret_cast<const void*>(m_value));
         }
@@ -618,6 +672,14 @@ namespace any
             return new ValueContainer<void*>(m_value);
         }
 
+        virtual IContainer* deep_clone() const override {
+            return nullptr;
+        }
+
+        virtual IContainer* deep_move_clone() const override {
+            return nullptr;
+        }
+
         virtual void* get_data_ptr_unsafe() const override {
             return m_value;
         }
@@ -653,6 +715,14 @@ namespace any
         virtual IContainer* clone() const override {
             // 使用复制构造函数来处理Any的克隆，避免递归
             return new ValueContainer<Any>(m_value);
+        }
+
+        virtual IContainer* deep_clone() const override {
+            return nullptr;
+        }
+
+        virtual IContainer* deep_move_clone() const override {
+            return nullptr;
         }
 
         virtual void* get_data_ptr_unsafe() const override {
