@@ -437,9 +437,7 @@ namespace {
 
         virtual const ArrayList<TypeHandle>& get_base_classes() const override {
             static ArrayList<TypeHandle> bases {
-## for base in type_info.base_classes
-                get_type<{{ base.type }}>(),
-## endfor
+                //cannot find type_info<zeno::INode>(void), so we have to disable it for now.
             };
 
             return bases;
