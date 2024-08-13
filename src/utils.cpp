@@ -137,10 +137,20 @@ std::string get_file_path_in_header_output(std::string_view filename)
 
 std::string relative_path_to_header_output(std::string_view abs_path)
 {
-    const std::filesystem::path header_output_dir(GLOBAL_CONTROL_FLAGS->output_dir);
-    const std::filesystem::path input_path(abs_path);
+    //现在zeno在生成header的目录结构是:
+    /*
+      build/
+        intermediate/
+            zeno_nodes/
+            zeno_types/
+     */
+    const std::filesystem::path base_include_dir(
+        GLOBAL_CONTROL_FLAGS->custom_include_dir.empty() ? 
+        GLOBAL_CONTROL_FLAGS->output_dir : 
+        GLOBAL_CONTROL_FLAGS->custom_include_dir);
 
-    return std::filesystem::relative(input_path, header_output_dir).string();
+    const std::filesystem::path input_path(abs_path);
+    return std::filesystem::relative(input_path, base_include_dir).string();
 }
 
 void truncate_file(const std::string &path)

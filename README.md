@@ -17,5 +17,5 @@ This project should support C++17 and above C++ standards.
         include/data.h
         include/test.h
     ) 
-    zeno_declare_reflection_support(ReflectExample "${REFLECTION_HEADERS}")
+    zeno_declare_reflection_support(ReflectExample "${REFLECTION_HEADERS}" ReflectExample)
     ```

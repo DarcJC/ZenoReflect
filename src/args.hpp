@@ -5,6 +5,7 @@
 struct ControlFlags : public argparse::Args {
     std::vector<std::string>& input_sources = kwarg("input_source,S", "Source file path passing to generator");
     std::string& output_dir = kwarg("header_output,o", "Output directory");
+    std::string& custom_include_dir = kwarg("custom_include_dir", "the include dir specified by custom project");
     std::string& target_type_register_source_path = kwarg("generated_source_path", "Path to target source contains generate type static register");
     std::string& cpp_version = kwarg("stdc++", "Set cpp standard (default: 17)").set_default("17");
     bool& verbose = flag("v,verbose", "Print extra information");

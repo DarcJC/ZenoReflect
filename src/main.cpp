@@ -2,8 +2,13 @@
 #include "utils.hpp"
 #include "codegen.hpp"
 #include "parser.hpp"
+//#include <Windows.h>
+
 
 int main(int argc, char* argv[]) {
+
+    //MessageBoxA(0, "GEN", "GEN", MB_OK);
+
     ControlFlags flags = parse_args(argc, argv);
     GLOBAL_CONTROL_FLAGS = &flags;
 

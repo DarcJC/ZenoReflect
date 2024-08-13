@@ -26,7 +26,7 @@ if (REFLECT_BUILD_EXAMPLE)
         target_compile_definitions(${target_name} PRIVATE
             REFLECT_TEST_NAME="${name}"
         )
-        zeno_declare_reflection_support(${target_name} "${REFLECTION_HEADERS}")
+        zeno_declare_reflection_support(${target_name} "${REFLECTION_HEADERS}" ${target_name})
     endfunction(add_single_file_test_target)
 
     add_single_file_test_target(example)

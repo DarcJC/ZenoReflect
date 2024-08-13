@@ -70,7 +70,7 @@ function(get_prebuilt_generator generator_path)
     RETURN(PROPAGATE generator_path)
 endfunction()
 
-function(zeno_declare_reflection_support target reflection_headers)
+function(zeno_declare_reflection_support target reflection_headers target_name)
     set(generator_path "${CMAKE_BINARY_DIR}/ReflectGenerator-Prebuilt.exe")
     if (REFLECTION_USE_PREBUILT_BINARY AND WIN32)
         get_prebuilt_generator(generator_path)
@@ -81,8 +81,8 @@ function(zeno_declare_reflection_support target reflection_headers)
     # Call this function after all target source has been added
     set(splitor ",")
 
-    set(INTERMEDIATE_FILE_DIR "${INTERMEDIATE_FILE_BASE_DIR}/${target}")
-    set(INTERMEDIATE_ALL_IN_ONE_FILE "${INTERMEDIATE_FILE_DIR}/${target}.generated.cpp")
+    set(INTERMEDIATE_FILE_DIR "${INTERMEDIATE_FILE_BASE_DIR}/${target_name}")
+    set(INTERMEDIATE_ALL_IN_ONE_FILE "${INTERMEDIATE_FILE_DIR}/${target_name}.generated.cpp")
     file(WRITE "${INTERMEDIATE_ALL_IN_ONE_FILE}" "// TBD by reflection generator\n")
     target_sources(${target} PRIVATE "${INTERMEDIATE_ALL_IN_ONE_FILE}")
 
@@ -91,7 +91,7 @@ function(zeno_declare_reflection_support target reflection_headers)
     get_target_property(REFLECTION_GENERATION_SOURCE_DIR ${target} SOURCE_DIR)
     list(LENGTH REFLECTION_GENERATION_SOURCE source_files_length)
     if (source_files_length EQUAL 0)
-        message(WARNING "There is not source files found in target ${target}, check your calling timing")
+        message(WARNING "There is not source files found in target ${target_name}, check your calling timing")
     endif()
     set(source_paths_value ${REFLECTION_GENERATION_SOURCE})
     list(JOIN reflection_headers ${splitor} source_paths_string)
@@ -101,12 +101,12 @@ function(zeno_declare_reflection_support target reflection_headers)
     # Obtain compiler built-in include paths
     list(JOIN CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES "," SYSTEM_IMPLICIT_INCLUDE_DIRS)
 
-    set(REFLECTION_GENERATION_TARGET _internal_${target}_reflect_generation)
-    set(TIMESTAMP_FILE "${CMAKE_BINARY_DIR}/timestamp/${target}_timestamp")
+    set(REFLECTION_GENERATION_TARGET _internal_${target_name}_reflect_generation)
+    set(TIMESTAMP_FILE "${CMAKE_BINARY_DIR}/timestamp/${target_name}_timestamp")
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/timestamp")
 
     if (${GENERATE_ON_BUILD_DIR})
-        set(REFLECTION_GENERATED_DIR ${CMAKE_BINARY_DIR}/intermediate/${target})
+        set(REFLECTION_GENERATED_DIR ${CMAKE_BINARY_DIR}/intermediate/${target_name})
     else()
         set(REFLECTION_GENERATED_DIR ${ZENO_REFLECTION_GENERATED_HEADERS_DIR})
     endif()
@@ -122,12 +122,13 @@ function(zeno_declare_reflection_support target reflection_headers)
                 --header_output="${REFLECTION_GENERATED_DIR}"
                 --template_include="${REFLECT_TEMPLATE_INCLUDE}"
                 --inja_dir="${INJA_TEMPLATE_DIR_PATH}"
+                --custom_include_dir="${CUSTOM_HEADER_INCLUDE_DIR}"
                 --stdc++=${CMAKE_CXX_STANDARD}
                 $<IF:$<CONFIG:Debug>,-v,>
                 --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}"
-                --target_name="${target}"
+                --target_name="${target_name}"
             DEPENDS ${reflection_headers}
-            COMMENT "Generating reflection information for ${target}..."
+            COMMENT "Generating reflection information for ${target_name}..."
         )
     else ()
         add_custom_command(
@@ -140,12 +141,13 @@ function(zeno_declare_reflection_support target reflection_headers)
                 --header_output="${REFLECTION_GENERATED_DIR}"
                 --template_include="${REFLECT_TEMPLATE_INCLUDE}"
                 --inja_dir="${INJA_TEMPLATE_DIR_PATH}"
+                --custom_include_dir="${CUSTOM_HEADER_INCLUDE_DIR}"
                 --stdc++=${CMAKE_CXX_STANDARD}
                 $<IF:$<CONFIG:Debug>,-v,>
                 --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}"
-                --target_name="${target}"
+                --target_name="${target_name}"
             DEPENDS ${reflection_headers}
-            COMMENT "Generating reflection information for ${target}..."
+            COMMENT "Generating reflection information for ${target_name}..."
         )
     endif ()
 
@@ -153,69 +155,6 @@ function(zeno_declare_reflection_support target reflection_headers)
         DEPENDS ${TIMESTAMP_FILE}
     )
 
-    add_dependencies(${RELFECTION_GENERATION_ROOT_TARGET} ${REFLECTION_GENERATION_TARGET})
-    add_dependencies(${target} ${RELFECTION_GENERATION_ROOT_TARGET})
-
-    target_link_libraries(${target} PUBLIC ZenoReflect::libreflect ZenoReflect::libgenerated)
-endfunction()
-
-
-function(zeno_generate_reflection_on_builddir target reflection_headers)
-    set(generator_path "${CMAKE_BINARY_DIR}/ReflectGenerator-Prebuilt.exe")
-    if (REFLECTION_USE_PREBUILT_BINARY AND WIN32)
-        get_prebuilt_generator(generator_path)
-    endif()
-
-    set(INTERMEDIATE_FILE_BASE_DIR "${CMAKE_BINARY_DIR}/intermediate")
-
-    # Call this function after all target source has been added
-    set(splitor ",")
-
-    set(INTERMEDIATE_FILE_DIR "${INTERMEDIATE_FILE_BASE_DIR}/${target}")
-    set(INTERMEDIATE_ALL_IN_ONE_FILE "${INTERMEDIATE_FILE_DIR}/${target}.generated.cpp")
-    file(WRITE "${INTERMEDIATE_ALL_IN_ONE_FILE}" "// TBD by reflection generator\n")
-    target_sources(${target} PRIVATE "${INTERMEDIATE_ALL_IN_ONE_FILE}")
-
-    # Input sources
-    get_target_property(REFLECTION_GENERATION_SOURCE ${target} SOURCES)
-    get_target_property(REFLECTION_GENERATION_SOURCE_DIR ${target} SOURCE_DIR)
-    list(LENGTH REFLECTION_GENERATION_SOURCE source_files_length)
-    if (source_files_length EQUAL 0)
-        message(WARNING "There is not source files found in target ${target}, check your calling timing")
-    endif()
-    set(source_paths_value ${REFLECTION_GENERATION_SOURCE})
-    list(JOIN reflection_headers ${splitor} source_paths_string)
-
-    # Include dirs
-    set(INCLUDE_DIRS $<LIST:REMOVE_DUPLICATES,$<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>>)
-    # Obtain compiler built-in include paths
-    list(JOIN CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES "," SYSTEM_IMPLICIT_INCLUDE_DIRS)
-
-    set(REFLECTION_GENERATION_TARGET _internal_${target}_reflect_generation)
-
-    if (REFLECTION_USE_PREBUILT_BINARY AND WIN32)
-        add_custom_target(${REFLECTION_GENERATION_TARGET}
-            WORKING_DIRECTORY
-                ${CMAKE_CURRENT_BINARY_DIR}
-            COMMAND
-                ${generator_path} --include_dirs=\"$<JOIN:${INCLUDE_DIRS},${splitor}>,${SYSTEM_IMPLICIT_INCLUDE_DIRS}\" --pre_include_header="${LIBREFLECT_PCH_PATH}" --input_source=\"${source_paths_string}\" --header_output="${INTERMEDIATE_FILE_DIR}" --stdc++=${CMAKE_CXX_STANDARD} $<IF:$<CONFIG:Debug>,-v,> --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}" --target_name="${target}"
-            SOURCES
-                ${reflection_headers}
-            COMMENT
-                "Generating reflection information for ${target}..."
-        )
-    else ()
-        add_custom_target(${REFLECTION_GENERATION_TARGET}
-            WORKING_DIRECTORY
-                ${CMAKE_CURRENT_BINARY_DIR}
-            COMMAND
-                $<TARGET_FILE:ZenoReflect::generator> --include_dirs=\"$<JOIN:${INCLUDE_DIRS},${splitor}>,${SYSTEM_IMPLICIT_INCLUDE_DIRS}\" --pre_include_header="${LIBREFLECT_PCH_PATH}" --input_source=\"${source_paths_string}\" --header_output="${INTERMEDIATE_FILE_DIR}" --stdc++=${CMAKE_CXX_STANDARD} $<IF:$<CONFIG:Debug>,-v,> --generated_source_path="${INTERMEDIATE_ALL_IN_ONE_FILE}" --target_name="${target}"
-            SOURCES
-                ${reflection_headers}
-            COMMENT
-                "Generating reflection information for ${target}..."
-        )
-    endif ()
     add_dependencies(${RELFECTION_GENERATION_ROOT_TARGET} ${REFLECTION_GENERATION_TARGET})
     add_dependencies(${target} ${RELFECTION_GENERATION_ROOT_TARGET})
 
