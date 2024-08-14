@@ -132,7 +132,7 @@ void replace_all(std::string& out_str, const std::string& from, const std::strin
 
 std::string get_file_path_in_header_output(std::string_view filename)
 {
-    return (std::filesystem::path(GLOBAL_CONTROL_FLAGS->output_dir) / std::filesystem::path(filename)).string();
+    return (std::filesystem::path(GLOBAL_CONTROL_FLAGS->output_dir) / std::filesystem::path(GLOBAL_CONTROL_FLAGS->target_name) / std::filesystem::path(filename)).string();
 }
 
 std::string relative_path_to_header_output(std::string_view abs_path)

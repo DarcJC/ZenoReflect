@@ -57,7 +57,6 @@ ParserErrorCode generate_reflection_model(const TranslationUnit &unit, Reflectio
 
     const std::string template_header_dir = zeno::reflect::get_file_path_in_header_output(std::format("reflect/{}", GLOBAL_CONTROL_FLAGS->target_name));
     const std::string gen_template_header_path = std::format("{}/{}.generated.hpp", template_header_dir, zeno::reflect::normalize_filename(unit.identity_name));
-    zeno::reflect::mkdirs(template_header_dir);
     zeno::reflect::truncate_file(gen_template_header_path);
     out_model.generated_headers.insert(gen_template_header_path);
 
@@ -80,6 +79,7 @@ ParserErrorCode post_generate_reflection_model(const ReflectionModel &model, con
 
     std::ofstream ghp_stream(generated_header_path, std::ios::out | std::ios::trunc);
     ghp_stream << "#pragma once\r\n";
+    ghp_stream << "#if !defined(ZENO_REFLECT_PROCESSING)\r\n";
 
     for (const std::string& s : zeno::reflect::find_files_with_extension(generated_header_dir, ".hpp")) {
         const auto relative_path = zeno::reflect::relative_path_to_header_output(s);
@@ -87,6 +87,8 @@ ParserErrorCode post_generate_reflection_model(const ReflectionModel &model, con
             ghp_stream << std::format("#include \"{}\"", relative_path) << "\r\n";
         }
     }
+
+    ghp_stream << "#endif";
 
     const std::string generated_target_source = GLOBAL_CONTROL_FLAGS->target_type_register_source_path;
     std::ofstream gts_stream(generated_target_source, std::ios::out | std::ios::trunc);
@@ -106,6 +108,9 @@ ParserErrorCode post_generate_reflection_model(const ReflectionModel &model, con
 
 ParserErrorCode pre_generate_reflection_model()
 {
+    const std::string template_header_dir = zeno::reflect::get_file_path_in_header_output(std::format("reflect/{}", GLOBAL_CONTROL_FLAGS->target_name));
+    zeno::reflect::mkdirs(template_header_dir);
+
     const std::string generated_header_path = zeno::reflect::get_file_path_in_header_output("reflect/reflection.generated.hpp");
     zeno::reflect::truncate_file(generated_header_path);
 

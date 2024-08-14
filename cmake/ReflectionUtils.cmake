@@ -106,7 +106,7 @@ function(zeno_declare_reflection_support target reflection_headers target_name)
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/timestamp")
 
     if (${GENERATE_ON_BUILD_DIR})
-        set(REFLECTION_GENERATED_DIR ${CMAKE_BINARY_DIR}/intermediate/${target_name})
+        set(REFLECTION_GENERATED_DIR ${CMAKE_BINARY_DIR}/intermediate)
     else()
         set(REFLECTION_GENERATED_DIR ${ZENO_REFLECTION_GENERATED_HEADERS_DIR})
     endif()
