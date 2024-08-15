@@ -9,9 +9,13 @@
     #define ZPROPERTY(...)
     #define ZNODE(...)
     #define ZMETHOD(...)
+    #define ZPRIMITIVE(...)
+    #define ZDEFNODE(...)
 #else
     #define ZENO_ANNOTATE(...) [[clang::annotate(__VA_ARGS__)]]
     #define ZRECORD(...) ZENO_ANNOTATE("#struct, " #__VA_ARGS__)
+    #define ZPRIMITIVE(...) ZENO_ANNOTATE("#struct, " #__VA_ARGS__)
+    #define ZDEFNODE(...) ZENO_ANNOTATE("#struct, " #__VA_ARGS__)
     #define ZPROPERTY(...)  ZENO_ANNOTATE("#property, " #__VA_ARGS__)
     #define ZNODE(...)  ZENO_ANNOTATE("#node, " #__VA_ARGS__)
     #define ZMETHOD(...)  ZENO_ANNOTATE("#method, " #__VA_ARGS__)
