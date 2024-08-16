@@ -23,6 +23,10 @@
     }}
     
 
+#define REFLECT_REGISTER_OBJECT(Ty, DispName) \
+    REFLECT_REGISTER_RTTI_TYPE_WITH_NAME(std::shared_ptr<Ty>, DispName)\
+    REFLECT_REGISTER_RTTI_TYPE_WITH_NAME(std::shared_ptr<const Ty>, const##DispName)
+
 namespace zeno
 {
 namespace reflect 
