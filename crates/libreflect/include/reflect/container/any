@@ -696,6 +696,8 @@ namespace any
 
         ValueType m_value;
 
+        ValueContainer() : m_value(Any::make_null()) {}
+
         ValueContainer(const ValueType& value) : m_value(value) {}
 
         ValueContainer(ValueType&& value) noexcept : m_value(std::move(value)) {}
