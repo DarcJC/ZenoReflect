@@ -19,6 +19,8 @@ namespace reflect
         TF_IsRValueRef = 1 << 1,
         TF_IsLValueRef = 1 << 2,
         TF_IsConst = 1 << 3,
+        TF_IsObject = 1 << 4,
+        TF_IsIObject = 1 << 5,
     };
 
     template <typename T>

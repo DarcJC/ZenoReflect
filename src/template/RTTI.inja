@@ -19,6 +19,8 @@ namespace reflect
                     {% if isConst -%}TF_IsConst | {%- endif -%} 
                     {% if isRValueRef -%}TF_IsRValueRef | {%- endif -%} 
                     {% if isLValueRef -%}TF_IsLValueRef | {%- endif -%} 
+                    {% if isObject -%}TF_IsObject | {%- endif -%} 
+                    {% if isIObject -%}TF_IsIObject | {%- endif -%} 
                     TF_None ),
                 0
             };
@@ -32,6 +34,8 @@ namespace reflect
                     {% if isConst -%}TF_IsConst | {%- endif -%} 
                     {% if isRValueRef -%}TF_IsRValueRef | {%- endif -%} 
                     {% if isLValueRef -%}TF_IsLValueRef | {%- endif -%} 
+                    {% if isObject -%}TF_IsObject | {%- endif -%} 
+                    {% if isIObject -%}TF_IsIObject | {%- endif -%} 
                     TF_None ),
                 type_info<typename std::decay<std::remove_pointer<{{cppType}}>::type>::type>().hash_code()
             };

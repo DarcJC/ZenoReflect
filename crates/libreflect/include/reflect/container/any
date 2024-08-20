@@ -494,6 +494,11 @@ namespace any
                 }
                 return AnyConversionMethod::AsIs;
             }
+            else if (
+                self_type.has_flags(TypeFlag::TF_IsObject) && other_type.has_flags(TypeFlag::TF_IsIObject)
+            ) {
+                return AnyConversionMethod::AsIs;
+            }
 
             return AnyConversionMethod::Impossible;
         }

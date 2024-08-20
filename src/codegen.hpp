@@ -87,6 +87,9 @@ namespace zeno::reflect
             data["dispName"] = dispName;
             data["hash"] = hash_value;
             data["isPointer"] = m_qual_type->isPointerType();
+            //目前zeno只有object会基于shared_ptr，先这么用
+            data["isObject"] = name.find("shared_ptr") != std::string::npos;
+            data["isIObject"] = dispName == "IObject";
             data["isRValueRef"] = m_qual_type->isRValueReferenceType();
             data["isLValueRef"] = m_qual_type->isLValueReferenceType();
             data["isConst"] = m_qual_type.isConstQualified();

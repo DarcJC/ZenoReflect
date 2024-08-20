@@ -83,7 +83,9 @@ function(zeno_declare_reflection_support target reflection_headers target_name)
 
     set(INTERMEDIATE_FILE_DIR "${INTERMEDIATE_FILE_BASE_DIR}/${target_name}")
     set(INTERMEDIATE_ALL_IN_ONE_FILE "${INTERMEDIATE_FILE_DIR}/${target_name}.generated.cpp")
-    file(WRITE "${INTERMEDIATE_ALL_IN_ONE_FILE}" "// TBD by reflection generator\n")
+    if(NOT EXISTS "${INTERMEDIATE_ALL_IN_ONE_FILE}")
+        file(WRITE "${INTERMEDIATE_ALL_IN_ONE_FILE}" "// TBD by reflection generator\n")
+    endif()
     target_sources(${target} PRIVATE "${INTERMEDIATE_ALL_IN_ONE_FILE}")
 
     # Input sources
