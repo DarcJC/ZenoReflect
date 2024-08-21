@@ -11,22 +11,27 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
 
 set(REFLECTION_CMAKE_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
 
-include(cmake/FindPackages.cmake)
+if (NOT REFLECTION_USE_PREBUILT_BINARY)
+    include(cmake/FindPackages.cmake)
+endif()
+
 include(cmake/ReflectionUtils.cmake)
 include(cmake/FixWindows.cmake)
 
-set(RELCTION_GENERATOR_TARGET ReflectGenerator)
-set(LLVM_ENABLE_RTTI ON)
-set(LLVM_ENABLE_EH ON)
-add_executable(${RELCTION_GENERATOR_TARGET} 
-    src/main.cpp src/args.cpp src/utils.cpp src/parser.cpp src/metadata.cpp src/codegen.cpp
-    src/template/template_literal.cpp
-)
+if (NOT REFLECTION_USE_PREBUILT_BINARY)
+    set(RELCTION_GENERATOR_TARGET ReflectGenerator)
+    set(LLVM_ENABLE_RTTI ON)
+    set(LLVM_ENABLE_EH ON)
+    add_executable(${RELCTION_GENERATOR_TARGET} 
+        src/main.cpp src/args.cpp src/utils.cpp src/parser.cpp src/metadata.cpp src/codegen.cpp
+        src/template/template_literal.cpp
+    )
 
-add_executable(ZenoReflect::generator ALIAS ${RELCTION_GENERATOR_TARGET})
-target_link_libraries(${RELCTION_GENERATOR_TARGET} PRIVATE ${LLVM_LIBRARY} ${LIBCLANG_LIBRARY})
-target_include_directories(${RELCTION_GENERATOR_TARGET} PUBLIC ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
-target_include_directories(${RELCTION_GENERATOR_TARGET} PRIVATE ${REFLECTION_ARGPARSE_INCLUDE_DIR} ${REFLECTION_INJA_INCLUDE_DIR})
+    add_executable(ZenoReflect::generator ALIAS ${RELCTION_GENERATOR_TARGET})
+    target_link_libraries(${RELCTION_GENERATOR_TARGET} PRIVATE ${LLVM_LIBRARY} ${LIBCLANG_LIBRARY})
+    target_include_directories(${RELCTION_GENERATOR_TARGET} PUBLIC ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
+    target_include_directories(${RELCTION_GENERATOR_TARGET} PRIVATE ${REFLECTION_ARGPARSE_INCLUDE_DIR} ${REFLECTION_INJA_INCLUDE_DIR})
+endif()
 
 add_subdirectory(crates)
 add_subdirectory(example)
