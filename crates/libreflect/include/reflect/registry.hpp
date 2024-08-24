@@ -81,6 +81,41 @@ namespace reflect
         ReflectTypeMap* operator->();
         RttiHashMap* getRttiMap();
     };
+
+    namespace _internal {
+        template <typename T>
+        struct FNV1aInternal {
+            static constexpr uint32_t val = 0x811c9dc5U;
+            static constexpr uint32_t prime = 0x1000193U;
+        };
+
+        template <>
+        struct FNV1aInternal<uint64_t> {
+            static constexpr uint64_t val = 0xcbf29ce484222325ULL;
+            static constexpr uint64_t prime = 0x100000001b3ULL;
+        };
+
+        constexpr uint32_t hash_32_fnv1a(std::string_view str) noexcept {
+            uint32_t hash = _internal::FNV1aInternal<uint32_t>::val;
+            for (const unsigned char c : str) {
+                hash = hash ^ c;
+                hash *= _internal::FNV1aInternal<uint32_t>::prime;
+            }
+            return hash;
+        }
+        constexpr uint64_t hash_64_fnv1a(std::string_view str) noexcept {
+            uint64_t hash = _internal::FNV1aInternal<uint64_t>::val;
+            for (const unsigned char c : str) {
+                hash = hash ^ c;
+                hash *= _internal::FNV1aInternal<uint64_t>::prime;
+            }
+            return hash;
+        }
+    }
+
+    constexpr uint64_t hash_64_typename(std::string_view str) noexcept {
+        return _internal::hash_64_fnv1a(str);
+    }
 }
 }
 

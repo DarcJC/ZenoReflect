@@ -13,6 +13,7 @@
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
+#include <regex>
 
 namespace zeno {
 
@@ -278,18 +279,31 @@ std::string clang_type_name_no_tag(const clang::QualType& type)
 
 inja::json parse_param_data(const clang::ParmVarDecl * param_decl)
 {
-
     inja::json param_data;
     clang::QualType type = param_decl->getType();
     param_data["name"] = param_decl->getName();
-    param_data["type"] = type.getCanonicalType().getAsString();
+    std::string typeName = type.getCanonicalType().getAsString();
+    param_data["type"] = typeName;
+    param_data["is_shared_obj"] = false;
+    param_data["fake_hashcode"] = "";
+    param_data["object_type_in_sharedptr"] = "";
+    if (typeName.find("shared_ptr<") != std::string::npos) {
+        param_data["is_shared_obj"] = true;
+        auto hash = zeno::reflect::FNV1aHash()(typeName);
+        param_data["fake_hashcode"] = hash;
+
+        std::regex rgx(R"(std::shared_ptr\s*<\s*(?:const)?\s*struct\s*zeno::(.*?)\s*>)");
+        std::smatch match;
+        if (std::regex_search(typeName, match, rgx)) {
+            param_data["object_type_in_sharedptr"] = match[1];
+        }
+    }
     param_data["has_default_arg"] = param_decl->hasDefaultArg();
     if (param_decl->hasDefaultArg()) {
         param_data["default_arg"] = zeno::reflect::clang_expr_to_string(param_decl->getDefaultArg());
     }
 
     return param_data;
-
 }
 
 inja::json parse_param_data(const clang::FieldDecl *param_decl)
@@ -297,7 +311,17 @@ inja::json parse_param_data(const clang::FieldDecl *param_decl)
     inja::json param_data;
     clang::QualType type = param_decl->getType();
     param_data["name"] = param_decl->getName();
-    param_data["type"] = type.getCanonicalType().getAsString();
+    std::string typeName = type.getCanonicalType().getAsString();
+    param_data["type"] = typeName;
+    param_data["is_shared_obj"] = false;
+    param_data["fake_hashcode"] = "";
+    param_data["object_type_in_sharedptr"] = "";
+    if (typeName.find("shared_ptr<") != std::string::npos) {
+        param_data["is_shared_obj"] = true;
+        auto hash = zeno::reflect::FNV1aHash()(typeName);
+        param_data["fake_hashcode"] = hash;
+    }
+
     param_data["has_default_arg"] = param_decl->hasInClassInitializer();
     if (param_decl->hasInClassInitializer()) {
         param_data["default_arg"] = zeno::reflect::clang_expr_to_string(param_decl->getInClassInitializer());

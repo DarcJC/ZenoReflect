@@ -123,7 +123,11 @@ namespace {
         virtual const ArrayList<RTTITypeInfo>& get_params() const override {
             static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in func.params
+{% if param.is_shared_obj %}
+                    { "{{ param.type }}", {{ param.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 },
+{% else %}
                     zeno::reflect::type_info<{{ param.type }}>(),
+{% endif %}
 ## endfor
             };
             return STATIC_LIST;
@@ -132,7 +136,11 @@ namespace {
         virtual const ArrayList<RTTITypeInfo>& get_params_dacayed() const override {
             static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in func.params
+{% if param.is_shared_obj %}
+                    { "{{ param.type }}", {{ param.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 },
+{% else %}
                     zeno::reflect::type_info<TTDecay<{{ param.type }}>>(),
+{% endif %}
 ## endfor
             };
             return STATIC_LIST;
@@ -148,11 +156,19 @@ namespace {
         }
 
         virtual TypeHandle get_return_type() const override {
+{% if func.ret_is_shared_obj %}
+            return TypeHandle({ "{{ func.ret }}", {{ func.ret_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 });
+{% else %}
             return get_type<{{ func.ret }}>();
+{% endif %}
         }
 
         virtual const RTTITypeInfo& get_return_rtti() const override {
+{% if func.ret_is_shared_obj %}
+            return { "{{ func.ret }}", {{ func.ret_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 };
+{% else %}
             return zeno::reflect::type_info<{{ func.ret }}>();
+{% endif %}
         }
 
         virtual Any get_param_default_value(size_t index) override {
@@ -190,7 +206,11 @@ namespace {
                     clazz.{{- func.name -}}
                     (
 ## for param in func.params
+{% if param.is_shared_obj %}
+                        nullptr,
+{% else %}
                         any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+{% endif %}
 ## endfor
                     );
                     return Any::make_null();
@@ -198,7 +218,11 @@ namespace {
                     return clazz.{{- func.name -}}
                     (
 ## for param in func.params
+{% if param.is_shared_obj %}
+                        nullptr,
+{% else %}
                         any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+{% endif %}
 ## endfor
                     );
 {% endif %}
@@ -212,7 +236,8 @@ namespace {
 {% if func.static %}
             return invoke_static(params);
 {% else %}
-			if (is_suitable_to_invoke(params)) {
+			/*if (is_suitable_to_invoke(params))*/
+            {
 				auto clazz = static_cast<{{- type_info.qualified_name -}}*>(clazz_object);
 ## for param in func.params
 				Any& any{{- loop.index }} = const_cast<Any&>(params[{{ loop.index }}]);
@@ -226,12 +251,31 @@ namespace {
 				);
 				return Any::make_null();
 {% else %}
-				return clazz->{{- func.name -}}
-				(
+
+{% if func.ret_is_shared_obj %}
+                auto spRes = clazz->{{- func.name -}} (
 ## for param in func.params
-					any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+{% if param.is_shared_obj %}
+                    std::dynamic_pointer_cast<zeno::{{ param.object_type_in_sharedptr }}>(any_cast<std::shared_ptr<zeno::IObject>>(any{{- loop.index -}})),
+{% else %}
+                    any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+{% endif %}
 ## endfor
-				);
+                );
+                std::shared_ptr<zeno::IObject> spIObject = spRes;
+                return spIObject;
+{% else %}
+                return clazz->{{- func.name -}} (
+## for param in func.params
+{% if param.is_shared_obj %}
+                    std::any_cast<{{ param.type }}>(any_cast<std::any>(any{{- loop.index -}})),
+{% else %}
+                    any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+{% endif %}
+## endfor
+                );
+{% endif %}
+
 {% endif %}
 			}
             return Any::make_null();
@@ -253,7 +297,11 @@ namespace {
                     clazz.{{- func.name -}}
                     (
 ## for param in func.params
+{% if param.is_shared_obj %}
+                        nullptr,
+{% else %}
                         any_cast<{{ param.type }}>(*any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+{% endif %}
 ## endfor
                     );
                     return Any::make_null();
@@ -261,7 +309,11 @@ namespace {
                     return clazz.{{- func.name -}}
                     (
 ## for param in func.params
+{% if param.is_shared_obj %}
+                        nullptr,
+{% else %}
                         any_cast<{{ param.type }}>(*any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
+{% endif %}
 ## endfor
                     );
 {% endif %}

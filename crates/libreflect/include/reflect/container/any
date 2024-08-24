@@ -670,7 +670,7 @@ namespace any
         }
 
         virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const override {
-            return AnyConversionMethod::Impossible;
+            return AnyConversionMethod::AsIs;
         }
 
         virtual IContainer* clone() const override {

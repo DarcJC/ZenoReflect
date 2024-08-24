@@ -239,7 +239,13 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
 
                         inja::json func_data;
                         func_data["name"] = zeno::reflect::convert_to_valid_cpp_var_name(method_decl->getNameAsString());
-                        func_data["ret"] = method_decl->getReturnType().getCanonicalType().getAsString();
+
+                        std::string retType = method_decl->getReturnType().getCanonicalType().getAsString();
+                        func_data["ret"] = retType;
+                        bool bRetIsSharedObj = retType.find("shared_ptr<") != std::string::npos;
+                        func_data["ret_is_shared_obj"] = bRetIsSharedObj;
+                        func_data["ret_hashcode"] = bRetIsSharedObj ? zeno::reflect::FNV1aHash()(retType) : 0;
+
                         func_data["params"] = inja::json::array();
                         for (unsigned int i = 0; i < method_decl->getNumParams(); ++i) {
                             const ParmVarDecl* param_decl = method_decl->getParamDecl(i);
