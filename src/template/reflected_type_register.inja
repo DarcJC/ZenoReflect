@@ -268,7 +268,7 @@ namespace {
                 return clazz->{{- func.name -}} (
 ## for param in func.params
 {% if param.is_shared_obj %}
-                    std::any_cast<{{ param.type }}>(any_cast<std::any>(any{{- loop.index -}})),
+                    std::dynamic_pointer_cast<zeno::{{ param.object_type_in_sharedptr }}>(any_cast<std::shared_ptr<zeno::IObject>>(any{{- loop.index -}})),
 {% else %}
                     any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
 {% endif %}
