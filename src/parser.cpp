@@ -186,6 +186,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
             type_data["funcs"] = inja::json::array();
             type_data["fields"] = inja::json::array();
             type_data["base_classes"] = inja::json::array();
+            type_data["is_inode"] = false;
 
             type_data["metadata"] = inja::render(zeno::reflect::text::REFLECTED_METADATA, metadata);
 
@@ -238,7 +239,12 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                     } else if (const CXXMethodDecl* method_decl = dyn_cast<CXXMethodDecl>(*it); method_decl && method_decl->getAccess() == clang::AS_public && !method_decl->isOverloadedOperator()) {
 
                         inja::json func_data;
-                        func_data["name"] = zeno::reflect::convert_to_valid_cpp_var_name(method_decl->getNameAsString());
+
+                        std::string funcname = zeno::reflect::convert_to_valid_cpp_var_name(method_decl->getNameAsString());
+                        if (funcname == "apply") {
+                            type_data["is_inode"] = true;
+                        }
+                        func_data["name"] = funcname;
 
                         std::string retType = method_decl->getReturnType().getCanonicalType().getAsString();
                         func_data["ret"] = retType;

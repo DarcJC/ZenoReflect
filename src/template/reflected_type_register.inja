@@ -510,6 +510,18 @@ namespace {
             Type{{- type_info.normal_name -}}_Instance* type_impl = new Type{{- type_info.normal_name -}}_Instance(info);
 
             (ReflectionRegistry::get())->add(type_impl);
+
+{% if type_info.is_inode %}
+            zeno::reflect::ITypeConstructor* ctor = type_impl->get_constructor_or_null({});
+            assert(ctor);
+            zeno::getSession().defNodeReflectClass([=]()->std::shared_ptr<zeno::INode> {
+                zeno::INode* pNewNode = static_cast<zeno::INode*>(ctor->new_instance());
+                pNewNode->initTypeBase(type_impl);
+                std::shared_ptr<zeno::INode> spNode(pNewNode);
+                return spNode;
+            }, type_impl);
+{% endif %}
+
         }
     };
     static S{{- type_info.normal_name -}}Registrator global_S{{- type_info.normal_name -}}Registrator{};
