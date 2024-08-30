@@ -82,7 +82,7 @@ REFLECT_STATIC_CONSTEXPR bool zeno::reflect::RTTITypeInfo::equal_fast_unsafe(con
 
 bool zeno::reflect::RTTITypeInfo::operator==(const RTTITypeInfo &other) const
 {
-    return other.hash_code() == other.hash_code() && CStringUtil<char>::strcmp(other.name(), name()) == 0;
+    return hash_code() == other.hash_code() && CStringUtil<char>::strcmp(other.name(), name()) == 0;
 }
 
 bool zeno::reflect::RTTITypeInfo::operator!=(const RTTITypeInfo &other) const
