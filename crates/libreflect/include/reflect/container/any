@@ -33,6 +33,7 @@ namespace any
         virtual IContainer* deep_move_clone() const = 0;
         virtual AnyConversionMethod is_convertible_to(const RTTITypeInfo& other_type) const = 0;
         virtual void* get_data_ptr_unsafe() const = 0;
+        virtual bool is_equal(IContainer* other_container) { return false; }
         virtual bool is_enable_from_this() = 0;
     };
 
@@ -108,6 +109,10 @@ namespace any
 
         virtual void* get_data_ptr_unsafe() const override {
             return const_cast<void*>(reinterpret_cast<const void*>(this));
+        }
+
+        virtual bool is_equal(IContainer* other_container) override {
+            return false;
         }
 
         bool is_enable_from_this() override {
@@ -204,6 +209,17 @@ namespace any
 
         operator bool() const {
             return has_value();
+        }
+
+        bool operator==(const Any& other) const {
+            if (!other.m_value_container || type() != other.m_value_container->type()) {
+                return false;
+            }
+            return m_value_container->is_equal(other.m_value_container);
+        }
+
+        bool operator!=(const Any& other) const {
+            return !operator==(other);
         }
 
         template <typename T, typename... Args>
@@ -523,6 +539,19 @@ namespace any
             return const_cast<void*>(reinterpret_cast<const void*>(&m_value));
         }
 
+        template <typename F, typename = void>
+        struct eq_ : std::false_type {};
+        template <typename F>
+        struct eq_<F, std::enable_if_t<std::is_same_v<bool, decltype(std::declval<F>() == std::declval<F>())>, void>> : std::true_type {};
+        virtual bool is_equal(IContainer* other_container) override {
+            if constexpr (eq_<T>::value) {
+                ValueContainer<T>* other_valuecon = static_cast<ValueContainer<T>*>(other_container);
+                return m_value == other_valuecon->m_value;
+            }
+            else
+                return false;
+        }
+
         bool is_enable_from_this() override {
             return false;
         }
@@ -563,6 +592,10 @@ namespace any
 
         virtual void* get_data_ptr_unsafe() const override {
             return nullptr;
+        }
+
+        virtual bool is_equal(IContainer* other_container) override {
+            return false;
         }
 
         bool is_enable_from_this() override {
@@ -643,6 +676,10 @@ namespace any
             return const_cast<void*>(reinterpret_cast<const void*>(m_value));
         }
 
+        virtual bool is_equal(IContainer* other_container) override {
+            return false;
+        }
+
         bool is_enable_from_this() override {
             return false;
         }
@@ -687,6 +724,10 @@ namespace any
 
         virtual void* get_data_ptr_unsafe() const override {
             return m_value;
+        }
+
+        virtual bool is_equal(IContainer* other_container) override {
+            return false;
         }
          
         bool is_enable_from_this() override {
@@ -734,6 +775,10 @@ namespace any
 
         virtual void* get_data_ptr_unsafe() const override {
             return const_cast<void*>(reinterpret_cast<const void*>(&m_value));
+        }
+
+        virtual bool is_equal(IContainer* other_container) override {
+            return false;
         }
          
         bool is_enable_from_this() override {
