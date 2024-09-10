@@ -289,13 +289,23 @@ inja::json parse_param_data(const clang::ParmVarDecl * param_decl)
     param_data["object_type_in_sharedptr"] = "";
     if (typeName.find("shared_ptr<") != std::string::npos) {
         param_data["is_shared_obj"] = true;
-        auto hash = zeno::reflect::FNV1aHash()(typeName);
-        param_data["fake_hashcode"] = hash;
-
-        std::regex rgx(R"(std::shared_ptr\s*<\s*(?:const)?\s*struct\s*zeno::(.*?)\s*>)");
+        std::regex rgx(R"(std::shared_ptr\s*<\s*(const)?\s*struct\s*zeno::(.*?)\s*>)");
         std::smatch match;
         if (std::regex_search(typeName, match, rgx)) {
-            param_data["object_type_in_sharedptr"] = match[1];
+            if (match[1].matched == true) {
+                param_data["is_const_object"] = true;
+            }
+            else {
+                param_data["is_const_object"] = false;
+            }
+            param_data["object_type_in_sharedptr"] = match[2];
+            std::string typeNormalName = "shared_ptr<" + std::string(match[2]) + ">";
+            param_data["type_normal"] = typeNormalName;
+            auto hash = zeno::reflect::FNV1aHash()(typeNormalName);
+            param_data["fake_hashcode"] = hash;
+        }
+        else {
+            return inja::json();
         }
     }
     param_data["has_default_arg"] = param_decl->hasDefaultArg();
@@ -318,8 +328,25 @@ inja::json parse_param_data(const clang::FieldDecl *param_decl)
     param_data["object_type_in_sharedptr"] = "";
     if (typeName.find("shared_ptr<") != std::string::npos) {
         param_data["is_shared_obj"] = true;
-        auto hash = zeno::reflect::FNV1aHash()(typeName);
-        param_data["fake_hashcode"] = hash;
+
+        std::regex rgx(R"(std::shared_ptr\s*<\s*(const)?\s*struct\s*zeno::(.*?)\s*>)");
+        std::smatch match;
+        if (std::regex_search(typeName, match, rgx)) {
+            if (match[1].matched == true) {
+                param_data["is_const_object"] = true;
+            }
+            else {
+                param_data["is_const_object"] = false;
+            }
+            param_data["object_type_in_sharedptr"] = match[2];
+            std::string typeNormalName = "shared_ptr<" + std::string(match[2]) + ">";
+            param_data["type_normal"] = typeNormalName;
+            auto hash = zeno::reflect::FNV1aHash()(typeNormalName);
+            param_data["fake_hashcode"] = hash;
+        }
+        else {
+            return inja::json();
+        }
     }
 
     param_data["has_default_arg"] = param_decl->hasInClassInitializer();

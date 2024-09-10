@@ -8,6 +8,7 @@
 #include "codegen.hpp"
 #include "template/template_literal"
 #include "clang/Sema/Sema.h"
+#include <regex>
 
 
 using namespace llvm;
@@ -248,9 +249,24 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
 
                         std::string retType = method_decl->getReturnType().getCanonicalType().getAsString();
                         func_data["ret"] = retType;
-                        bool bRetIsSharedObj = retType.find("shared_ptr<") != std::string::npos;
-                        func_data["ret_is_shared_obj"] = bRetIsSharedObj;
-                        func_data["ret_hashcode"] = bRetIsSharedObj ? zeno::reflect::FNV1aHash()(retType) : 0;
+                        func_data["ret_is_shared_obj"] = false;
+
+                        std::regex rgx(R"(std::shared_ptr\s*<\s*(const)?\s*struct\s*zeno::(.*?)\s*>)");
+                        std::smatch match;
+                        if (std::regex_search(retType, match, rgx)) {
+                            func_data["ret_is_shared_obj"] = true;
+                            if (match[1].matched == true) {
+                                func_data["ret_is_const_object"] = true;
+                            }
+                            else {
+                                func_data["ret_is_const_object"] = false;
+                            }
+
+                            std::string typeNormalName = "shared_ptr<" + std::string(match[2]) + ">";
+                            func_data["ret_type_normal"] = typeNormalName;
+                            auto hash = zeno::reflect::FNV1aHash()(typeNormalName);
+                            func_data["fake_hashcode"] = hash;
+                        }
 
                         func_data["params"] = inja::json::array();
                         for (unsigned int i = 0; i < method_decl->getNumParams(); ++i) {

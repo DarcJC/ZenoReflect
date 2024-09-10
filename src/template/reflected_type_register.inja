@@ -124,7 +124,11 @@ namespace {
             static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in func.params
 {% if param.is_shared_obj %}
-                    { "{{ param.type }}", {{ param.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 },
+{% if param.is_const_object %}
+                    { "{{ param.type_normal }}", {{ param.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None | TF_IsConst ), 0 },
+{% else %}
+                    { "{{ param.type_normal }}", {{ param.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 },
+{% endif %}
 {% else %}
                     zeno::reflect::type_info<{{ param.type }}>(),
 {% endif %}
@@ -137,7 +141,11 @@ namespace {
             static ArrayList<RTTITypeInfo> STATIC_LIST {
 ## for param in func.params
 {% if param.is_shared_obj %}
-                    { "{{ param.type }}", {{ param.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 },
+{% if param.is_const_object %}
+                    { "{{ param.type_normal }}", {{ param.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None | TF_IsConst ), 0 },
+{% else %}
+                    { "{{ param.type_normal }}", {{ param.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 },
+{% endif %}
 {% else %}
                     zeno::reflect::type_info<TTDecay<{{ param.type }}>>(),
 {% endif %}
@@ -157,7 +165,11 @@ namespace {
 
         virtual TypeHandle get_return_type() const override {
 {% if func.ret_is_shared_obj %}
-            return TypeHandle({ "{{ func.ret }}", {{ func.ret_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 });
+{% if func.ret_is_const_object %}
+            return TypeHandle({ "{{ func.ret_type_normal }}", {{ func.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None | TF_IsConst ), 0 });
+{% else %}
+            return TypeHandle({ "{{ func.ret_type_normal }}", {{ func.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 });
+{% endif %}
 {% else %}
             return get_type<{{ func.ret }}>();
 {% endif %}
@@ -165,7 +177,11 @@ namespace {
 
         virtual const RTTITypeInfo& get_return_rtti() const override {
 {% if func.ret_is_shared_obj %}
-            return { "{{ func.ret }}", {{ func.ret_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 };
+{% if func.ret_is_const_object %}
+            return { "{{ func.ret_type_normal }}", {{ func.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None | TF_IsConst ), 0 };
+{% else %}
+            return { "{{ func.ret_type_normal }}", {{ func.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 };
+{% endif %}
 {% else %}
             return zeno::reflect::type_info<{{ func.ret }}>();
 {% endif %}
