@@ -212,7 +212,9 @@ namespace any
         }
 
         bool operator==(const Any& other) const {
-            if (!other.m_value_container || type() != other.m_value_container->type()) {
+            if (!m_value_container && !other.m_value_container)
+                return true;
+            if (!other.m_value_container || !m_value_container || type() != other.m_value_container->type()) {
                 return false;
             }
             return m_value_container->is_equal(other.m_value_container);
