@@ -248,6 +248,10 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                             type_data["is_inode"] = true;
                             func_data["is_inode"] = true;
                         }
+                        else {
+                            //ignore all other functions but apply.
+                            continue;
+                        }
                         func_data["name"] = funcname;
 
                         std::string retType = method_decl->getReturnType().getCanonicalType().getAsString();
