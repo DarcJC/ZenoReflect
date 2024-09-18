@@ -241,9 +241,12 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
 
                         inja::json func_data;
 
-                        std::string funcname = zeno::reflect::convert_to_valid_cpp_var_name(method_decl->getNameAsString());
+                        func_data["is_inode"] = false;
+
+                        std::string funcname = /*zeno::reflect::convert_to_valid_cpp_var_name*/(method_decl->getNameAsString());
                         if (funcname == "apply") {
                             type_data["is_inode"] = true;
+                            func_data["is_inode"] = true;
                         }
                         func_data["name"] = funcname;
 

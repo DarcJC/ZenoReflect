@@ -208,6 +208,9 @@ namespace {
         }
 
         virtual Any invoke(const Any& clazz_object, const ArrayList<Any>& params) const override {
+{% if func.is_inode %}
+            return Any::make_null();
+{% else %}
 {% if func.static %}
             return invoke_static(params);
 {% else %}
@@ -246,6 +249,7 @@ namespace {
             }
             return Any::make_null();
 {% endif %}
+{% endif %}
         }
 		
 		virtual Any invoke_unsafe(void* clazz_object, const ArrayList<Any>& params) const override {
@@ -272,7 +276,7 @@ namespace {
                 auto spRes = clazz->{{- func.name -}} (
 ## for param in func.params
 {% if param.is_shared_obj %}
-                    std::dynamic_pointer_cast<zeno::{{ param.object_type_in_sharedptr }}>(any_cast<std::shared_ptr<zeno::IObject>>(any{{- loop.index -}})),
+                    std::dynamic_pointer_cast<zeno::{{ param.object_type_in_sharedptr }}>(any_cast<std::shared_ptr<zeno::IObject>>(any{{- loop.index -}})) {% if loop.index1 != length(func.params) %},{% endif %}
 {% else %}
                     any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
 {% endif %}
@@ -284,7 +288,7 @@ namespace {
                 return clazz->{{- func.name -}} (
 ## for param in func.params
 {% if param.is_shared_obj %}
-                    std::dynamic_pointer_cast<zeno::{{ param.object_type_in_sharedptr }}>(any_cast<std::shared_ptr<zeno::IObject>>(any{{- loop.index -}})),
+                    std::dynamic_pointer_cast<zeno::{{ param.object_type_in_sharedptr }}>(any_cast<std::shared_ptr<zeno::IObject>>(any{{- loop.index -}})) {% if loop.index1 != length(func.params) %},{% endif %}
 {% else %}
                     any_cast<{{ param.type }}>(any{{- loop.index -}}) {% if loop.index1 != length(func.params) %},{% endif %}
 {% endif %}
@@ -299,6 +303,9 @@ namespace {
         }
 
         virtual Any invoke(const Any& clazz_object, const ArrayList<Any*>& params) const override {
+{% if func.is_inode %}
+            return Any::make_null();
+{% else %}
 {% if func.static %}
             return invoke_static(params);
 {% else %}
@@ -336,6 +343,7 @@ namespace {
                 }
             }
             return Any::make_null();
+{% endif %}
 {% endif %}
         }
 
