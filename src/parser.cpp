@@ -257,22 +257,60 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                         std::string retType = method_decl->getReturnType().getCanonicalType().getAsString();
                         func_data["ret"] = retType;
                         func_data["ret_is_shared_obj"] = false;
+                        func_data["ret_is_const_object"] = false;
+                        func_data["ret_is_multi_ret"] = false;
 
-                        std::regex rgx(R"(std::shared_ptr\s*<\s*(const)?\s*struct\s*zeno::(.*?)\s*>)");
+                        std::regex rgx_pair(R"(std::(pair|tuple)\s*<(.*)>)");
                         std::smatch match;
-                        if (std::regex_search(retType, match, rgx)) {
-                            func_data["ret_is_shared_obj"] = true;
-                            if (match[1].matched == true) {
-                                func_data["ret_is_const_object"] = true;
-                            }
-                            else {
-                                func_data["ret_is_const_object"] = false;
-                            }
+                        if (std::regex_search(retType, match, rgx_pair)) {
+                            std::string lstItems(match[2]);
+                            std::vector<std::string> items = zeno::reflect::split_str(lstItems, ',', false);
 
-                            std::string typeNormalName = "shared_ptr<" + std::string(match[2]) + ">";
-                            func_data["ret_type_normal"] = typeNormalName;
-                            auto hash = zeno::reflect::FNV1aHash()(typeNormalName);
-                            func_data["fake_hashcode"] = hash;
+                            auto retTypes = inja::json::array();
+                            for (auto rettype : items) {
+                                std::regex _rgx(R"(std::shared_ptr\s*<\s*(const)?\s*struct\s*zeno::(.*?)\s*>)");
+                                std::smatch _match;
+                                inja::json ret_type_data;
+                                if (std::regex_search(rettype, _match, _rgx)) {
+                                    ret_type_data["ret_is_shared_obj"] = true;
+                                    ret_type_data["ret_is_const_object"] = _match[1].matched;
+                                }
+                                else {
+                                    //普通类型，直接填进去
+                                    ret_type_data["ret_is_shared_obj"] = false;
+                                }
+
+                                ret_type_data["ret"] = rettype;
+                                std::string typeNormalName = "shared_ptr<" + std::string(_match[0]) + ">";
+                                ret_type_data["ret_type_normal"] = typeNormalName;
+                                auto hash = zeno::reflect::FNV1aHash()(typeNormalName);
+                                ret_type_data["fake_hashcode"] = hash;
+
+                                retTypes.push_back(ret_type_data);
+                            }
+                            func_data["ret_is_multi_ret"] = true;
+                            func_data["ret_type_normal"] = "std::pair<wtf>";
+                            func_data["fake_hashcode"] = 233;
+                            func_data["ret_types"] = retTypes;
+
+                        }
+                        else {
+                            std::regex rgx2(R"(std::shared_ptr\s*<\s*(const)?\s*struct\s*zeno::(.*?)\s*>)");
+                            std::smatch match2;
+                            if (std::regex_search(retType, match2, rgx2)) {
+                                func_data["ret_is_shared_obj"] = true;
+                                if (match2[1].matched == true) {
+                                    func_data["ret_is_const_object"] = true;
+                                }
+                                else {
+                                    func_data["ret_is_const_object"] = false;
+                                }
+
+                                std::string typeNormalName = "shared_ptr<" + std::string(match2[2]) + ">";
+                                func_data["ret_type_normal"] = typeNormalName;
+                                auto hash = zeno::reflect::FNV1aHash()(typeNormalName);
+                                func_data["fake_hashcode"] = hash;
+                            }
                         }
 
                         func_data["params"] = inja::json::array();

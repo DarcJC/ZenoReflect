@@ -164,6 +164,9 @@ namespace {
         }
 
         virtual TypeHandle get_return_type() const override {
+{% if func.ret_is_multi_ret %}
+            return TypeHandle({ "{{ func.ret_type_normal }}", 0, static_cast<size_t>(TF_IsMultiReturn), 0 });
+{% else %}
 {% if func.ret_is_shared_obj %}
 {% if func.ret_is_const_object %}
             return TypeHandle({ "{{ func.ret_type_normal }}", {{ func.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None | TF_IsConst ), 0 });
@@ -173,9 +176,36 @@ namespace {
 {% else %}
             return get_type<{{ func.ret }}>();
 {% endif %}
+{% endif %}
+        }
+
+        virtual const ArrayList<RTTITypeInfo>& get_multi_return_rtti() const override {
+{% if func.ret_is_multi_ret %}
+
+            static ArrayList<RTTITypeInfo> rettypes {
+## for rettype in func.ret_types
+{% if rettype.ret_is_shared_obj %}
+{% if rettype.ret_is_const_object %}
+                { "{{ rettype.ret_type_normal }}", {{ rettype.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None | TF_IsConst ), 0 },
+{% else %}
+                { "{{ rettype.ret_type_normal }}", {{ rettype.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 },
+{% endif %}
+{% else %}
+                zeno::reflect::type_info<{{ rettype.ret }}>()
+{% endif %}
+## endfor
+            };
+            return rettypes;
+
+{% else %}
+            return ArrayList<RTTITypeInfo>();
+{% endif %}
         }
 
         virtual const RTTITypeInfo& get_return_rtti() const override {
+{% if func.ret_is_multi_ret %}
+            return { "{{ func.ret_type_normal }}", 0, static_cast<size_t>(TF_IsMultiReturn), 0 };
+{% else %}
 {% if func.ret_is_shared_obj %}
 {% if func.ret_is_const_object %}
             return { "{{ func.ret_type_normal }}", {{ func.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None | TF_IsConst ), 0 };
@@ -184,6 +214,7 @@ namespace {
 {% endif %}
 {% else %}
             return zeno::reflect::type_info<{{ func.ret }}>();
+{% endif %}
 {% endif %}
         }
 
@@ -272,7 +303,7 @@ namespace {
 				return Any::make_null();
 {% else %}
 
-{% if func.ret_is_shared_obj %}
+{% if func.ret_is_shared_obj or func.ret_is_multi_ret %}
                 auto spRes = clazz->{{- func.name -}} (
 ## for param in func.params
 {% if param.is_shared_obj %}
@@ -282,8 +313,20 @@ namespace {
 {% endif %}
 ## endfor
                 );
+{% if func.ret_is_multi_ret %}
+                std::vector<Any> vecRes;
+## for rettype in func.ret_types
+{% if rettype.ret_is_shared_obj %}
+                vecRes.push_back(std::shared_ptr<zeno::IObject>(std::get<{{- loop.index -}}>(spRes)));
+{% else %}
+                vecRes.push_back(std::get<{{- loop.index -}}>(spRes));
+{% endif %}
+## endfor
+                return vecRes;
+{% else %}
                 std::shared_ptr<zeno::IObject> spIObject = spRes;
                 return spIObject;
+{% endif %}
 {% else %}
                 return clazz->{{- func.name -}} (
 ## for param in func.params

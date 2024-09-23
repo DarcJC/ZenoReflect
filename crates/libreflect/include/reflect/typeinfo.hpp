@@ -21,6 +21,7 @@ namespace reflect
         TF_IsConst = 1 << 3,
         TF_IsObject = 1 << 4,
         TF_IsIObject = 1 << 5,
+        TF_IsMultiReturn = 1 << 6,
     };
 
     template <typename T>

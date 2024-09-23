@@ -198,6 +198,19 @@ std::string normalize_filename(std::string_view input)
     return std::filesystem::path(input).lexically_normal().filename().string();
 }
 
+std::vector<std::string> split_str(std::string const& s, char delimiter, bool bKeepEmpty)
+{
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream iss(s);
+    while (std::getline(iss, token, delimiter)) {
+        if (!bKeepEmpty && token.empty())
+            continue;
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
 std::string convert_to_valid_cpp_var_name(std::string_view type_name)
 {
     std::string var_name;
