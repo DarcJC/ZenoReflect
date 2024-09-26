@@ -281,7 +281,7 @@ void RecordTypeMatchCallback::run(const MatchFinder::MatchResult &result)
                                 }
 
                                 ret_type_data["ret"] = rettype;
-                                std::string typeNormalName = "shared_ptr<" + std::string(_match[0]) + ">";
+                                std::string typeNormalName = "shared_ptr<" + std::string(_match[2]) + ">";
                                 ret_type_data["ret_type_normal"] = typeNormalName;
                                 auto hash = zeno::reflect::FNV1aHash()(typeNormalName);
                                 ret_type_data["fake_hashcode"] = hash;
