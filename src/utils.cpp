@@ -302,7 +302,7 @@ inja::json parse_param_data(const clang::ParmVarDecl * param_decl)
     param_data["object_type_in_sharedptr"] = "";
     if (typeName.find("shared_ptr<") != std::string::npos) {
         param_data["is_shared_obj"] = true;
-        std::regex rgx(R"(std::shared_ptr\s*<\s*(const)?\s*struct\s*zeno::(.*?)\s*>)");
+        std::regex rgx(R"(std::shared_ptr\s*<\s*(const)?\s*(struct|class)\s*zeno::(.*?)\s*>)");
         std::smatch match;
         if (std::regex_search(typeName, match, rgx)) {
             if (match[1].matched == true) {
@@ -311,8 +311,8 @@ inja::json parse_param_data(const clang::ParmVarDecl * param_decl)
             else {
                 param_data["is_const_object"] = false;
             }
-            param_data["object_type_in_sharedptr"] = match[2];
-            std::string typeNormalName = "shared_ptr<" + std::string(match[2]) + ">";
+            param_data["object_type_in_sharedptr"] = match[3];
+            std::string typeNormalName = "shared_ptr<" + std::string(match[3]) + ">";
             param_data["type_normal"] = typeNormalName;
             auto hash = zeno::reflect::FNV1aHash()(typeNormalName);
             param_data["fake_hashcode"] = hash;
@@ -342,7 +342,7 @@ inja::json parse_param_data(const clang::FieldDecl *param_decl)
     if (typeName.find("shared_ptr<") != std::string::npos) {
         param_data["is_shared_obj"] = true;
 
-        std::regex rgx(R"(std::shared_ptr\s*<\s*(const)?\s*struct\s*zeno::(.*?)\s*>)");
+        std::regex rgx(R"(std::shared_ptr\s*<\s*(const)?\s*(struct|class)\s*zeno::(.*?)\s*>)");
         std::smatch match;
         if (std::regex_search(typeName, match, rgx)) {
             if (match[1].matched == true) {
@@ -351,8 +351,8 @@ inja::json parse_param_data(const clang::FieldDecl *param_decl)
             else {
                 param_data["is_const_object"] = false;
             }
-            param_data["object_type_in_sharedptr"] = match[2];
-            std::string typeNormalName = "shared_ptr<" + std::string(match[2]) + ">";
+            param_data["object_type_in_sharedptr"] = match[3];
+            std::string typeNormalName = "shared_ptr<" + std::string(match[3]) + ">";
             param_data["type_normal"] = typeNormalName;
             auto hash = zeno::reflect::FNV1aHash()(typeNormalName);
             param_data["fake_hashcode"] = hash;
