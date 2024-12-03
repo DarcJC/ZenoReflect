@@ -202,15 +202,15 @@ namespace {
 {% endif %}
         }
 
-        virtual const RTTITypeInfo& get_return_rtti() const override {
+        virtual const RTTITypeInfo get_return_rtti() const override {
 {% if func.ret_is_multi_ret %}
-            return { "{{ func.ret_type_normal }}", 0, static_cast<size_t>(TF_IsMultiReturn), 0 };
+            return RTTITypeInfo("{{ func.ret_type_normal }}", 0, static_cast<size_t>(TF_IsMultiReturn), 0);
 {% else %}
 {% if func.ret_is_shared_obj %}
 {% if func.ret_is_const_object %}
-            return { "{{ func.ret_type_normal }}", {{ func.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None | TF_IsConst ), 0 };
+            return RTTITypeInfo("{{ func.ret_type_normal }}", {{ func.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None | TF_IsConst ), 0);
 {% else %}
-            return { "{{ func.ret_type_normal }}", {{ func.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0 };
+            return RTTITypeInfo("{{ func.ret_type_normal }}", {{ func.fake_hashcode }}ULL, static_cast<size_t>(TF_IsObject | TF_None ), 0);
 {% endif %}
 {% else %}
             return zeno::reflect::type_info<{{ func.ret }}>();

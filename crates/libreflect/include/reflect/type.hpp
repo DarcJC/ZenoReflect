@@ -201,7 +201,7 @@ namespace reflect
     public:
         virtual ~IMemberFunction();
         virtual TypeHandle get_return_type() const = 0;
-        virtual const RTTITypeInfo& get_return_rtti() const = 0;
+        virtual const RTTITypeInfo get_return_rtti() const = 0;
         virtual const ArrayList<RTTITypeInfo>& get_multi_return_rtti() const = 0;
         virtual Any invoke(const Any& clazz_object, const ArrayList<Any>& params = {}) const = 0;
         virtual Any invoke(const Any& clazz_object, const ArrayList<Any*>& params = {}) const = 0;
